@@ -45,7 +45,8 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
       items: [{
         name: 'jenkinsUrl',
         fieldLabel: this.urlText,
-        property: 'jenkins.url'
+        property: 'jenkins.url',
+        vtype: 'url'
       },{
         name: 'jenkinsProject',
         fieldLabel: this.projectText,
@@ -54,13 +55,7 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
         name: 'jenkinsToken',
         fieldLabel: this.tokenText,
         property: 'jenkins.token'
-      }],
-      listeners: {
-        preUpdate: {
-          fn: this.updateProperties,
-          scope: this
-        }
-      }
+      }]
     };
     
     Ext.apply(this, Ext.apply(this.initialConfig, config));
