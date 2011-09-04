@@ -120,8 +120,10 @@ Ext.reg("jenkinsConfigPanel", Sonia.jenkins.ConfigPanel);
 
 // register panel
 Sonia.repository.openListeners.push(function(repository, panels){
-  panels.push({
-    xtype: 'jenkinsConfigPanel',
-    item: repository
-  });
+  if (Sonia.repository.isOwner(repository)){
+    panels.push({
+      xtype: 'jenkinsConfigPanel',
+      item: repository
+    });
+  }
 });
