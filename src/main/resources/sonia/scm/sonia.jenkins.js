@@ -32,50 +32,28 @@
 
 Ext.ns('Sonia.jenkins');
 
-Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.FormPanel, {
+Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
   
   formTitleText: 'Jenkins',
   urlText: 'Url',
   projectText: 'Project',
   tokenText: 'Token',
   
-  initComponent: function(){
-    var url = "";
-    var project = "";
-    var token = "";
-    
-    // read fields from properties
-    var properties = this.item.properties;
-    if ( properties ){
-      for (var i=0; i<properties.length; i++){
-        var property = properties[i];
-        if ( property.key == 'jenkins.url' ){
-          url = property.value;
-        } else if (property.key == 'jenkins.project'){
-          project = property.value;
-        } else if (property.key == 'jenkins.token'){
-          token = property.value;
-        }
-      }
-    }
-    
+  initComponent: function(){    
     var config = {
       title: this.formTitleText,
       items: [{
-        id: 'jenkinsUrl',
+        name: 'jenkinsUrl',
         fieldLabel: this.urlText,
-        submitValue: false,
-        value: url
+        property: 'jenkins.url'
       },{
-        id: 'jenkinsProject',
+        name: 'jenkinsProject',
         fieldLabel: this.projectText,
-        submitValue: false,
-        value: project
+        property: 'jenkins.project'
       },{
-        id: 'jenkinsToken',
+        name: 'jenkinsToken',
         fieldLabel: this.tokenText,
-        submitValue: false,
-        value: token
+        property: 'jenkins.token'
       }],
       listeners: {
         preUpdate: {
@@ -87,30 +65,6 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.FormPanel, {
     
     Ext.apply(this, Ext.apply(this.initialConfig, config));
     Sonia.jenkins.ConfigPanel.superclass.initComponent.apply(this, arguments);
-  }, 
-  
-  updateProperties: function(item){
-    // create properties if they are empty
-    if (!item.properties){
-      item.properties = [];
-    }
-    
-    // copy fields to properties
-    item.properties.push({
-      key: 'jenkins.url',
-      value: item.jenkinsUrl
-    },{
-      key: 'jenkins.project',
-      value: item.jenkinsProject
-    },{
-      key: 'jenkins.token',
-      value: item.jenkinsToken
-    });
-    
-    // remove properties from object
-    delete item.jenkinsUrl;
-    delete item.jenkinsProject;
-    delete item.jenkinsToken;
   }
   
 });
