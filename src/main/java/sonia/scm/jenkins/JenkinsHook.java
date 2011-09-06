@@ -36,6 +36,7 @@ package sonia.scm.jenkins;
 //~--- non-JDK imports --------------------------------------------------------
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,12 +90,13 @@ public class JenkinsHook implements RepositoryHook
    * Constructs ...
    *
    *
-   * @param httpClient
+   *
+   * @param httpClientProvider
    */
   @Inject
-  public JenkinsHook(HttpClient httpClient)
+  public JenkinsHook(Provider<HttpClient> httpClientProvider)
   {
-    this.httpClient = httpClient;
+    this.httpClientProvider = httpClientProvider;
   }
 
   //~--- methods --------------------------------------------------------------
@@ -211,6 +213,7 @@ public class JenkinsHook implements RepositoryHook
   private void sendRequest(String url, String token) throws IOException
   {
     HttpResponse response = null;
+    HttpClient httpClient = httpClientProvider.get();
 
     if (Util.isNotEmpty(token))
     {
@@ -236,5 +239,5 @@ public class JenkinsHook implements RepositoryHook
   //~--- fields ---------------------------------------------------------------
 
   /** Field description */
-  private HttpClient httpClient;
+  private Provider<HttpClient> httpClientProvider;
 }
