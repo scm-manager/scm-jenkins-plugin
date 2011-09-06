@@ -39,6 +39,10 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
   projectText: 'Project',
   tokenText: 'Token',
   
+  urlHelpText: 'Url of Jenkins install (with contextpath).',
+  projectHelpText: 'The name of the Jenkins project.',
+  tokenHelpText: 'Jenkins Authentication Token',
+  
   initComponent: function(){    
     var config = {
       title: this.formTitleText,
@@ -46,15 +50,18 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
         name: 'jenkinsUrl',
         fieldLabel: this.urlText,
         property: 'jenkins.url',
-        vtype: 'url'
+        vtype: 'url',
+        helpText: this.urlHelpText
       },{
         name: 'jenkinsProject',
         fieldLabel: this.projectText,
-        property: 'jenkins.project'
+        property: 'jenkins.project',
+        helpText: this.projectHelpText
       },{
         name: 'jenkinsToken',
         fieldLabel: this.tokenText,
-        property: 'jenkins.token'
+        property: 'jenkins.token',
+        helpText: this.tokenHelpText
       }]
     };
     
