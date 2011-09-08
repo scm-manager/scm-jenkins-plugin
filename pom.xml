@@ -15,6 +15,8 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>scm-jenkins-plugin</name>
+  <url>https://bitbucket.org/sdorra/scm-jenkins-plugin</url>
+  <description>This plugin will ping your Jenkins CI server when a new commit is pushed to SCM-Manager.</description>
   
   <repositories>
     
