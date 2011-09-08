@@ -39,7 +39,7 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
   projectText: 'Project',
   tokenText: 'Token',
   
-  urlHelpText: 'Url of Jenkins install (with contextpath).',
+  urlHelpText: 'Url of Jenkins installation (with contextpath).',
   projectHelpText: 'The name of the Jenkins project.',
   tokenHelpText: 'Jenkins Authentication Token',
   
