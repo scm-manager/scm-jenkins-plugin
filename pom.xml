@@ -18,6 +18,12 @@
   <url>https://bitbucket.org/sdorra/scm-jenkins-plugin</url>
   <description>This plugin will ping your Jenkins CI server when a new commit is pushed to SCM-Manager.</description>
   
+  <scm>
+    <connection>scm:hg:https://bitbucket.org/sdorra/scm-jenkins-plugin</connection>
+    <developerConnection>scm:hg:https://bitbucket.org/sdorra/scm-jenkins-plugin</developerConnection>
+    <url>https://bitbucket.org/sdorra/scm-jenkins-plugin</url>
+  </scm>
+  
   <repositories>
     
     <repository>
