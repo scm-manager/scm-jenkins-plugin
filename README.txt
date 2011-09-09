@@ -1,9 +1,9 @@
-scm-jira-plugin
+scm-jenkins-plugin
 ==============================
 This plugin is part of the scm-manager (http://www.scm-manager.org) project.
 
 Issue tracker: https://bitbucket.org/sdorra/scm-manager/issues
-Please set component to jira-plugin.
+Please set component to jenkins-plugin.
 
 Mailing list:  http://groups.google.com/group/scmmanager
 Wiki: https://bitbucket.org/sdorra/scm-manager/wiki/Home
