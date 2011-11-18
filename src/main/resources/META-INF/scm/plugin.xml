@@ -1,21 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <plugin>
 
+  <!-- 
+    The author of the maven plugin.
+    The elements groupId, artifactId, name, version and url
+    are automatically added from the pom.xml by a maven plugin (since 1.5).
+  -->
   <information>
     <author>Sebastian Sdorra</author>
   </information>
 
+  <!-- 
+    scm-jenkins-plugin requires SCM-Manager version 1.7
+  -->
   <conditions>
     <min-version>1.7</min-version>
   </conditions>
   
-  <!-- register package for plugin annotation finder -->
+  <!-- 
+    register the java package sonia.scm.jenkins for plugin extension finder.
+   -->
   <packages>
     <package>sonia.scm.jenkins</package>
   </packages>
 
-  <!-- register javascript file -->
+  <!-- 
+    register the javascript file src/main/resources/sonia/scm/sonia.jenkins.js
+   -->
   <resources>
     <script>/sonia/scm/sonia.jenkins.js</script>
   </resources>
