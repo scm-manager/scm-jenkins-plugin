@@ -8,13 +8,14 @@
   -->
   <information>
     <author>Sebastian Sdorra</author>
+    <category>Continuous Integration</category>
   </information>
 
   <!-- 
-    scm-jenkins-plugin requires SCM-Manager version 1.7
+    scm-jenkins-plugin requires SCM-Manager version 1.7 (from pom.xml)
   -->
   <conditions>
-    <min-version>1.7</min-version>
+    <min-version>${project.parent.version}</min-version>
   </conditions>
   
   <!-- 
