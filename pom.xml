@@ -43,6 +43,27 @@
     <url>https://bitbucket.org/sdorra/scm-jenkins-plugin</url>
   </scm>
   
+  
+  <build>
+    <plugins>
+    
+      <plugin>
+        <groupId>sonia.scm.maven</groupId>
+        <artifactId>scm-maven-plugin</artifactId>
+        <version>1.10</version>
+        <executions>
+          <execution>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>fix-descriptor</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    
+    </plugins>
+  </build>
+  
   <!-- 
     SCM-Manager maven repository. This part is required to fetch the maven 
     plugins and must be available in each pom of a SCM-Manager plugin.
