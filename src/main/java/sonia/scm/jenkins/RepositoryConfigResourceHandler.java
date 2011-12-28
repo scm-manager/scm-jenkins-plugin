@@ -97,7 +97,7 @@ public class RepositoryConfigResourceHandler implements ResourceHandler
   {
     InputStream content = null;
 
-    if (context.getConfiguration().isRepositoryConfiguration())
+    if (!context.getConfiguration().isDisableRepositoryConfiguration())
     {
       content = RepositoryConfigResourceHandler.class.getResourceAsStream(PATH);
     }

@@ -71,9 +71,9 @@ public class GlobalJenkinsConfiugration implements Validateable
    *
    * @return
    */
-  public boolean isRepositoryConfiguration()
+  public boolean isDisableGitTrigger()
   {
-    return repositoryConfiguration;
+    return disableGitTrigger;
   }
 
   /**
@@ -82,9 +82,9 @@ public class GlobalJenkinsConfiugration implements Validateable
    *
    * @return
    */
-  public boolean isTriggerGit()
+  public boolean isDisableMercurialTrigger()
   {
-    return triggerGit;
+    return disableMercurialTrigger;
   }
 
   /**
@@ -93,9 +93,9 @@ public class GlobalJenkinsConfiugration implements Validateable
    *
    * @return
    */
-  public boolean isTriggerMercurial()
+  public boolean isDisableRepositoryConfiguration()
   {
-    return triggerMercurial;
+    return disableRepositoryConfiguration;
   }
 
   /**
@@ -107,7 +107,7 @@ public class GlobalJenkinsConfiugration implements Validateable
   @Override
   public boolean isValid()
   {
-    return (Util.isEmpty(url) && triggerGit) || triggerMercurial;
+    return Util.isNotEmpty(url);
   }
 
   //~--- set methods ----------------------------------------------------------
@@ -116,33 +116,34 @@ public class GlobalJenkinsConfiugration implements Validateable
    * Method description
    *
    *
-   * @param repositoryConfiguration
+   * @param disableGitTrigger
    */
-  public void setRepositoryConfiguration(boolean repositoryConfiguration)
+  public void setDisableGitTrigger(boolean disableGitTrigger)
   {
-    this.repositoryConfiguration = repositoryConfiguration;
+    this.disableGitTrigger = disableGitTrigger;
   }
 
   /**
    * Method description
    *
    *
-   * @param triggerGit
+   * @param disableMercurialTrigger
    */
-  public void setTriggerGit(boolean triggerGit)
+  public void setDisableMercurialTrigger(boolean disableMercurialTrigger)
   {
-    this.triggerGit = triggerGit;
+    this.disableMercurialTrigger = disableMercurialTrigger;
   }
 
   /**
    * Method description
    *
    *
-   * @param triggerMercurial
+   * @param disableRepositoryConfiguration
    */
-  public void setTriggerMercurial(boolean triggerMercurial)
+  public void setDisableRepositoryConfiguration(
+          boolean disableRepositoryConfiguration)
   {
-    this.triggerMercurial = triggerMercurial;
+    this.disableRepositoryConfiguration = disableRepositoryConfiguration;
   }
 
   /**
@@ -159,16 +160,16 @@ public class GlobalJenkinsConfiugration implements Validateable
   //~--- fields ---------------------------------------------------------------
 
   /** Field description */
-  @XmlElement(name = "repository-configuration")
-  private boolean repositoryConfiguration = true;
+  @XmlElement(name = "disable-repository-configuration")
+  private boolean disableRepositoryConfiguration = false;
 
   /** Field description */
-  @XmlElement(name = "trigger-git")
-  private boolean triggerGit = true;
+  @XmlElement(name = "disable-mercurial-trigger")
+  private boolean disableMercurialTrigger = false;
 
   /** Field description */
-  @XmlElement(name = "trigger-mercurial")
-  private boolean triggerMercurial = true;
+  @XmlElement(name = "disable-git-trigger")
+  private boolean disableGitTrigger = false;
 
   /** Field description */
   private String url;

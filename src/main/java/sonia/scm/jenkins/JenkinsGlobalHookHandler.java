@@ -120,11 +120,12 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
       String type = repository.getType();
 
       if (TYPE_MERCURIAL.equalsIgnoreCase(type)
-          || configuration.isTriggerMercurial())
+          ||!configuration.isDisableMercurialTrigger())
       {
         urlSuffix = URL_MERCURIAL;
       }
-      else if (TYPE_GIT.equalsIgnoreCase(type) || configuration.isTriggerGit())
+      else if (TYPE_GIT.equalsIgnoreCase(type)
+               ||!configuration.isDisableGitTrigger())
       {
         urlSuffix = URL_MERCURIAL;
       }

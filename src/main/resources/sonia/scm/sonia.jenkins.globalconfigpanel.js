@@ -42,12 +42,12 @@ Sonia.jenkins.GlobalConfigPanel = Ext.extend(Sonia.config.ConfigForm, {
   triggerMercurialText: 'Trigger Mercurial',
   
   urlHelpText: 'Url of Jenkins installation (with contextpath).',
-  repositoryConfigurationHelpText: 'Allow repository owners to configure jenkins hooks. \n\
+  repositoryConfigurationHelpText: 'Do not allow repository owners to configure jenkins hooks. \n\
     You have to restart your application server after changing this value.',
-  triggerGitHelpText: 'Trigger builds after a git repository has changed. \n\
-    Requires version 1.1.14 or above of the jenkins git plugin.',
-  triggerMercurialHelpText: 'Trigger builds after a mercurial repository has changed. \n\
-    Requires version 1.38 or above of the jenkins mercurial plugin.',
+  triggerGitHelpText: 'Disable trigger for git repositories. \n\
+    Note: the git trigger requires version 1.1.14 or above of the jenkins git plugin.',
+  triggerMercurialHelpText: 'Disable trigger for mercurial repositories. \n\
+    Note: the mercurial trigger requires version 1.38 or above of the jenkins mercurial plugin.',
 
   initComponent: function(){
 
@@ -57,24 +57,25 @@ Sonia.jenkins.GlobalConfigPanel = Ext.extend(Sonia.config.ConfigForm, {
         xtype : 'textfield',
         fieldLabel : this.urlText,
         name : 'url',
+        vtype: 'url',
         allowBlank : true,
         helpText: this.urlHelpText
       },{
         xtype: 'checkbox',
         fieldLabel : this.repositoryConfigurationText,
-        name: 'repository-configuration',
+        name: 'disable-repository-configuration',
         inputValue: 'true',
         helpText: this.repositoryConfigurationHelpText
       },{
         xtype: 'checkbox',
         fieldLabel : this.triggerGitText,
-        name: 'trigger-git',
+        name: 'disable-mercurial-trigger',
         inputValue: 'true',
         helpText: this.triggerGitHelpText
       },{
         xtype: 'checkbox',
         fieldLabel : this.triggerMercurialText,
-        name: 'trigger-mercurial',
+        name: 'disable-git-trigger',
         inputValue: 'true',
         helpText: this.triggerMercurialHelpText
       }]

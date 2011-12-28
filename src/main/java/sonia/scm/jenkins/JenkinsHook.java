@@ -134,7 +134,7 @@ public class JenkinsHook implements RepositoryHook
       GlobalJenkinsConfiugration globalConfig = context.getConfiguration();
       JenkinsHookHandler handler = null;
 
-      if (globalConfig.isRepositoryConfiguration())
+      if (!globalConfig.isDisableRepositoryConfiguration())
       {
 
         // read jenkins configuration from repository
