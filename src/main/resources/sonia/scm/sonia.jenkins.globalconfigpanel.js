@@ -36,15 +36,18 @@ Sonia.jenkins.GlobalConfigPanel = Ext.extend(Sonia.config.ConfigForm, {
 
   titleText: 'Jenkins Configuration',
   
-  urlText: 'URL',
+  urlText: 'Url',
   repositoryConfigurationText: 'Allow Repository Configuration',
   triggerGitText: 'Trigger Git',
   triggerMercurialText: 'Trigger Mercurial',
   
   urlHelpText: 'Url of Jenkins installation (with contextpath).',
-  repositoryConfigurationHelpText: '',
-  triggerGitHelpText: '',
-  triggerMercurialHelpText: '',
+  repositoryConfigurationHelpText: 'Allow repository owners to configure jenkins hooks. \n\
+    You have to restart your application server after changing this value.',
+  triggerGitHelpText: 'Trigger builds after a git repository has changed. \n\
+    Requires version 1.1.14 or above of the jenkins git plugin.',
+  triggerMercurialHelpText: 'Trigger builds after a mercurial repository has changed. \n\
+    Requires version 1.38 or above of the jenkins mercurial plugin.',
 
   initComponent: function(){
 
@@ -73,7 +76,7 @@ Sonia.jenkins.GlobalConfigPanel = Ext.extend(Sonia.config.ConfigForm, {
         fieldLabel : this.triggerMercurialText,
         name: 'trigger-mercurial',
         inputValue: 'true',
-        helpText: this.triggerMercurialText
+        helpText: this.triggerMercurialHelpText
       }]
     }
 
