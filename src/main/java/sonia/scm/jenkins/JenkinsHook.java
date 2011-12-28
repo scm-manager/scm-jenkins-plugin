@@ -69,7 +69,7 @@ import java.util.Map;
  *
  * Extension objects in SCM-Manager:
  * https://bitbucket.org/sdorra/scm-manager/wiki/ExtensionPoints
- * 
+ *
  * @author Sebastian Sdorra
  */
 @Extension
@@ -78,15 +78,6 @@ public class JenkinsHook implements RepositoryHook
 
   /** Http parameter for jenkins authentication token */
   public static final String PARAMETER_TOKEN = "token";
-
-  /** Repository property for a comma seperated list of project keys */
-  public static final String PROPERTY_JENKINS_PROJECT = "jenkins.project";
-
-  /** Repository property for the jenkins authentication token */
-  public static final String PROPERTY_JENKINS_TOKEN = "jenkins.token";
-
-  /** Repository property for the jenkins ci server url */
-  public static final String PROPERTY_JENKINS_URL = "jenkins.url";
 
   /** the logger for JenkinsHook */
   private static final Logger logger =
@@ -103,7 +94,7 @@ public class JenkinsHook implements RepositoryHook
    * Google Guice.Guice injects all necessary dependencies to the constructor.
    * For more informations on Google Guice contructor injection have a look
    * at http://code.google.com/p/google-guice/wiki/Injections.
-   * 
+   *
    * Available objects for injection in SCM-Manager:
    * https://bitbucket.org/sdorra/scm-manager/wiki/injectionObjects
    *
@@ -132,13 +123,26 @@ public class JenkinsHook implements RepositoryHook
     // get the changed repository
     Repository repository = event.getRepository();
 
-    /** 
+    /**
      * check if the repository is not null. If the repository is null
      * log an error.
      */
     if (repository != null)
     {
-      handleRepositoryEvent(repository);
+
+      // read jenkins configuration from repository
+      JenkinsConfiguration configuration = new JenkinsConfiguration(repository);
+
+      // check if the configuration is valid and log error if not
+      if (configuration.isValid())
+      {
+        handleRepositoryEvent(configuration);
+      }
+      else if (logger.isWarnEnabled())
+      {
+        logger.warn("jenkins configuration for repository {} is not valid",
+                    repository.getName());
+      }
     }
     else if (logger.isWarnEnabled())
     {
@@ -150,7 +154,6 @@ public class JenkinsHook implements RepositoryHook
 
   /**
    * Returns the types of the hook.
-   *
    *
    * @return a {@link Collection} of repository types.
    */
@@ -165,7 +168,6 @@ public class JenkinsHook implements RepositoryHook
    * Note you can not access the current servlet or user if the hook is executed
    * asynchronous.
    *
-   *
    * @return true if the hook is executed asynchronous.
    */
   @Override
@@ -179,85 +181,75 @@ public class JenkinsHook implements RepositoryHook
   /**
    * Creates the url to the remote trigger servlet of jenkins.
    *
-   * @param url base url to the jenkins server
-   * @param project jenkins project name
+   * @param configuration jenkins configuration
    *
    * @return the url to the remote trigger servlet of jenkins
    */
-  private String createUrl(String url, String project)
+  private String createUrl(JenkinsConfiguration configuration)
   {
+    String url = configuration.getUrl();
+
     if (!url.endsWith("/"))
     {
       url = url.concat("/");
     }
 
-    return url.concat("job/").concat(project).concat("/build");
+    return url.concat("job/").concat(configuration.getProject()).concat(
+        "/build");
   }
 
   /**
    * Handles the repository event. Checks the configuration for the repository
    * and calls the jenkins server.
    *
-   *
-   * @param repository which received the changesets
+   * @param configuration jenkins configuration
    */
-  private void handleRepositoryEvent(Repository repository)
+  private void handleRepositoryEvent(JenkinsConfiguration configuration)
   {
 
-    // read the url property from the repository
-    String url = repository.getProperty(PROPERTY_JENKINS_URL);
+    // create the url to the endpoint
+    String url = createUrl(configuration);
 
-    // read the project property from the repository
-    String project = repository.getProperty(PROPERTY_JENKINS_PROJECT);
+    // log the url
+    if (logger.isInfoEnabled())
+    {
+      logger.info("call jenkins at {}", url);
+    }
 
-    // check if both properties are not null and the length is greate then 0.
-    if (Util.isNotEmpty(url) && Util.isNotEmpty(project))
+    try
     {
 
-      // create the url to the endpoint
-      url = createUrl(url, project);
+      // send the request to the jenkins server
+      sendRequest(configuration, url);
+    }
 
-      // log the url
-      if (logger.isInfoEnabled())
-      {
-        logger.info("call jenkins at {}", url);
-      }
-
-      // read the token property from the repository
-      String token = repository.getProperty(PROPERTY_JENKINS_TOKEN);
-
-      try
-      {
-
-        // send the request to the jenkins server
-        sendRequest(url, token);
-      }
-
-      // catch each IOException and log them
-      catch (IOException ex)
-      {
-        logger.error("could not send request to jenkins", ex);
-      }
+    // catch each IOException and log them
+    catch (IOException ex)
+    {
+      logger.error("could not send request to jenkins", ex);
     }
   }
 
   /**
    * Send the request to the jenkins ci server to trigger a new build.
    *
-   *
+   * @param configuration jenkins configuration
    * @param url url of the jenkins server
-   * @param token the authentication token of the jenkins project
    *
    * @throws IOException
    */
-  private void sendRequest(String url, String token) throws IOException
+  private void sendRequest(JenkinsConfiguration configuration, String url)
+          throws IOException
   {
-    HttpResponse response = null;
 
     /**
      * Create a new http client from the Guice Provider.
      */
     HttpClient httpClient = httpClientProvider.get();
+    HttpResponse response = null;
+
+    // retrive authentication token
+    String token = configuration.getToken();
 
     // check if the token is not empty.
     if (Util.isNotEmpty(token))
@@ -286,6 +278,10 @@ public class JenkinsHook implements RepositoryHook
     if (sc >= 400)
     {
       logger.error("jenkins returned status code {}", sc);
+    }
+    else if (logger.isInfoEnabled())
+    {
+      logger.info("jenkins hook successfully submited");
     }
   }
 
