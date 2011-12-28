@@ -42,23 +42,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sonia.scm.net.HttpClient;
-import sonia.scm.net.HttpResponse;
 import sonia.scm.plugin.ext.Extension;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHook;
 import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.repository.RepositoryHookType;
-import sonia.scm.util.Util;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.io.IOException;
-
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Jenkins post receive Hook.
@@ -75,9 +68,6 @@ import java.util.Map;
 @Extension
 public class JenkinsHook implements RepositoryHook
 {
-
-  /** Http parameter for jenkins authentication token */
-  public static final String PARAMETER_TOKEN = "token";
 
   /** the logger for JenkinsHook */
   private static final Logger logger =
@@ -132,9 +122,10 @@ public class JenkinsHook implements RepositoryHook
      */
     if (repository != null)
     {
-      GlobalJenkinsConfiugration config = context.getConfiguration();
+      GlobalJenkinsConfiugration globalConfig = context.getConfiguration();
+      JenkinsHookHandler handler = null;
 
-      if (config.isRepositoryConfiguration())
+      if (globalConfig.isRepositoryConfiguration())
       {
 
         // read jenkins configuration from repository
@@ -144,19 +135,28 @@ public class JenkinsHook implements RepositoryHook
         // check if the configuration is valid and log error if not
         if (configuration.isValid())
         {
-          handleRepositoryEvent(configuration);
+          handler = new JenkinsRepositoryHookHandler(httpClientProvider,
+                  configuration);
         }
-        else if (logger.isWarnEnabled())
+        else
         {
-          logger.warn("jenkins configuration for repository {} is not valid",
-                      repository.getName());
+          if (logger.isWarnEnabled())
+          {
+            logger.warn("jenkins configuration for repository {} is not valid",
+                        repository.getName());
+          }
+
+          handler = new JenkinsGlobalHookHandler(httpClientProvider,
+                  globalConfig, repository);
         }
       }
       else
       {
-
-        // handle
+        handler = new JenkinsGlobalHookHandler(httpClientProvider,
+                globalConfig, repository);
       }
+
+      handler.sendRequest();
     }
     else if (logger.isWarnEnabled())
     {
@@ -188,115 +188,6 @@ public class JenkinsHook implements RepositoryHook
   public boolean isAsync()
   {
     return true;
-  }
-
-  //~--- methods --------------------------------------------------------------
-
-  /**
-   * Creates the url to the remote trigger servlet of jenkins.
-   *
-   * @param configuration jenkins configuration
-   *
-   * @return the url to the remote trigger servlet of jenkins
-   */
-  private String createUrl(JenkinsConfiguration configuration)
-  {
-    String url = configuration.getUrl();
-
-    if (!url.endsWith("/"))
-    {
-      url = url.concat("/");
-    }
-
-    return url.concat("job/").concat(configuration.getProject()).concat(
-        "/build");
-  }
-
-  /**
-   * Handles the repository event. Checks the configuration for the repository
-   * and calls the jenkins server.
-   *
-   * @param configuration jenkins configuration
-   */
-  private void handleRepositoryEvent(JenkinsConfiguration configuration)
-  {
-
-    // create the url to the endpoint
-    String url = createUrl(configuration);
-
-    // log the url
-    if (logger.isInfoEnabled())
-    {
-      logger.info("call jenkins at {}", url);
-    }
-
-    try
-    {
-
-      // send the request to the jenkins server
-      sendRequest(configuration, url);
-    }
-
-    // catch each IOException and log them
-    catch (IOException ex)
-    {
-      logger.error("could not send request to jenkins", ex);
-    }
-  }
-
-  /**
-   * Send the request to the jenkins ci server to trigger a new build.
-   *
-   * @param configuration jenkins configuration
-   * @param url url of the jenkins server
-   *
-   * @throws IOException
-   */
-  private void sendRequest(JenkinsConfiguration configuration, String url)
-          throws IOException
-  {
-
-    /**
-     * Create a new http client from the Guice Provider.
-     */
-    HttpClient httpClient = httpClientProvider.get();
-    HttpResponse response = null;
-
-    // retrive authentication token
-    String token = configuration.getToken();
-
-    // check if the token is not empty.
-    if (Util.isNotEmpty(token))
-    {
-
-      // add the token as parameter for the request
-      Map<String, List<String>> parameters = new HashMap<String,
-                                               List<String>>();
-
-      parameters.put(PARAMETER_TOKEN, Arrays.asList(token));
-
-      // execute the http post request with the http client
-      response = httpClient.post(url, parameters);
-    }
-    else
-    {
-
-      // execute the http post request with the http client
-      response = httpClient.post(url);
-    }
-
-    // fetch the status code of the response
-    int sc = response.getStatusCode();
-
-    // if the response is greater than 400 write an error to the log
-    if (sc >= 400)
-    {
-      logger.error("jenkins returned status code {}", sc);
-    }
-    else if (logger.isInfoEnabled())
-    {
-      logger.info("jenkins hook successfully submited");
-    }
   }
 
   //~--- fields ---------------------------------------------------------------
