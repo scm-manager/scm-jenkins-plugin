@@ -126,6 +126,8 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
 
       if (Util.isNotEmpty(urlSuffix))
       {
+        String url = HttpUtil.getUriWithoutEndSeperator(
+                         configuration.getUrl()).concat(urlSuffix);
         HttpClient client = httpClientProvider.get();
         Map<String, List<String>> parameters = new HashMap<String,
                                                  List<String>>();
@@ -134,7 +136,11 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
 
         try
         {
-          HttpResponse response = client.get(type, parameters);
+          if ( logger.isDebugEnabled() ){
+            logger.debug("try to access url {}", url);
+          }
+          
+          HttpResponse response = client.get(url, parameters);
 
           if (logger.isDebugEnabled())
           {
