@@ -35,6 +35,7 @@ package sonia.scm.jenkins;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import sonia.scm.store.Store;
@@ -59,6 +60,7 @@ public class JenkinsContext
    *
    * @param storeFactory
    */
+  @Inject
   public JenkinsContext(StoreFactory storeFactory)
   {
     store = storeFactory.getStore(GlobalJenkinsConfiugration.class, NAME);
