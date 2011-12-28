@@ -99,11 +99,14 @@ public class JenkinsHook implements RepositoryHook
    * https://bitbucket.org/sdorra/scm-manager/wiki/injectionObjects
    *
    * @param httpClientProvider Google Guice provider for an {@link HttpClient}
+   * @param context
    */
   @Inject
-  public JenkinsHook(Provider<HttpClient> httpClientProvider)
+  public JenkinsHook(Provider<HttpClient> httpClientProvider,
+                     JenkinsContext context)
   {
     this.httpClientProvider = httpClientProvider;
+    this.context = context;
   }
 
   //~--- methods --------------------------------------------------------------
@@ -129,19 +132,30 @@ public class JenkinsHook implements RepositoryHook
      */
     if (repository != null)
     {
+      GlobalJenkinsConfiugration config = context.getConfiguration();
 
-      // read jenkins configuration from repository
-      JenkinsConfiguration configuration = new JenkinsConfiguration(repository);
-
-      // check if the configuration is valid and log error if not
-      if (configuration.isValid())
+      if (config.isRepositoryConfiguration())
       {
-        handleRepositoryEvent(configuration);
+
+        // read jenkins configuration from repository
+        JenkinsConfiguration configuration =
+          new JenkinsConfiguration(repository);
+
+        // check if the configuration is valid and log error if not
+        if (configuration.isValid())
+        {
+          handleRepositoryEvent(configuration);
+        }
+        else if (logger.isWarnEnabled())
+        {
+          logger.warn("jenkins configuration for repository {} is not valid",
+                      repository.getName());
+        }
       }
-      else if (logger.isWarnEnabled())
+      else
       {
-        logger.warn("jenkins configuration for repository {} is not valid",
-                    repository.getName());
+
+        // handle
       }
     }
     else if (logger.isWarnEnabled())
@@ -286,6 +300,9 @@ public class JenkinsHook implements RepositoryHook
   }
 
   //~--- fields ---------------------------------------------------------------
+
+  /** Global jenkins configuration */
+  private JenkinsContext context;
 
   /** Guice provider for {@link HttpClient} */
   private Provider<HttpClient> httpClientProvider;
