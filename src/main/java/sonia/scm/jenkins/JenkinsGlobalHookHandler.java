@@ -40,20 +40,18 @@ import com.google.inject.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sonia.scm.config.ScmConfiguration;
 import sonia.scm.net.HttpClient;
 import sonia.scm.net.HttpResponse;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryHandler;
+import sonia.scm.repository.RepositoryManager;
 import sonia.scm.util.HttpUtil;
 import sonia.scm.util.Util;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import java.io.IOException;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -87,14 +85,21 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
    * Constructs ...
    *
    *
+   *
+   * @param repositoryManager
+   * @param scmConfiguration
    * @param httpClientProvider
    * @param configuration
    * @param repository
    */
-  public JenkinsGlobalHookHandler(Provider<HttpClient> httpClientProvider,
+  public JenkinsGlobalHookHandler(RepositoryManager repositoryManager,
+                                  ScmConfiguration scmConfiguration,
+                                  Provider<HttpClient> httpClientProvider,
                                   GlobalJenkinsConfiugration configuration,
                                   Repository repository)
   {
+    this.repositoryManager = repositoryManager;
+    this.scmConfiguration = scmConfiguration;
     this.httpClientProvider = httpClientProvider;
     this.configuration = configuration;
     this.repository = repository;
@@ -129,18 +134,26 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
         String url = HttpUtil.getUriWithoutEndSeperator(
                          configuration.getUrl()).concat(urlSuffix);
         HttpClient client = httpClientProvider.get();
-        Map<String, List<String>> parameters = new HashMap<String,
-                                                 List<String>>();
+        String repositoryUrl = repository.getUrl();
 
-        parameters.put(PARAMETER_URL, Arrays.asList(repository.getUrl()));
+        if (Util.isEmpty(repositoryUrl))
+        {
+          repositoryUrl = createRepositoryUrl(repository);
+        }
+
+        if (Util.isNotEmpty(repositoryUrl))
+        {
+          url = url.concat("?url=").concat(repositoryUrl);
+        }
 
         try
         {
-          if ( logger.isDebugEnabled() ){
+          if (logger.isDebugEnabled())
+          {
             logger.debug("try to access url {}", url);
           }
-          
-          HttpResponse response = client.get(url, parameters);
+
+          HttpResponse response = client.get(url);
 
           if (logger.isDebugEnabled())
           {
@@ -163,6 +176,29 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
     }
   }
 
+  /**
+   * Method description
+   *
+   *
+   * @param repository
+   *
+   * @return
+   */
+  private String createRepositoryUrl(Repository repository)
+  {
+    String url = null;
+    RepositoryHandler handler =
+      repositoryManager.getHandler(repository.getType());
+
+    if (handler != null)
+    {
+      url = handler.createResourcePath(repository);
+      url = HttpUtil.getCompleteUrl(scmConfiguration, url);
+    }
+
+    return url;
+  }
+
   //~--- fields ---------------------------------------------------------------
 
   /** Field description */
@@ -173,4 +209,10 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
 
   /** Field description */
   private Repository repository;
+
+  /** Field description */
+  private RepositoryManager repositoryManager;
+
+  /** Field description */
+  private ScmConfiguration scmConfiguration;
 }

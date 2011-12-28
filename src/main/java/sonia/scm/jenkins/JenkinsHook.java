@@ -41,12 +41,14 @@ import com.google.inject.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sonia.scm.config.ScmConfiguration;
 import sonia.scm.net.HttpClient;
 import sonia.scm.plugin.ext.Extension;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHook;
 import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.repository.RepositoryHookType;
+import sonia.scm.repository.RepositoryManager;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -88,13 +90,20 @@ public class JenkinsHook implements RepositoryHook
    * Available objects for injection in SCM-Manager:
    * https://bitbucket.org/sdorra/scm-manager/wiki/injectionObjects
    *
+   *
+   * @param repositoryManager
+   * @param scmConfiguration
    * @param httpClientProvider Google Guice provider for an {@link HttpClient}
    * @param context
    */
   @Inject
-  public JenkinsHook(Provider<HttpClient> httpClientProvider,
+  public JenkinsHook(RepositoryManager repositoryManager,
+                     ScmConfiguration scmConfiguration,
+                     Provider<HttpClient> httpClientProvider,
                      JenkinsContext context)
   {
+    this.repositoryManager = repositoryManager;
+    this.scmConfiguration = scmConfiguration;
     this.httpClientProvider = httpClientProvider;
     this.context = context;
   }
@@ -146,14 +155,15 @@ public class JenkinsHook implements RepositoryHook
                         repository.getName());
           }
 
-          handler = new JenkinsGlobalHookHandler(httpClientProvider,
-                  globalConfig, repository);
+          handler = new JenkinsGlobalHookHandler(repositoryManager,
+                  scmConfiguration, httpClientProvider, globalConfig,
+                  repository);
         }
       }
       else
       {
-        handler = new JenkinsGlobalHookHandler(httpClientProvider,
-                globalConfig, repository);
+        handler = new JenkinsGlobalHookHandler(repositoryManager,
+                scmConfiguration, httpClientProvider, globalConfig, repository);
       }
 
       handler.sendRequest();
@@ -197,4 +207,10 @@ public class JenkinsHook implements RepositoryHook
 
   /** Guice provider for {@link HttpClient} */
   private Provider<HttpClient> httpClientProvider;
+
+  /** Field description */
+  private RepositoryManager repositoryManager;
+
+  /** Field description */
+  private ScmConfiguration scmConfiguration;
 }
