@@ -37,9 +37,9 @@ Sonia.jenkins.GlobalConfigPanel = Ext.extend(Sonia.config.ConfigForm, {
   titleText: 'Jenkins Configuration',
   
   urlText: 'Url',
-  repositoryConfigurationText: 'Allow Repository Configuration',
-  triggerGitText: 'Trigger Git',
-  triggerMercurialText: 'Trigger Mercurial',
+  repositoryConfigurationText: 'Do not allow repository configuration',
+  triggerGitText: 'Disable Git trigger',
+  triggerMercurialText: 'Disable Mercurial trigger',
   
   urlHelpText: 'Url of Jenkins installation (with contextpath).',
   repositoryConfigurationHelpText: 'Do not allow repository owners to configure jenkins hooks. \n\
