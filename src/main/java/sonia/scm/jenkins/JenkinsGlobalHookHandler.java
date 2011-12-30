@@ -155,10 +155,11 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
           }
 
           HttpResponse response = client.get(url);
+          int statusCode = response.getStatusCode();
 
-          if (logger.isDebugEnabled())
+          if (logger.isInfoEnabled())
           {
-            logger.debug("request returned {}", response.getStatusCode());
+            logger.info("request returned {}", statusCode);
           }
         }
         catch (IOException ex)
