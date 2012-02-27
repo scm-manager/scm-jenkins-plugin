@@ -127,7 +127,7 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
       else if (TYPE_GIT.equalsIgnoreCase(type)
                ||!configuration.isDisableGitTrigger())
       {
-        urlSuffix = URL_MERCURIAL;
+        urlSuffix = URL_GIT;
       }
 
       if (Util.isNotEmpty(urlSuffix))
