@@ -119,13 +119,27 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
       String urlSuffix = null;
       String type = repository.getType();
 
+      if (logger.isDebugEnabled())
+      {
+        //J-
+        logger.debug(
+            "check for global jenkins hook: type={}, hg disabled={}, git disabled={}",
+            new Object[] { 
+              type,
+              configuration.isDisableMercurialTrigger(),
+              configuration.isDisableGitTrigger() 
+            }
+        );
+        //J+
+      }
+
       if (TYPE_MERCURIAL.equalsIgnoreCase(type)
-          ||!configuration.isDisableMercurialTrigger())
+          &&!configuration.isDisableMercurialTrigger())
       {
         urlSuffix = URL_MERCURIAL;
       }
       else if (TYPE_GIT.equalsIgnoreCase(type)
-               ||!configuration.isDisableGitTrigger())
+               &&!configuration.isDisableGitTrigger())
       {
         urlSuffix = URL_GIT;
       }

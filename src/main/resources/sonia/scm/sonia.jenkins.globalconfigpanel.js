@@ -69,13 +69,13 @@ Sonia.jenkins.GlobalConfigPanel = Ext.extend(Sonia.config.ConfigForm, {
       },{
         xtype: 'checkbox',
         fieldLabel : this.triggerGitText,
-        name: 'disable-mercurial-trigger',
+        name: 'disable-git-trigger',
         inputValue: 'true',
         helpText: this.triggerGitHelpText
       },{
         xtype: 'checkbox',
         fieldLabel : this.triggerMercurialText,
-        name: 'disable-git-trigger',
+        name: 'disable-mercurial-trigger',
         inputValue: 'true',
         helpText: this.triggerMercurialHelpText
       }]
