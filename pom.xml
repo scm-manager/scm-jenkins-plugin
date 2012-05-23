@@ -16,7 +16,7 @@
   <parent>
     <groupId>sonia.scm.plugins</groupId>
     <artifactId>scm-plugins</artifactId>
-    <version>1.7</version>
+    <version>1.9</version>
   </parent>
 
   <!--

@@ -58,6 +58,10 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
   projectText: 'Project',
   // label of the token field
   tokenText: 'Token',
+  // label of the username field.
+  usernameText: 'Username',
+  // label of the apiToken field.
+  apiTokenText: 'API Token',
   
   // help text for the url field
   urlHelpText: 'Url of Jenkins installation (with contextpath).',
@@ -65,6 +69,12 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
   projectHelpText: 'The name of the Jenkins project.',
   // help text for the token field
   tokenHelpText: 'Jenkins Authentication Token',
+  // help text for the username field
+  usernameHelpText: 'Username which is used for the authentication on the Jenkins ci server.',
+  // help text for the apiToken field
+  apiTokenHelpText: 'The API Token of the user. This token is used for authentication. \n\
+                     You could get your API Token from your Jenkins Server at \n\
+                     http://yourjenkinsserver/jenkins/user/username/configure.',
   
   /**
    * This method initializes the component and configures it. 
@@ -105,6 +115,18 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
         fieldLabel: this.tokenText,
         property: 'jenkins.token',
         helpText: this.tokenHelpText
+      },{
+        // jenkins username field
+        name: 'jenkinsUsername',
+        fieldLabel: this.usernameText,
+        property: 'jenkins.username',
+        helpText: this.usernameHelpText
+      },{
+        // jenkins api token field
+        name: 'jenkinsApiToken',
+        fieldLabel: this.apiTokenText,
+        property: 'jenkins.api-token',
+        helpText: this.apiTokenHelpText
       }]
     };
     

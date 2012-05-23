@@ -41,17 +41,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sonia.scm.net.HttpClient;
-import sonia.scm.net.HttpResponse;
+import sonia.scm.net.HttpRequest;
 import sonia.scm.util.Util;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import java.io.IOException;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -163,33 +159,47 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
      * Create a new http client from the Guice Provider.
      */
     HttpClient httpClient = httpClientProvider.get();
-    HttpResponse response = null;
 
     // retrive authentication token
     String token = configuration.getToken();
+    HttpRequest request = new HttpRequest(url);
 
     // check if the token is not empty.
     if (Util.isNotEmpty(token))
     {
 
       // add the token as parameter for the request
-      Map<String, List<String>> parameters = new HashMap<String,
-                                               List<String>>();
-
-      parameters.put(PARAMETER_TOKEN, Arrays.asList(token));
-
-      // execute the http post request with the http client
-      response = httpClient.post(url, parameters);
+      request.addParameters(PARAMETER_TOKEN, token);
     }
-    else
+    else if (logger.isDebugEnabled())
     {
-
-      // execute the http post request with the http client
-      response = httpClient.post(url);
+      logger.debug("no project token is available");
     }
 
-    // fetch the status code of the response
-    int sc = response.getStatusCode();
+    // check for authentication parameters
+    String username = configuration.getUsername();
+    String apiToken = configuration.getApiToken();
+
+    if (Util.isNotEmpty(username) && Util.isNotEmpty(apiToken))
+    {
+      if (logger.isDebugEnabled())
+      {
+        logger.debug("added authentication for user {}", username);
+      }
+
+      // add basic authentication header
+      request.setBasicAuthentication(username, apiToken);
+    }
+    else if (logger.isDebugEnabled())
+    {
+      logger.debug("skip authentication. username or api token is empty");
+    }
+
+    /**
+     * execute the http post request with the http client and
+     * fetch the status code of the response.
+     */
+    int sc = httpClient.post(request).getStatusCode();
 
     // if the response is greater than 400 write an error to the log
     if (sc >= 400)

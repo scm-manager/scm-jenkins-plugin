@@ -48,6 +48,9 @@ import sonia.scm.util.Util;
 public class JenkinsConfiguration implements Validateable
 {
 
+  /** Repository property for the api token of the user */
+  public static final String PROPERTY_JENKINS_APITOKEN = "jenkins.api-token";
+
   /** Repository property for a comma seperated list of project keys */
   public static final String PROPERTY_JENKINS_PROJECT = "jenkins.project";
 
@@ -56,6 +59,9 @@ public class JenkinsConfiguration implements Validateable
 
   /** Repository property for the jenkins ci server url */
   public static final String PROPERTY_JENKINS_URL = "jenkins.url";
+
+  /** Repository property for the username for jenkins */
+  public static final String PROPERTY_JENKINS_USERNAME = "jenkins.username";
 
   //~--- constructors ---------------------------------------------------------
 
@@ -71,9 +77,24 @@ public class JenkinsConfiguration implements Validateable
     this.url = repository.getProperty(PROPERTY_JENKINS_URL);
     this.project = repository.getProperty(PROPERTY_JENKINS_PROJECT);
     this.token = repository.getProperty(PROPERTY_JENKINS_TOKEN);
+    this.username = repository.getProperty(PROPERTY_JENKINS_USERNAME);
+    this.apiToken = repository.getProperty(PROPERTY_JENKINS_APITOKEN);
   }
 
   //~--- get methods ----------------------------------------------------------
+
+  /**
+   * Returns the api token which is used for authentication.
+   * Note the authentication is only used if the username and
+   * the api token are non null.
+   *
+   *
+   * @return api token of the user
+   */
+  public String getApiToken()
+  {
+    return apiToken;
+  }
 
   /**
    * Returns the name of the jenkins project.
@@ -109,6 +130,19 @@ public class JenkinsConfiguration implements Validateable
   }
 
   /**
+   * Returns the username which is used for authentication.
+   * Note the authentication is only used if the username and
+   * the api token are non null.
+   *
+   *
+   * @return username for authentication
+   */
+  public String getUsername()
+  {
+    return username;
+  }
+
+  /**
    * Return true, if the configuration is valid.
    *
    *
@@ -123,6 +157,9 @@ public class JenkinsConfiguration implements Validateable
   //~--- fields ---------------------------------------------------------------
 
   /** Field description */
+  private String apiToken;
+
+  /** Field description */
   private String project;
 
   /** Field description */
@@ -130,4 +167,7 @@ public class JenkinsConfiguration implements Validateable
 
   /** Field description */
   private String url;
+
+  /** Field description */
+  private String username;
 }
