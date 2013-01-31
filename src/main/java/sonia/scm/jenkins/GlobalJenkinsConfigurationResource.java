@@ -36,9 +36,12 @@ package sonia.scm.jenkins;
 //~--- non-JDK imports --------------------------------------------------------
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import sonia.scm.store.StoreFactory;
+import sonia.scm.util.SecurityUtil;
+import sonia.scm.web.security.WebSecurityContext;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -55,7 +58,7 @@ import javax.ws.rs.core.Response;
  * @author Sebastian Sdorra
  */
 @Singleton
-@Path("/plugins/jenkins/global-config")
+@Path("plugins/jenkins/global-config")
 public class GlobalJenkinsConfigurationResource
 {
 
@@ -66,12 +69,15 @@ public class GlobalJenkinsConfigurationResource
    *
    * @param factory
    * @param context
+   * @param securityContextProvider
    */
   @Inject
   public GlobalJenkinsConfigurationResource(StoreFactory factory,
-          JenkinsContext context)
+    JenkinsContext context,
+    Provider<WebSecurityContext> securityContextProvider)
   {
     this.context = context;
+    this.securityContextProvider = securityContextProvider;
   }
 
   //~--- methods --------------------------------------------------------------
@@ -88,6 +94,7 @@ public class GlobalJenkinsConfigurationResource
   @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
   public Response updateConfiguration(GlobalJenkinsConfiugration updatedConfig)
   {
+    SecurityUtil.assertIsAdmin(securityContextProvider);
     context.setConfiguration(updatedConfig);
     context.storeConfiguration();
 
@@ -106,6 +113,8 @@ public class GlobalJenkinsConfigurationResource
   @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
   public Response getConfiguration()
   {
+    SecurityUtil.assertIsAdmin(securityContextProvider);
+
     return Response.ok(context.getConfiguration()).build();
   }
 
@@ -113,4 +122,7 @@ public class GlobalJenkinsConfigurationResource
 
   /** Field description */
   private JenkinsContext context;
+
+  /** Field description */
+  private Provider<WebSecurityContext> securityContextProvider;
 }
