@@ -29,6 +29,7 @@
     register the javascript file src/main/resources/sonia/scm/sonia.jenkins.globalconfigpanel.js
    -->
   <resources>
+    <script>/sonia/scm/sonia.jenkins.js</script>
     <script>/sonia/scm/sonia.jenkins.globalconfigpanel.js</script>
   </resources>
 

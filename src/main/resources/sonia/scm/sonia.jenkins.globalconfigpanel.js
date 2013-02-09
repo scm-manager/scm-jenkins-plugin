@@ -57,7 +57,7 @@ Sonia.jenkins.GlobalConfigPanel = Ext.extend(Sonia.config.ConfigForm, {
         xtype : 'textfield',
         fieldLabel : this.urlText,
         name : 'url',
-        vtype: 'url',
+        vtype: 'jenkinsUrl',
         allowBlank : true,
         helpText: this.urlHelpText
       },{

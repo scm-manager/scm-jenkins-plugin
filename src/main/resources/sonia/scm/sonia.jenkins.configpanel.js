@@ -100,7 +100,7 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
          */
         property: 'jenkins.url',
         // validation of the field
-        vtype: 'url',
+        vtype: 'jenkinsUrl',
         // help text
         helpText: this.urlHelpText
       },{
