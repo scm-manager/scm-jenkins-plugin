@@ -43,14 +43,14 @@
     <url>https://bitbucket.org/sdorra/scm-jenkins-plugin</url>
   </scm>
   
-  
+    
   <build>
     <plugins>
     
       <plugin>
         <groupId>sonia.scm.maven</groupId>
         <artifactId>scm-maven-plugin</artifactId>
-        <version>1.10</version>
+        <version>1.35</version>
         <executions>
           <execution>
             <phase>process-resources</phase>

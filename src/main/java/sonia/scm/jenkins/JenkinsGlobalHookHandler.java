@@ -93,10 +93,8 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
    * @param repository
    */
   public JenkinsGlobalHookHandler(RepositoryManager repositoryManager,
-                                  ScmConfiguration scmConfiguration,
-                                  Provider<HttpClient> httpClientProvider,
-                                  GlobalJenkinsConfiugration configuration,
-                                  Repository repository)
+    ScmConfiguration scmConfiguration, Provider<HttpClient> httpClientProvider,
+    GlobalJenkinsConfiugration configuration, Repository repository)
   {
     this.repositoryManager = repositoryManager;
     this.scmConfiguration = scmConfiguration;
@@ -106,6 +104,36 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
   }
 
   //~--- methods --------------------------------------------------------------
+
+  /**
+   * Fix duplicated slashes in repository url.
+   *
+   *
+   * @see <a target="_blank" href="https://bitbucket.org/sdorra/scm-manager/issue/510/wrong-git-notification-url-to-many-slashes">Issue 510</a>
+   * @param url url to fix
+   *
+   * @return fixed url
+   */
+  static String fixUrl(String url)
+  {
+    int index = url.indexOf("://");
+
+    // absolute url
+    if (index > 0)
+    {
+      String suffix = url.substring(index + 3).replaceAll("//", "/");
+
+      url = url.substring(0, index + 3).concat(suffix);
+    }
+
+    // relative url
+    else
+    {
+      url = url.replaceAll("//", "/");
+    }
+
+    return url;
+  }
 
   /**
    * Method description
@@ -134,12 +162,12 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
       }
 
       if (TYPE_MERCURIAL.equalsIgnoreCase(type)
-          &&!configuration.isDisableMercurialTrigger())
+        &&!configuration.isDisableMercurialTrigger())
       {
         urlSuffix = URL_MERCURIAL;
       }
       else if (TYPE_GIT.equalsIgnoreCase(type)
-               &&!configuration.isDisableGitTrigger())
+        &&!configuration.isDisableGitTrigger())
       {
         urlSuffix = URL_GIT;
       }
@@ -147,7 +175,7 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
       if (Util.isNotEmpty(urlSuffix))
       {
         String url = HttpUtil.getUriWithoutEndSeperator(
-                         configuration.getUrl()).concat(urlSuffix);
+                       configuration.getUrl()).concat(urlSuffix);
         HttpClient client = httpClientProvider.get();
         String repositoryUrl = repository.getUrl();
 
@@ -158,7 +186,7 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
 
         if (Util.isNotEmpty(repositoryUrl))
         {
-          url = url.concat("?url=").concat(repositoryUrl);
+          url = url.concat("?url=").concat(fixUrl(repositoryUrl));
         }
 
         try
