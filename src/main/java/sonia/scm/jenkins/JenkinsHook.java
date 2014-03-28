@@ -149,11 +149,8 @@ public class JenkinsHook implements RepositoryHook
         }
         else
         {
-          if (logger.isWarnEnabled())
-          {
-            logger.warn("jenkins configuration for repository {} is not valid",
+          logger.debug("jenkins configuration for repository {} is not valid, try global configuration",
                         repository.getName());
-          }
 
           handler = new JenkinsGlobalHookHandler(repositoryManager,
                   scmConfiguration, httpClientProvider, globalConfig,
