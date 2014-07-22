@@ -42,12 +42,17 @@ import org.slf4j.LoggerFactory;
 
 import sonia.scm.net.HttpClient;
 import sonia.scm.net.HttpRequest;
+import sonia.scm.repository.Changeset;
+import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.util.Util;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import java.io.IOException;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -73,7 +78,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
    * @param configuration
    */
   public JenkinsRepositoryHookHandler(Provider<HttpClient> httpClientProvider,
-          JenkinsConfiguration configuration)
+    JenkinsConfiguration configuration)
   {
     this.httpClientProvider = httpClientProvider;
     this.configuration = configuration;
@@ -84,11 +89,28 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
   /**
    * Method description
    *
+   *
+   * @param event
    */
   @Override
-  public void sendRequest()
+  public void sendRequest(RepositoryHookEvent event)
   {
-    handleRepositoryEvent(configuration);
+    if (configuration.getBranches().isEmpty())
+    {
+      logger.debug("branch list is empty, send request");
+      handleRepositoryEvent(configuration);
+    }
+    else
+    {
+      if (isInBranchSet(configuration.getBranches(), event.getChangesets()))
+      {
+        handleRepositoryEvent(configuration);
+      }
+      else
+      {
+        logger.debug("changesets does not contain configured branches");
+      }
+    }
   }
 
   /**
@@ -108,7 +130,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
     }
 
     return url.concat("job/").concat(configuration.getProject()).concat(
-        "/build");
+      "/build");
   }
 
   /**
@@ -152,7 +174,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
    * @throws IOException
    */
   private void sendRequest(JenkinsConfiguration configuration, String url)
-          throws IOException
+    throws IOException
   {
 
     /**
@@ -210,6 +232,74 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
     {
       logger.info("jenkins hook successfully submited");
     }
+  }
+
+  //~--- get methods ----------------------------------------------------------
+
+  /**
+   * Method description
+   *
+   *
+   * @param branchSet
+   * @param changesets
+   *
+   * @return
+   */
+  private boolean isInBranchSet(Set<String> branchSet,
+    Collection<Changeset> changesets)
+  {
+    boolean found = false;
+
+    if (Util.isNotEmpty(changesets))
+    {
+      for (Changeset changeset : changesets)
+      {
+        if (isInBranchSet(branchSet, changeset))
+        {
+          found = true;
+
+          break;
+        }
+      }
+    }
+    else
+    {
+      logger.warn("received repository hook without changesets");
+    }
+
+    return found;
+  }
+
+  /**
+   * Method description
+   *
+   *
+   * @param branchSet
+   * @param changeset
+   *
+   * @return
+   */
+  private boolean isInBranchSet(Set<String> branchSet, Changeset changeset)
+  {
+    boolean found = false;
+    List<String> branches = changeset.getBranches();
+
+    if (Util.isNotEmpty(branches))
+    {
+      for (String branch : branches)
+      {
+        if (branchSet.contains(branch))
+        {
+          logger.debug("found branch {} at {}, send request", branch,
+            changeset.getId());
+          found = true;
+
+          break;
+        }
+      }
+    }
+
+    return found;
   }
 
   //~--- fields ---------------------------------------------------------------

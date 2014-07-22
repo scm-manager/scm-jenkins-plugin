@@ -33,6 +33,10 @@
 
 package sonia.scm.jenkins;
 
+//~--- non-JDK imports --------------------------------------------------------
+
+import sonia.scm.repository.RepositoryHookEvent;
+
 /**
  *
  * @author Sebastian Sdorra
@@ -44,6 +48,7 @@ public interface JenkinsHookHandler
    * Method description
    *
    *
+   * @param event
    */
-  public void sendRequest();
+  public void sendRequest(RepositoryHookEvent event);
 }

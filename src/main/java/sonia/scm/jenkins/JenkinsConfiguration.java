@@ -39,6 +39,12 @@ import sonia.scm.Validateable;
 import sonia.scm.repository.Repository;
 import sonia.scm.util.Util;
 
+//~--- JDK imports ------------------------------------------------------------
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Configuration for Jenkins Hook. This configuration reads the properties from
  * the repository. The properties can be configured from web interface.
@@ -50,6 +56,9 @@ public class JenkinsConfiguration implements Validateable
 
   /** Repository property for the api token of the user */
   public static final String PROPERTY_JENKINS_APITOKEN = "jenkins.api-token";
+
+  /** Repository property for branch restrictions */
+  public static final String PROPERTY_JENKINS_BRANCHES = "jenkins.branches";
 
   /** Repository property for a comma seperated list of project keys */
   public static final String PROPERTY_JENKINS_PROJECT = "jenkins.project";
@@ -79,6 +88,17 @@ public class JenkinsConfiguration implements Validateable
     this.token = repository.getProperty(PROPERTY_JENKINS_TOKEN);
     this.username = repository.getProperty(PROPERTY_JENKINS_USERNAME);
     this.apiToken = repository.getProperty(PROPERTY_JENKINS_APITOKEN);
+    
+    Set<String> set = new HashSet<String>();
+    String branchString = repository.getProperty(PROPERTY_JENKINS_BRANCHES);
+    if (Util.isNotEmpty(branchString))
+    {
+      for (String branch : branchString.split(","))
+      {
+        set.add(branch.trim());
+      }
+    }
+    this.branches = Collections.unmodifiableSet(set);
   }
 
   //~--- get methods ----------------------------------------------------------
@@ -94,6 +114,21 @@ public class JenkinsConfiguration implements Validateable
   public String getApiToken()
   {
     return apiToken;
+  }
+
+  /**
+   * Returns comma separated list of branches. The hook will only be executed, 
+   * if the branch is listed. If the set is empty the hook will be executed on
+   * every push.
+   *
+   *
+   * @return comma separated list of branches
+   *
+   * @since 1.10
+   */
+  public Set<String> getBranches()
+  {
+    return branches;
   }
 
   /**
@@ -157,17 +192,20 @@ public class JenkinsConfiguration implements Validateable
   //~--- fields ---------------------------------------------------------------
 
   /** Field description */
-  private String apiToken;
+  private final String apiToken;
 
   /** Field description */
-  private String project;
+  private final Set<String> branches;
 
   /** Field description */
-  private String token;
+  private final String project;
 
   /** Field description */
-  private String url;
+  private final String token;
 
   /** Field description */
-  private String username;
+  private final String url;
+
+  /** Field description */
+  private final String username;
 }

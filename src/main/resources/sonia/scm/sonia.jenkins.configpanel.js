@@ -62,6 +62,8 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
   usernameText: 'Username',
   // label of the apiToken field.
   apiTokenText: 'API Token',
+  // label of the branches field.
+  branchesText: 'Branches',
   
   // help text for the url field
   urlHelpText: 'Url of Jenkins installation (with contextpath).',
@@ -75,6 +77,8 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
   apiTokenHelpText: 'The API Token of the user. This token is used for authentication. \n\
                      You could get your API Token from your Jenkins Server at \n\
                      http://yourjenkinsserver/jenkins/user/username/configure.',
+  // help text for the branches field
+  branchesHelpText: 'Comma separated list of branches.',
   
   /**
    * This method initializes the component and configures it. 
@@ -127,6 +131,12 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
         fieldLabel: this.apiTokenText,
         property: 'jenkins.api-token',
         helpText: this.apiTokenHelpText
+      },{
+        // branches field
+        name: 'jenkinsBranches',
+        fieldLabel: this.branchesText,
+        property: 'jenkins.branches',
+        helpText: this.branchesHelpText
       }]
     };
     

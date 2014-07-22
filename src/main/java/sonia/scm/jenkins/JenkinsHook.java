@@ -132,7 +132,7 @@ public class JenkinsHook implements RepositoryHook
     if (repository != null)
     {
       GlobalJenkinsConfiugration globalConfig = context.getConfiguration();
-      JenkinsHookHandler handler = null;
+      JenkinsHookHandler handler;
 
       if (!globalConfig.isDisableRepositoryConfiguration())
       {
@@ -163,7 +163,7 @@ public class JenkinsHook implements RepositoryHook
                 scmConfiguration, httpClientProvider, globalConfig, repository);
       }
 
-      handler.sendRequest();
+      handler.sendRequest(event);
     }
     else if (logger.isWarnEnabled())
     {

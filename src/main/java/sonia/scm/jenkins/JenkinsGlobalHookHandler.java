@@ -52,6 +52,7 @@ import sonia.scm.util.Util;
 //~--- JDK imports ------------------------------------------------------------
 
 import java.io.IOException;
+import sonia.scm.repository.RepositoryHookEvent;
 
 /**
  *
@@ -140,7 +141,7 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
    *
    */
   @Override
-  public void sendRequest()
+  public void sendRequest(RepositoryHookEvent event)
   {
     if (configuration.isValid())
     {
