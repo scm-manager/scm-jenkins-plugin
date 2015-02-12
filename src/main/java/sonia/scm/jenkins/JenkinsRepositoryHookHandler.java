@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import sonia.scm.util.HttpUtil;
 
 /**
  *
@@ -128,9 +129,13 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
     {
       url = url.concat("/");
     }
-
-    return url.concat("job/").concat(configuration.getProject()).concat(
-      "/build");
+    
+    //J-
+    // url encode proejct name, see http://goo.gl/v8Rond
+    return url.concat("job/")
+              .concat(HttpUtil.encode(configuration.getProject()))
+              .concat("/build");
+    //J+
   }
 
   /**
