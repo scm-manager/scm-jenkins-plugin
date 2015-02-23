@@ -50,10 +50,14 @@ import sonia.scm.util.Util;
 
 import java.io.IOException;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import sonia.scm.util.HttpUtil;
 
 /**
  *
@@ -115,13 +119,14 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
   }
 
   /**
-   * Creates the url to the remote trigger servlet of jenkins.
+   * Creates the url to the remote trigger servlet of jenkins. The method is
+   * visible to the package for testing.
    *
    * @param configuration jenkins configuration
    *
    * @return the url to the remote trigger servlet of jenkins
    */
-  private String createUrl(JenkinsConfiguration configuration)
+  String createUrl(JenkinsConfiguration configuration)
   {
     String url = configuration.getUrl();
 
@@ -129,13 +134,54 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
     {
       url = url.concat("/");
     }
-    
+
     //J-
     // url encode proejct name, see http://goo.gl/v8Rond
-    return url.concat("job/")
-              .concat(HttpUtil.encode(configuration.getProject()))
-              .concat("/build");
+    return escape(
+      url.concat("job/")
+         .concat(configuration.getProject())
+         .concat("/build")
+    );
     //J+
+  }
+
+  /**
+   * Escapes a complete url. The method is visible to the package for testing.
+   *
+   * @param urlString url
+   * @return escaped url
+   */
+  String escape(String urlString)
+  {
+    String escapedUrl = urlString;
+
+    try
+    {
+      URL url = new URL(urlString);
+      //J-
+      URI uri = new URI(
+        url.getProtocol(), 
+        url.getUserInfo(), 
+        url.getHost(), 
+        url.getPort(), 
+        url.getPath(), 
+        url.getQuery(), 
+        url.getRef()
+      );
+      //J+
+
+      escapedUrl = uri.toString();
+    }
+    catch (URISyntaxException ex)
+    {
+      logger.warn("could not escaped url", ex);
+    }
+    catch (MalformedURLException ex)
+    {
+      logger.warn("could not escaped url", ex);
+    }
+
+    return escapedUrl;
   }
 
   /**
