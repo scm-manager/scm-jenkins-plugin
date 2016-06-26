@@ -71,6 +71,13 @@ public class JenkinsConfiguration implements Validateable
 
   /** Repository property for the username for jenkins */
   public static final String PROPERTY_JENKINS_USERNAME = "jenkins.username";
+  
+  /** 
+   * Repository property for the username for jenkins csrf protection.
+   * 
+   * @since 1.13
+   */
+  public static final String PROPERTY_JENKINS_CSRF = "jenkins.csrf";
 
   //~--- constructors ---------------------------------------------------------
 
@@ -88,6 +95,7 @@ public class JenkinsConfiguration implements Validateable
     this.token = repository.getProperty(PROPERTY_JENKINS_TOKEN);
     this.username = repository.getProperty(PROPERTY_JENKINS_USERNAME);
     this.apiToken = repository.getProperty(PROPERTY_JENKINS_APITOKEN);
+    this.csrf = Boolean.valueOf(repository.getProperty(PROPERTY_JENKINS_CSRF));
     
     Set<String> set = new HashSet<String>();
     String branchString = repository.getProperty(PROPERTY_JENKINS_BRANCHES);
@@ -178,6 +186,17 @@ public class JenkinsConfiguration implements Validateable
   }
 
   /**
+   * Returns {@code true} if the jenkins instance is csrf protected.
+   * 
+   * @since 1.12
+   * @return {@code true} if jenkins is csrf protected
+   */
+  public boolean isCsrf()
+  {
+    return csrf;
+  }
+
+  /**
    * Return true, if the configuration is valid.
    *
    *
@@ -208,4 +227,7 @@ public class JenkinsConfiguration implements Validateable
 
   /** Field description */
   private final String username;
+  
+  /** Field description */
+  private final boolean csrf;
 }

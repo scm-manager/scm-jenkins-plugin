@@ -49,6 +49,7 @@ import sonia.scm.util.Util;
 //~--- JDK imports ------------------------------------------------------------
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -58,6 +59,8 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import sonia.scm.net.HttpResponse;
+import sonia.scm.util.IOUtil;
 
 /**
  *
@@ -117,6 +120,17 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
       }
     }
   }
+  
+  private String createBaseUrl(JenkinsConfiguration configuration){
+    String url = configuration.getUrl();
+
+    if (!url.endsWith("/"))
+    {
+      url = url.concat("/");
+    }
+    
+    return url;
+  }
 
   /**
    * Creates the url to the remote trigger servlet of jenkins. The method is
@@ -128,12 +142,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
    */
   String createUrl(JenkinsConfiguration configuration)
   {
-    String url = configuration.getUrl();
-
-    if (!url.endsWith("/"))
-    {
-      url = url.concat("/");
-    }
+    String url = createBaseUrl(configuration);
 
     //J-
     // url encode proejct name, see http://goo.gl/v8Rond
@@ -215,6 +224,92 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
       logger.error("could not send request to jenkins", ex);
     }
   }
+  
+  private String createCrumbUrl(JenkinsConfiguration configuration)
+  {
+    return escape(createBaseUrl(configuration).concat("crumbIssuer/api/xml"));
+  }
+  
+  private CsrfCrumb parseCsrfCrumbResponse(HttpResponse response) throws IOException
+  {
+    CsrfCrumb csrfCrumb = null;
+    InputStream content = null;
+    try 
+    {
+      content = response.getContent();
+      csrfCrumb = CsrfCrumbParser.parse(content);
+    } 
+    finally 
+    {
+      IOUtil.close(content);
+    }
+    return csrfCrumb;
+  }
+  
+  private CsrfCrumb getJenkinsCsrfCrumb(JenkinsConfiguration configuration, HttpClient client)
+  {
+    String url = createCrumbUrl(configuration);
+    logger.debug("fetch csrf crumb from {}", url);
+    
+    HttpRequest request = new HttpRequest(url);
+    appendAuthenticationHeader(configuration, request);
+    
+    CsrfCrumb crumb = null;
+    try
+    {
+      HttpResponse response = client.get(request);
+      int sc = response.getStatusCode();
+      if (sc != 200)
+      {
+        logger.warn("jenkins crumb endpoint returned status code {}", sc);
+      } 
+      else 
+      {
+        crumb = parseCsrfCrumbResponse(response);
+      }
+    }
+    catch (IOException ex)
+    {
+      logger.warn("failed to fetch csrf crumb", ex);
+    }
+    
+    return crumb;
+  }
+  
+  private void appendCsrfCrumb(JenkinsConfiguration configuration, HttpClient client, HttpRequest request)
+  {
+    if (configuration.isCsrf())
+    {
+      CsrfCrumb crumb = getJenkinsCsrfCrumb(configuration, client);
+      logger.debug("add csrf crumb to api request");
+      request.addHeader(crumb.getCrumbRequestField(), crumb.getCrumb());
+    }
+    else 
+    {
+      logger.debug("csrf protection is disabled, skipping crumb");
+    }
+  }
+  
+  private void appendAuthenticationHeader(JenkinsConfiguration configuration, HttpRequest request){
+    // check for authentication parameters
+    String username = configuration.getUsername();
+    String apiToken = configuration.getApiToken();
+
+    if (Util.isNotEmpty(username) && Util.isNotEmpty(apiToken))
+    {
+      if (logger.isDebugEnabled())
+      {
+        logger.debug("added authentication for user {}", username);
+      }
+
+      // add basic authentication header
+      request.setBasicAuthentication(username, apiToken);
+    }
+    else if (logger.isDebugEnabled())
+    {
+      logger.debug("skip authentication. username or api token is empty");
+    }
+  }
 
   /**
    * Send the request to the jenkins ci server to trigger a new build.
@@ -234,9 +329,8 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
     HttpClient httpClient = httpClientProvider.get();
 
     // retrive authentication token
-    String token = configuration.getToken();
     HttpRequest request = new HttpRequest(url);
-
+    String token = configuration.getToken();
     // check if the token is not empty.
     if (Util.isNotEmpty(token))
     {
@@ -249,24 +343,8 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
       logger.debug("no project token is available");
     }
 
-    // check for authentication parameters
-    String username = configuration.getUsername();
-    String apiToken = configuration.getApiToken();
-
-    if (Util.isNotEmpty(username) && Util.isNotEmpty(apiToken))
-    {
-      if (logger.isDebugEnabled())
-      {
-        logger.debug("added authentication for user {}", username);
-      }
-
-      // add basic authentication header
-      request.setBasicAuthentication(username, apiToken);
-    }
-    else if (logger.isDebugEnabled())
-    {
-      logger.debug("skip authentication. username or api token is empty");
-    }
+    appendAuthenticationHeader(configuration, request);
+    appendCsrfCrumb(configuration, httpClient, request);
 
     /**
      * execute the http post request with the http client and

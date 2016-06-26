@@ -58,6 +58,8 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
   projectText: 'Project',
   // label of the token field
   tokenText: 'Token',
+  // label of the csrf field
+  csrfText: 'CSRF Protected',
   // label of the username field.
   usernameText: 'Username',
   // label of the apiToken field.
@@ -71,6 +73,8 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
   projectHelpText: 'The name of the Jenkins project.',
   // help text for the token field
   tokenHelpText: 'Jenkins Authentication Token',
+  // hep text for the csrf field
+  csrfHelpText: 'Should be checked if your Jenkins instance is csrf protected.',
   // help text for the username field
   usernameHelpText: 'Username which is used for the authentication on the Jenkins ci server.',
   // help text for the apiToken field
@@ -119,6 +123,14 @@ Sonia.jenkins.ConfigPanel = Ext.extend(Sonia.repository.PropertiesFormPanel, {
         fieldLabel: this.tokenText,
         property: 'jenkins.token',
         helpText: this.tokenHelpText
+      },{
+        // jenkins csrf field
+        xtype: 'checkbox',
+        name: 'jenkinsCsrf',
+        fieldLabel: this.csrfText,
+        inputValue: true,
+        property: 'jenkins.csrf',
+        helpText: this.csrfHelpText
       },{
         // jenkins username field
         name: 'jenkinsUsername',

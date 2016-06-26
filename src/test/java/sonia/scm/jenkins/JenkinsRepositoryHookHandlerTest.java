@@ -48,11 +48,6 @@ import sonia.scm.net.HttpClient;
 
 import static org.junit.Assert.*;
 
-import static org.mockito.Mockito.*;
-
-//~--- JDK imports ------------------------------------------------------------
-
-import javax.security.auth.login.Configuration;
 
 /**
  *
