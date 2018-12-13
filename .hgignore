@@ -25,3 +25,4 @@ Desktop DF$
 \.settings
 \.idea
 .*\.iml
+node_modules
