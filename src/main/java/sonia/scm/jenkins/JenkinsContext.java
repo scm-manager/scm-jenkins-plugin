@@ -38,8 +38,8 @@ package sonia.scm.jenkins;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import sonia.scm.store.Store;
-import sonia.scm.store.StoreFactory;
+import sonia.scm.store.ConfigurationStore;
+import sonia.scm.store.ConfigurationStoreFactory;
 
 /**
  *
@@ -61,9 +61,9 @@ public class JenkinsContext
    * @param storeFactory
    */
   @Inject
-  public JenkinsContext(StoreFactory storeFactory)
+  public JenkinsContext(ConfigurationStoreFactory storeFactory)
   {
-    store = storeFactory.getStore(GlobalJenkinsConfiugration.class, NAME);
+    store = storeFactory.withType(GlobalJenkinsConfiugration.class).withName(NAME).build();
     configuration = store.get();
 
     if (configuration == null)
@@ -115,5 +115,5 @@ public class JenkinsContext
   private GlobalJenkinsConfiugration configuration;
 
   /** Field description */
-  private Store<GlobalJenkinsConfiugration> store;
+  private ConfigurationStore<GlobalJenkinsConfiugration> store;
 }

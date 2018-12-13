@@ -35,13 +35,14 @@ package sonia.scm.jenkins;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import com.google.inject.Provider;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sonia.scm.net.HttpClient;
-import sonia.scm.net.HttpRequest;
+import sonia.scm.net.ahc.AdvancedHttpClient;
+import sonia.scm.net.ahc.AdvancedHttpRequest;
+import sonia.scm.net.ahc.AdvancedHttpRequestWithBody;
+import sonia.scm.net.ahc.AdvancedHttpResponse;
+import sonia.scm.net.ahc.BaseHttpRequest;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.util.Util;
@@ -56,11 +57,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import sonia.scm.net.HttpResponse;
 import sonia.scm.util.IOUtil;
+
+import javax.inject.Provider;
 
 /**
  *
@@ -85,8 +86,8 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
    * @param httpClientProvider
    * @param configuration
    */
-  public JenkinsRepositoryHookHandler(Provider<HttpClient> httpClientProvider,
-    JenkinsConfiguration configuration)
+  public JenkinsRepositoryHookHandler(Provider<AdvancedHttpClient> httpClientProvider,
+                                      JenkinsConfiguration configuration)
   {
     this.httpClientProvider = httpClientProvider;
     this.configuration = configuration;
@@ -110,7 +111,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
     }
     else
     {
-      if (isInBranchSet(configuration.getBranches(), event.getChangesets()))
+      if (isInBranchSet(configuration.getBranches(), event.getContext().getChangesetProvider().getChangesets()))
       {
         handleRepositoryEvent(configuration);
       }
@@ -230,13 +231,13 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
     return escape(createBaseUrl(configuration).concat("crumbIssuer/api/xml"));
   }
   
-  private CsrfCrumb parseCsrfCrumbResponse(HttpResponse response) throws IOException
+  private CsrfCrumb parseCsrfCrumbResponse(AdvancedHttpResponse response) throws IOException
   {
     CsrfCrumb csrfCrumb = null;
     InputStream content = null;
     try 
     {
-      content = response.getContent();
+      content = response.contentAsStream();
       csrfCrumb = CsrfCrumbParser.parse(content);
     } 
     finally 
@@ -246,19 +247,20 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
     return csrfCrumb;
   }
   
-  private CsrfCrumb getJenkinsCsrfCrumb(JenkinsConfiguration configuration, HttpClient client)
+  private CsrfCrumb getJenkinsCsrfCrumb(JenkinsConfiguration configuration, AdvancedHttpClient client)
   {
     String url = createCrumbUrl(configuration);
     logger.debug("fetch csrf crumb from {}", url);
-    
-    HttpRequest request = new HttpRequest(url);
+
+    AdvancedHttpRequest request = client.get(url);
+
     appendAuthenticationHeader(configuration, request);
     
     CsrfCrumb crumb = null;
     try
     {
-      HttpResponse response = client.get(request);
-      int sc = response.getStatusCode();
+      AdvancedHttpResponse response = request.request();
+      int sc = response.getStatus();
       if (sc != 200)
       {
         logger.warn("jenkins crumb endpoint returned status code {}", sc);
@@ -276,13 +278,13 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
     return crumb;
   }
   
-  private void appendCsrfCrumb(JenkinsConfiguration configuration, HttpClient client, HttpRequest request)
+  private void appendCsrfCrumb(JenkinsConfiguration configuration, AdvancedHttpClient client, BaseHttpRequest request)
   {
     if (configuration.isCsrf())
     {
       CsrfCrumb crumb = getJenkinsCsrfCrumb(configuration, client);
       logger.debug("add csrf crumb to api request");
-      request.addHeader(crumb.getCrumbRequestField(), crumb.getCrumb());
+      request.header(crumb.getCrumbRequestField(), crumb.getCrumb());
     }
     else 
     {
@@ -290,7 +292,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
     }
   }
   
-  private void appendAuthenticationHeader(JenkinsConfiguration configuration, HttpRequest request){
+  private void appendAuthenticationHeader(JenkinsConfiguration configuration, BaseHttpRequest request){
     // check for authentication parameters
     String username = configuration.getUsername();
     String apiToken = configuration.getApiToken();
@@ -303,7 +305,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
       }
 
       // add basic authentication header
-      request.setBasicAuthentication(username, apiToken);
+      request.basicAuth(username, apiToken);
     }
     else if (logger.isDebugEnabled())
     {
@@ -326,17 +328,17 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
     /**
      * Create a new http client from the Guice Provider.
      */
-    HttpClient httpClient = httpClientProvider.get();
+    AdvancedHttpClient httpClient = httpClientProvider.get();
 
     // retrive authentication token
-    HttpRequest request = new HttpRequest(url);
+    AdvancedHttpRequestWithBody request = httpClient.post(url);
     String token = configuration.getToken();
     // check if the token is not empty.
     if (Util.isNotEmpty(token))
     {
 
       // add the token as parameter for the request
-      request.addParameters(PARAMETER_TOKEN, token);
+      request.queryString(PARAMETER_TOKEN, token);
     }
     else if (logger.isDebugEnabled())
     {
@@ -350,7 +352,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
      * execute the http post request with the http client and
      * fetch the status code of the response.
      */
-    int sc = httpClient.post(request).getStatusCode();
+    int sc = request.request().getStatus();
 
     // if the response is greater than 400 write an error to the log
     if (sc >= 400)
@@ -375,25 +377,18 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
    * @return
    */
   private boolean isInBranchSet(Set<String> branchSet,
-    Collection<Changeset> changesets)
+    Iterable<Changeset> changesets)
   {
     boolean found = false;
 
-    if (Util.isNotEmpty(changesets))
+    for (Changeset changeset : changesets)
     {
-      for (Changeset changeset : changesets)
+      if (isInBranchSet(branchSet, changeset))
       {
-        if (isInBranchSet(branchSet, changeset))
-        {
-          found = true;
+        found = true;
 
-          break;
-        }
+        break;
       }
-    }
-    else
-    {
-      logger.warn("received repository hook without changesets");
     }
 
     return found;
@@ -436,6 +431,6 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler
   /** Field description */
   private JenkinsConfiguration configuration;
 
-  /** Guice provider for {@link HttpClient} */
-  private Provider<HttpClient> httpClientProvider;
+  /** Guice provider for {@link AdvancedHttpClient} */
+  private Provider<AdvancedHttpClient> httpClientProvider;
 }

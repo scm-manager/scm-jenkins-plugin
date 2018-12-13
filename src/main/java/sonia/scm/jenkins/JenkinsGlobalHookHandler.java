@@ -40,18 +40,19 @@ import com.google.inject.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sonia.scm.config.ScmConfiguration;
-import sonia.scm.net.HttpClient;
-import sonia.scm.net.HttpResponse;
+import sonia.scm.net.ahc.AdvancedHttpClient;
+import sonia.scm.net.ahc.AdvancedHttpResponse;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryHandler;
-import sonia.scm.repository.RepositoryManager;
+import sonia.scm.repository.api.RepositoryService;
+import sonia.scm.repository.api.RepositoryServiceFactory;
+import sonia.scm.repository.api.ScmProtocol;
 import sonia.scm.util.HttpUtil;
 import sonia.scm.util.Util;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import java.io.IOException;
+
 import sonia.scm.repository.RepositoryHookEvent;
 
 /**
@@ -60,10 +61,6 @@ import sonia.scm.repository.RepositoryHookEvent;
  */
 public class JenkinsGlobalHookHandler implements JenkinsHookHandler
 {
-
-  /** Field description */
-  public static final String PARAMETER_URL = "url";
-
   /** Field description */
   public static final String TYPE_GIT = "git";
 
@@ -86,22 +83,18 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
    * Constructs ...
    *
    *
-   *
-   * @param repositoryManager
-   * @param scmConfiguration
    * @param httpClientProvider
    * @param configuration
    * @param repository
+   * @param repositoryServiceFactory
    */
-  public JenkinsGlobalHookHandler(RepositoryManager repositoryManager,
-    ScmConfiguration scmConfiguration, Provider<HttpClient> httpClientProvider,
-    GlobalJenkinsConfiugration configuration, Repository repository)
+  public JenkinsGlobalHookHandler(Provider<AdvancedHttpClient> httpClientProvider,
+                                  GlobalJenkinsConfiugration configuration, Repository repository, RepositoryServiceFactory repositoryServiceFactory)
   {
-    this.repositoryManager = repositoryManager;
-    this.scmConfiguration = scmConfiguration;
     this.httpClientProvider = httpClientProvider;
     this.configuration = configuration;
     this.repository = repository;
+    this.repositoryServiceFactory = repositoryServiceFactory;
   }
 
   //~--- methods --------------------------------------------------------------
@@ -152,12 +145,10 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
       {
         //J-
         logger.debug(
-            "check for global jenkins hook: type={}, hg disabled={}, git disabled={}",
-            new Object[] { 
-              type,
-              configuration.isDisableMercurialTrigger(),
-              configuration.isDisableGitTrigger() 
-            }
+                "check for global jenkins hook: type={}, hg disabled={}, git disabled={}",
+                type,
+                configuration.isDisableMercurialTrigger(),
+                configuration.isDisableGitTrigger()
         );
         //J+
       }
@@ -177,13 +168,8 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
       {
         String url = HttpUtil.getUriWithoutEndSeperator(
                        configuration.getUrl()).concat(urlSuffix);
-        HttpClient client = httpClientProvider.get();
-        String repositoryUrl = repository.getUrl();
-
-        if (Util.isEmpty(repositoryUrl))
-        {
-          repositoryUrl = createRepositoryUrl(repository);
-        }
+        AdvancedHttpClient client = httpClientProvider.get();
+        String repositoryUrl = createRepositoryUrl(repository);
 
         if (Util.isNotEmpty(repositoryUrl))
         {
@@ -197,8 +183,8 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
             logger.debug("try to access url {}", url);
           }
 
-          HttpResponse response = client.get(url);
-          int statusCode = response.getStatusCode();
+          AdvancedHttpResponse response = client.get(url).request();
+          int statusCode = response.getStatus();
 
           if (logger.isInfoEnabled())
           {
@@ -231,17 +217,14 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
    */
   private String createRepositoryUrl(Repository repository)
   {
-    String url = null;
-    RepositoryHandler handler =
-      repositoryManager.getHandler(repository.getType());
-
-    if (handler != null)
-    {
-      url = handler.createResourcePath(repository);
-      url = HttpUtil.getCompleteUrl(scmConfiguration, url);
+    try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
+      return repositoryService
+              .getSupportedProtocols()
+              .filter(p -> "http".equals(p.getType()))
+              .map(ScmProtocol::getUrl)
+              .findFirst()
+              .orElse(null);
     }
-
-    return url;
   }
 
   //~--- fields ---------------------------------------------------------------
@@ -250,14 +233,10 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
   private GlobalJenkinsConfiugration configuration;
 
   /** Field description */
-  private Provider<HttpClient> httpClientProvider;
+  private Provider<AdvancedHttpClient> httpClientProvider;
 
   /** Field description */
   private Repository repository;
 
-  /** Field description */
-  private RepositoryManager repositoryManager;
-
-  /** Field description */
-  private ScmConfiguration scmConfiguration;
+  private final RepositoryServiceFactory repositoryServiceFactory;
 }

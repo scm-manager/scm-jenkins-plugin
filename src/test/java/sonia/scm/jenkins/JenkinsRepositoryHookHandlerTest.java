@@ -35,16 +35,15 @@ package sonia.scm.jenkins;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import com.google.inject.Provider;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import sonia.scm.net.ahc.AdvancedHttpClient;
 
-import sonia.scm.net.HttpClient;
+import javax.inject.Provider;
 
 import static org.junit.Assert.*;
 
@@ -100,5 +99,5 @@ public class JenkinsRepositoryHookHandlerTest
 
   /** Field description */
   @Mock
-  private Provider<HttpClient> httpClientProvider;
+  private Provider<AdvancedHttpClient> httpClientProvider;
 }

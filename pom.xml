@@ -16,7 +16,7 @@
   <parent>
     <groupId>sonia.scm.plugins</groupId>
     <artifactId>scm-plugins</artifactId>
-    <version>1.9</version>
+    <version>2.0.0-SNAPSHOT</version>
   </parent>
 
   <!--
@@ -27,8 +27,8 @@
   -->
   <groupId>sonia.scm.plugins</groupId>
   <artifactId>scm-jenkins-plugin</artifactId>
-  <version>1.14-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <version>2.0-SNAPSHOT</version>
+  <packaging>smp</packaging>
   <name>scm-jenkins-plugin</name>
   <url>https://bitbucket.org/sdorra/scm-jenkins-plugin</url>
   <description>This plugin will ping your Jenkins CI server when a new commit is pushed to SCM-Manager.</description>
@@ -43,28 +43,7 @@
     <url>https://bitbucket.org/sdorra/scm-jenkins-plugin</url>
   </scm>
   
-    
-  <build>
-    <plugins>
-    
-      <plugin>
-        <groupId>sonia.scm.maven</groupId>
-        <artifactId>scm-maven-plugin</artifactId>
-        <version>1.35</version>
-        <executions>
-          <execution>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>fix-descriptor</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    
-    </plugins>
-  </build>
-  
-  <!-- 
+  <!--
     SCM-Manager maven repository. This part is required to fetch the maven 
     plugins and must be available in each pom of a SCM-Manager plugin.
   -->

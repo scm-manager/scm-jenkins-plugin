@@ -35,20 +35,20 @@ package sonia.scm.jenkins;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.github.legman.Subscribe;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sonia.scm.config.ScmConfiguration;
-import sonia.scm.net.HttpClient;
-import sonia.scm.plugin.ext.Extension;
+import sonia.scm.EagerSingleton;
+import sonia.scm.net.ahc.AdvancedHttpClient;
+import sonia.scm.plugin.Extension;
+import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryHook;
-import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.repository.RepositoryHookType;
-import sonia.scm.repository.RepositoryManager;
+import sonia.scm.repository.api.RepositoryServiceFactory;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -67,8 +67,8 @@ import java.util.Collection;
  *
  * @author Sebastian Sdorra
  */
-@Extension
-public class JenkinsHook implements RepositoryHook
+@Extension @EagerSingleton
+public class JenkinsHook
 {
 
   /** the logger for JenkinsHook */
@@ -90,22 +90,18 @@ public class JenkinsHook implements RepositoryHook
    * Available objects for injection in SCM-Manager:
    * https://bitbucket.org/sdorra/scm-manager/wiki/injectionObjects
    *
-   *
-   * @param repositoryManager
-   * @param scmConfiguration
-   * @param httpClientProvider Google Guice provider for an {@link HttpClient}
+   * @param httpClientProvider Google Guice provider for an {@link AdvancedHttpClient}
    * @param context
+   * @param repositoryServiceFactory
    */
   @Inject
-  public JenkinsHook(RepositoryManager repositoryManager,
-                     ScmConfiguration scmConfiguration,
-                     Provider<HttpClient> httpClientProvider,
-                     JenkinsContext context)
+  public JenkinsHook(Provider<AdvancedHttpClient> httpClientProvider,
+                     JenkinsContext context,
+                     RepositoryServiceFactory repositoryServiceFactory)
   {
-    this.repositoryManager = repositoryManager;
-    this.scmConfiguration = scmConfiguration;
     this.httpClientProvider = httpClientProvider;
     this.context = context;
+    this.repositoryServiceFactory = repositoryServiceFactory;
   }
 
   //~--- methods --------------------------------------------------------------
@@ -118,8 +114,8 @@ public class JenkinsHook implements RepositoryHook
    * @param event the event of the hook. This object contains the changed
    *        repository and the changesets.
    */
-  @Override
-  public void onEvent(RepositoryHookEvent event)
+  @Subscribe
+  public void onEvent(PostReceiveRepositoryHookEvent event)
   {
 
     // get the changed repository
@@ -152,15 +148,13 @@ public class JenkinsHook implements RepositoryHook
           logger.debug("jenkins configuration for repository {} is not valid, try global configuration",
                         repository.getName());
 
-          handler = new JenkinsGlobalHookHandler(repositoryManager,
-                  scmConfiguration, httpClientProvider, globalConfig,
-                  repository);
+          handler = new JenkinsGlobalHookHandler(httpClientProvider, globalConfig,
+                  repository, repositoryServiceFactory);
         }
       }
       else
       {
-        handler = new JenkinsGlobalHookHandler(repositoryManager,
-                scmConfiguration, httpClientProvider, globalConfig, repository);
+        handler = new JenkinsGlobalHookHandler(httpClientProvider, globalConfig, repository, repositoryServiceFactory);
       }
 
       handler.sendRequest(event);
@@ -171,43 +165,13 @@ public class JenkinsHook implements RepositoryHook
     }
   }
 
-  //~--- get methods ----------------------------------------------------------
-
-  /**
-   * Returns the types of the hook.
-   *
-   * @return a {@link Collection} of repository types.
-   */
-  @Override
-  public Collection<RepositoryHookType> getTypes()
-  {
-    return TYPES;
-  }
-
-  /**
-   * Return true if the hook can be executed asynchronous.
-   * Note you can not access the current servlet or user if the hook is executed
-   * asynchronous.
-   *
-   * @return true if the hook is executed asynchronous.
-   */
-  @Override
-  public boolean isAsync()
-  {
-    return true;
-  }
-
   //~--- fields ---------------------------------------------------------------
 
   /** Global jenkins configuration */
   private JenkinsContext context;
 
-  /** Guice provider for {@link HttpClient} */
-  private Provider<HttpClient> httpClientProvider;
+  /** Guice provider for {@link AdvancedHttpClient} */
+  private Provider<AdvancedHttpClient> httpClientProvider;
 
-  /** Field description */
-  private RepositoryManager repositoryManager;
-
-  /** Field description */
-  private ScmConfiguration scmConfiguration;
+  private final RepositoryServiceFactory repositoryServiceFactory;
 }

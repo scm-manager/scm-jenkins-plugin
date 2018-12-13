@@ -36,12 +36,10 @@ package sonia.scm.jenkins;
 //~--- non-JDK imports --------------------------------------------------------
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
-import sonia.scm.store.StoreFactory;
-import sonia.scm.util.SecurityUtil;
-import sonia.scm.web.security.WebSecurityContext;
+import sonia.scm.config.ConfigurationPermissions;
+import sonia.scm.config.ScmConfiguration;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -67,17 +65,13 @@ public class GlobalJenkinsConfigurationResource
    *
    *
    *
-   * @param factory
    * @param context
-   * @param securityContextProvider
    */
   @Inject
-  public GlobalJenkinsConfigurationResource(StoreFactory factory,
-    JenkinsContext context,
-    Provider<WebSecurityContext> securityContextProvider)
+  public GlobalJenkinsConfigurationResource(JenkinsContext context, ScmConfiguration configuration)
   {
     this.context = context;
-    this.securityContextProvider = securityContextProvider;
+    this.configuration = configuration;
   }
 
   //~--- methods --------------------------------------------------------------
@@ -94,7 +88,7 @@ public class GlobalJenkinsConfigurationResource
   @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
   public Response updateConfiguration(GlobalJenkinsConfiugration updatedConfig)
   {
-    SecurityUtil.assertIsAdmin(securityContextProvider);
+    ConfigurationPermissions.write(configuration).check();
     context.setConfiguration(updatedConfig);
     context.storeConfiguration();
 
@@ -113,7 +107,7 @@ public class GlobalJenkinsConfigurationResource
   @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
   public Response getConfiguration()
   {
-    SecurityUtil.assertIsAdmin(securityContextProvider);
+    ConfigurationPermissions.read(configuration).check();
 
     return Response.ok(context.getConfiguration()).build();
   }
@@ -122,7 +116,5 @@ public class GlobalJenkinsConfigurationResource
 
   /** Field description */
   private JenkinsContext context;
-
-  /** Field description */
-  private Provider<WebSecurityContext> securityContextProvider;
+  private final ScmConfiguration configuration;
 }
