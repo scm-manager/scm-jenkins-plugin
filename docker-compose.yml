@@ -2,8 +2,7 @@ version: '2.1'
 
 services:
   jenkins:
-    build:
-      dockerfile: docker/Dockerfile
+    build: docker
     ports:
       - "8082:8080"
     volumes:
