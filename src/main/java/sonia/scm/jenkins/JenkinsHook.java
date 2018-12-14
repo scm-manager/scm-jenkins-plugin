@@ -127,15 +127,14 @@ public class JenkinsHook
      */
     if (repository != null)
     {
-      GlobalJenkinsConfiugration globalConfig = context.getConfiguration();
+      GlobalJenkinsConfiguration globalConfig = context.getConfiguration();
       JenkinsHookHandler handler;
 
       if (!globalConfig.isDisableRepositoryConfiguration())
       {
 
         // read jenkins configuration from repository
-        JenkinsConfiguration configuration =
-          new JenkinsConfiguration(repository);
+        JenkinsConfiguration configuration = context.getConfiguration(repository);
 
         // check if the configuration is valid and log error if not
         if (configuration.isValid())

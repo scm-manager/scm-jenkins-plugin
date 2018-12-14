@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2010, Sebastian Sdorra
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * <p>
  * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
+ * this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * 3. Neither the name of SCM-Manager; nor the names of its
- *    contributors may be used to endorse or promote products derived from this
- *    software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from this
+ * software without specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -24,11 +24,9 @@
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * <p>
  * http://bitbucket.org/sdorra/scm-manager
- *
  */
-
 
 
 package sonia.scm.jenkins;
@@ -37,7 +35,7 @@ package sonia.scm.jenkins;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
+import sonia.scm.repository.Repository;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 
@@ -46,74 +44,38 @@ import sonia.scm.store.ConfigurationStoreFactory;
  * @author Sebastian Sdorra
  */
 @Singleton
-public class JenkinsContext
-{
+public class JenkinsContext {
 
-  /** Field description */
   public static final String NAME = "jenkins";
 
-  //~--- constructors ---------------------------------------------------------
-
-  /**
-   * Constructs ...
-   *
-   *
-   * @param storeFactory
-   */
   @Inject
-  public JenkinsContext(ConfigurationStoreFactory storeFactory)
-  {
-    store = storeFactory.withType(GlobalJenkinsConfiugration.class).withName(NAME).build();
-    configuration = store.get();
-
-    if (configuration == null)
-    {
-      configuration = new GlobalJenkinsConfiugration();
-    }
+  public JenkinsContext(ConfigurationStoreFactory storeFactory) {
+    this.storeFactory = storeFactory;
   }
 
-  //~--- methods --------------------------------------------------------------
-
-  /**
-   * Method description
-   *
-   */
-  public void storeConfiguration()
-  {
-    store.set(configuration);
+  public void storeConfiguration(GlobalJenkinsConfiguration configuration) {
+    createGlobalStore().set(configuration);
   }
 
-  //~--- get methods ----------------------------------------------------------
-
-  /**
-   * Method description
-   *
-   *
-   * @return
-   */
-  public GlobalJenkinsConfiugration getConfiguration()
-  {
-    return configuration;
+  public void storeConfiguration(JenkinsConfiguration configuration, Repository repository) {
+    createStore(repository).set(configuration);
   }
 
-  //~--- set methods ----------------------------------------------------------
-
-  /**
-   * Method description
-   *
-   *
-   * @param configuration
-   */
-  public void setConfiguration(GlobalJenkinsConfiugration configuration)
-  {
-    this.configuration = configuration;
+  public GlobalJenkinsConfiguration getConfiguration() {
+    return createGlobalStore().getOptional().orElse(new GlobalJenkinsConfiguration());
   }
 
-  //~--- fields ---------------------------------------------------------------
+  public JenkinsConfiguration getConfiguration(Repository repository) {
+    return createStore(repository).getOptional().orElse(new JenkinsConfiguration());
+  }
 
-  /** Field description */
-  private GlobalJenkinsConfiugration configuration;
+  private ConfigurationStore<JenkinsConfiguration> createStore(Repository repository) {
+    return storeFactory.withType(JenkinsConfiguration.class).withName(NAME).forRepository(repository).build();
+  }
 
-  /** Field description */
-  private ConfigurationStore<GlobalJenkinsConfiugration> store;
+  private ConfigurationStore<GlobalJenkinsConfiguration> createGlobalStore() {
+    return storeFactory.withType(GlobalJenkinsConfiguration.class).withName(NAME).build();
+  }
+
+  private ConfigurationStoreFactory storeFactory;
 }

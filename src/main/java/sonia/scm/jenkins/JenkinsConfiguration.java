@@ -41,6 +41,10 @@ import sonia.scm.util.Util;
 
 //~--- JDK imports ------------------------------------------------------------
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,63 +55,10 @@ import java.util.Set;
  *
  * @author Sebastian Sdorra
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "jenkins-config")
 public class JenkinsConfiguration implements Validateable
 {
-
-  /** Repository property for the api token of the user */
-  public static final String PROPERTY_JENKINS_APITOKEN = "jenkins.api-token";
-
-  /** Repository property for branch restrictions */
-  public static final String PROPERTY_JENKINS_BRANCHES = "jenkins.branches";
-
-  /** Repository property for a comma seperated list of project keys */
-  public static final String PROPERTY_JENKINS_PROJECT = "jenkins.project";
-
-  /** Repository property for the jenkins authentication token */
-  public static final String PROPERTY_JENKINS_TOKEN = "jenkins.token";
-
-  /** Repository property for the jenkins ci server url */
-  public static final String PROPERTY_JENKINS_URL = "jenkins.url";
-
-  /** Repository property for the username for jenkins */
-  public static final String PROPERTY_JENKINS_USERNAME = "jenkins.username";
-  
-  /** 
-   * Repository property for the username for jenkins csrf protection.
-   * 
-   * @since 1.13
-   */
-  public static final String PROPERTY_JENKINS_CSRF = "jenkins.csrf";
-
-  //~--- constructors ---------------------------------------------------------
-
-  /**
-   * Constructs a new jenkins configuration object. This constructor reads the
-   * properties and stores it in the configuration object.
-   *
-   *
-   * @param repository the repository which triggered the hook
-   */
-  public JenkinsConfiguration(Repository repository)
-  {
-    this.url = repository.getProperty(PROPERTY_JENKINS_URL);
-    this.project = repository.getProperty(PROPERTY_JENKINS_PROJECT);
-    this.token = repository.getProperty(PROPERTY_JENKINS_TOKEN);
-    this.username = repository.getProperty(PROPERTY_JENKINS_USERNAME);
-    this.apiToken = repository.getProperty(PROPERTY_JENKINS_APITOKEN);
-    this.csrf = Boolean.valueOf(repository.getProperty(PROPERTY_JENKINS_CSRF));
-    
-    Set<String> set = new HashSet<String>();
-    String branchString = repository.getProperty(PROPERTY_JENKINS_BRANCHES);
-    if (Util.isNotEmpty(branchString))
-    {
-      for (String branch : branchString.split(","))
-      {
-        set.add(branch.trim());
-      }
-    }
-    this.branches = Collections.unmodifiableSet(set);
-  }
 
   //~--- get methods ----------------------------------------------------------
 
@@ -196,6 +147,34 @@ public class JenkinsConfiguration implements Validateable
     return csrf;
   }
 
+  public void setApiToken(String apiToken) {
+    this.apiToken = apiToken;
+  }
+
+  public void setBranches(Set<String> branches) {
+    this.branches = branches;
+  }
+
+  public void setProject(String project) {
+    this.project = project;
+  }
+
+  public void setToken(String token) {
+    this.token = token;
+  }
+
+  public void setUrl(String url) {
+    this.url = url;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  public void setCsrf(boolean csrf) {
+    this.csrf = csrf;
+  }
+
   /**
    * Return true, if the configuration is valid.
    *
@@ -211,23 +190,24 @@ public class JenkinsConfiguration implements Validateable
   //~--- fields ---------------------------------------------------------------
 
   /** Field description */
-  private final String apiToken;
+  @XmlElement(name = "api-token")
+  private String apiToken;
 
   /** Field description */
-  private final Set<String> branches;
+  private Set<String> branches;
 
   /** Field description */
-  private final String project;
+  private String project;
 
   /** Field description */
-  private final String token;
+  private String token;
 
   /** Field description */
-  private final String url;
+  private String url;
 
   /** Field description */
-  private final String username;
+  private String username;
   
   /** Field description */
-  private final boolean csrf;
+  private boolean csrf;
 }

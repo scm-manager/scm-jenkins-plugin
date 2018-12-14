@@ -89,7 +89,7 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
    * @param repositoryServiceFactory
    */
   public JenkinsGlobalHookHandler(Provider<AdvancedHttpClient> httpClientProvider,
-                                  GlobalJenkinsConfiugration configuration, Repository repository, RepositoryServiceFactory repositoryServiceFactory)
+                                  GlobalJenkinsConfiguration configuration, Repository repository, RepositoryServiceFactory repositoryServiceFactory)
   {
     this.httpClientProvider = httpClientProvider;
     this.configuration = configuration;
@@ -230,7 +230,7 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
   //~--- fields ---------------------------------------------------------------
 
   /** Field description */
-  private GlobalJenkinsConfiugration configuration;
+  private GlobalJenkinsConfiguration configuration;
 
   /** Field description */
   private Provider<AdvancedHttpClient> httpClientProvider;

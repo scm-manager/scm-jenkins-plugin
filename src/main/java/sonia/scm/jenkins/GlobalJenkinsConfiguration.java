@@ -51,7 +51,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "jenkins-config")
-public class GlobalJenkinsConfiugration implements Validateable
+public class GlobalJenkinsConfiguration implements Validateable
 {
 
   /**
@@ -140,8 +140,7 @@ public class GlobalJenkinsConfiugration implements Validateable
    *
    * @param disableRepositoryConfiguration
    */
-  public void setDisableRepositoryConfiguration(
-          boolean disableRepositoryConfiguration)
+  public void setDisableRepositoryConfiguration(boolean disableRepositoryConfiguration)
   {
     this.disableRepositoryConfiguration = disableRepositoryConfiguration;
   }
