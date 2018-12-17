@@ -15,7 +15,10 @@
       "form": {
         "header": "Jenkins Configuration",
         "apiToken": "API Token",
-        "branches": "Branches",
+        "branches": "New Branch",
+        "branchesAdd": "Add branch",
+        "branchesDelete": "Delete",
+        "branchesHeader": "Branch",
         "project": "Project",
         "token": "Token",
         "url": "Url",

@@ -1,7 +1,13 @@
 //@flow
 
 import React from "react";
-import {Checkbox, Configuration, InputField} from "@scm-manager/ui-components";
+import {
+  AddEntryToTableField,
+  Checkbox,
+  Configuration,
+  DeleteButton,
+  InputField
+} from "@scm-manager/ui-components";
 import {translate} from "react-i18next";
 
 type LocalConfiguration = {
@@ -38,8 +44,32 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
     }, () => this.props.onConfigurationChange({...this.state}, true));
   };
 
+  addBranchHandler = (newBranch: string) => {
+    console.log("ADD BRANCH");
+    let branches = this.state.branches == null? []: this.state.branches;
+    console.log(branches);
+    branches.push(newBranch);
+    console.log(branches);
+    this.setState({
+      "branches": branches
+    }, () => this.props.onConfigurationChange({...this.state}, true));
+  };
+
+  deleteBranchHandler = (branchToDelete: any) => {
+    console.log(branchToDelete);
+    let branches = this.state.branches == null? []: this.state.branches;
+    console.log(branches);
+    branches.pop(branchToDelete);
+    console.log(branches);
+    this.setState({
+      "branches": branches
+    });
+    this.props.onConfigurationChange({...this.state}, true);
+  };
+
   render(): React.ReactNode {
     const {t, readOnly} = this.props;
+    const branches = this.state.branches == null ? [] : this.state.branches;
     return (
       <>
         <InputField name={"apiToken"}
@@ -72,8 +102,41 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
                   checked={this.state.csrf}
                   disabled={readOnly}
                   onChange={this.valueChangeHandler}/>
+
+
+        <table className="table is-hoverable is-fullwidth">
+          <thead>
+          <tr>
+            <th>{t("scm-jenkins-plugin.local.form.branchesHeader")}</th>
+            <th />
+          </tr>
+          </thead>
+          <tbody>
+          {
+            branches.map(branch => {
+            return (
+              <tr>
+                <td>{branch}</td>
+                <td>
+                  <DeleteButton
+                    label={t("scm-jenkins-plugin.local.form.branchesDelete")}
+                    action={this.deleteBranchHandler}
+                  />
+                </td>
+              </tr>
+            );
+          })}
+          </tbody>
+        </table>
+
+
+
+        <AddEntryToTableField disabled={readOnly}
+                              fieldLabel={t("scm-jenkins-plugin.local.form.branches")}
+                              addEntry={this.addBranchHandler}
+                              buttonLabel={t("scm-jenkins-plugin.local.form.branchesAdd")}/>
       </>
-    )
+    );
   }
 }
 
