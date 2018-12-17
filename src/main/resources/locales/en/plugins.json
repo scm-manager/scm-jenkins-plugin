@@ -1,0 +1,27 @@
+{
+  "scm-jenkins-plugin": {
+    "global": {
+      "nav-link": "Jenkins",
+      "form": {
+        "header": "Global Jenkins Configuration",
+        "disableRepositoryConfiguration": "Do not allow repository configuration",
+        "disableMercurialTrigger": "Disable Mercurial trigger",
+        "disableGitTrigger": "Disable Git trigger",
+        "url": "Url"
+      }
+    },
+    "local": {
+      "nav-link": "Jenkins",
+      "form": {
+        "header": "Jenkins Configuration",
+        "apiToken": "API Token",
+        "branches": "Branches",
+        "project": "Project",
+        "token": "Token",
+        "url": "Url",
+        "username": "Username",
+        "csrf": "CSRF Protected"
+      }
+    }
+  }
+}

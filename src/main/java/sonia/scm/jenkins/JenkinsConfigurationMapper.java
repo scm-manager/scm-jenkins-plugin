@@ -7,8 +7,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
-import sonia.scm.config.ConfigurationPermissions;
-import sonia.scm.config.ScmConfiguration;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
 

@@ -190,7 +190,6 @@ public class JenkinsConfiguration implements Validateable
   //~--- fields ---------------------------------------------------------------
 
   /** Field description */
-  @XmlElement(name = "api-token")
   private String apiToken;
 
   /** Field description */

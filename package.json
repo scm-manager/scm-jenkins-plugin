@@ -1,6 +1,6 @@
 {
   "name": "@scm-manager/scm-jenkins-plugin",
-  "license" : "BSD-3-Clause",
+  "license": "BSD-3-Clause",
   "main": "src/main/js/index.js",
   "scripts": {
     "build": "ui-bundler plugin",
@@ -9,9 +9,13 @@
     "flow": "flow check"
   },
   "dependencies": {
-    "@scm-manager/ui-extensions": "^0.0.7"
+    "@scm-manager/ui-components": "^2.0.0-20181111-155341",
+    "@scm-manager/ui-extensions": "^0.1.1",
+    "@scm-manager/ui-types": "^2.0.0-20181111-155341",
+    "react-i18next": "latest",
+    "react": "latest"
   },
   "devDependencies": {
-    "@scm-manager/ui-bundler": "^0.0.19"
+    "@scm-manager/ui-bundler": "^0.0.24"
   }
 }
