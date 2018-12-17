@@ -2,8 +2,8 @@ version: '2.1'
 
 services:
   jenkins:
-    build: docker
+    build: target/docker
     ports:
       - "8082:8080"
     volumes:
-      - ./docker/jenkins_home:/var/jenkins_home
+      - ./target/docker/jenkins_home:/var/jenkins_home
