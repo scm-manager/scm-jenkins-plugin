@@ -39,9 +39,8 @@ import sonia.scm.util.Util;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.HashSet;
 import java.util.Set;
-
-import static java.util.Collections.emptySet;
 
 /**
  * Configuration for Jenkins Hook. This configuration reads the properties from
@@ -187,7 +186,7 @@ public class JenkinsConfiguration implements Validateable
   private String apiToken;
 
   /** Field description */
-  private Set<String> branches = emptySet();
+  private Set<String> branches = new HashSet<>();
 
   /** Field description */
   private String project;
