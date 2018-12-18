@@ -33,21 +33,15 @@
 
 package sonia.scm.jenkins;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import sonia.scm.Validateable;
-import sonia.scm.repository.Repository;
 import sonia.scm.util.Util;
-
-//~--- JDK imports ------------------------------------------------------------
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
+
+import static java.util.Collections.emptySet;
 
 /**
  * Configuration for Jenkins Hook. This configuration reads the properties from
@@ -193,7 +187,7 @@ public class JenkinsConfiguration implements Validateable
   private String apiToken;
 
   /** Field description */
-  private Set<String> branches;
+  private Set<String> branches = emptySet();
 
   /** Field description */
   private String project;
