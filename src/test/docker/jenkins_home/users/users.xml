@@ -6,5 +6,9 @@
       <string>scmadmin</string>
       <string>scmadmin_7075372381595711302</string>
     </entry>
+    <entry>
+      <string>rene</string>
+      <string>rene_3538008740781472256</string>
+    </entry>
   </idToDirectoryNameMap>
 </hudson.model.UserIdMapper>
