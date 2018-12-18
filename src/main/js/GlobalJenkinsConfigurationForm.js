@@ -39,28 +39,32 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
     const {t, readOnly} = this.props;
     return (
       <>
+        <InputField name={"url"}
+                    label={t("scm-jenkins-plugin.global.form.url")}
+                    helpText={t("scm-jenkins-plugin.global.form.urlHelp")}
+                    disabled={readOnly}
+                    value={this.state.url}
+                    onChange={this.valueChangeHandler}/>
         <Checkbox name={"disableRepositoryConfiguration"}
                   label={t("scm-jenkins-plugin.global.form.disableRepositoryConfiguration")}
+                  helpText={t("scm-jenkins-plugin.global.form.disableRepositoryConfigurationHelp")}
                   checked={this.state.disableRepositoryConfiguration}
-                  disabled={readOnly}
-                  onChange={this.valueChangeHandler}/>
-        <Checkbox name={"disableMercurialTrigger"}
-                  label={t("scm-jenkins-plugin.global.form.disableMercurialTrigger")}
-                  checked={this.state.disableMercurialTrigger}
                   disabled={readOnly}
                   onChange={this.valueChangeHandler}/>
         <Checkbox name={"disableGitTrigger"}
                   label={t("scm-jenkins-plugin.global.form.disableGitTrigger")}
+                  helpText={t("scm-jenkins-plugin.global.form.disableGitTriggerHelp")}
                   checked={this.state.disableGitTrigger}
                   disabled={readOnly}
                   onChange={this.valueChangeHandler}/>
-        <InputField name={"url"}
-                    label={t("scm-jenkins-plugin.global.form.url")}
-                    disabled={readOnly}
-                    value={this.state.url}
-                    onChange={this.valueChangeHandler}/>
+        <Checkbox name={"disableMercurialTrigger"}
+                  label={t("scm-jenkins-plugin.global.form.disableMercurialTrigger")}
+                  helpText={t("scm-jenkins-plugin.global.form.disableMercurialTriggerHelp")}
+                  checked={this.state.disableMercurialTrigger}
+                  disabled={readOnly}
+                  onChange={this.valueChangeHandler}/>
       </>
-    )
+    );
   }
 }
 

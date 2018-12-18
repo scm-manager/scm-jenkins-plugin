@@ -4,26 +4,37 @@
       "nav-link": "Jenkins",
       "form": {
         "header": "Global Jenkins Configuration",
+        "url": "Url",
+        "urlHelp": "Url of Jenkins installation (with contextpath).",
         "disableRepositoryConfiguration": "Do not allow repository configuration",
-        "disableMercurialTrigger": "Disable Mercurial trigger",
+        "disableRepositoryConfigurationHelp": "Do not allow repository owners to configure jenkins hooks. You have to restart your application server after changing this value.",
         "disableGitTrigger": "Disable Git trigger",
-        "url": "Url"
+        "disableGitTriggerHelp": "Disable trigger for git repositories. Note: the git trigger requires version 1.1.14 or above of the jenkins git plugin.",
+        "disableMercurialTrigger": "Disable Mercurial trigger",
+        "disableMercurialTriggerHelp": "Disable trigger for mercurial repositories. Note: the mercurial trigger requires version 1.38 or above of the jenkins mercurial plugin."
       }
     },
     "local": {
       "nav-link": "Jenkins",
       "form": {
         "header": "Jenkins Configuration",
+        "url": "Url",
+        "urlHelp": "Url of Jenkins installation (with contextpath).",
+        "project": "Project",
+        "projectHelp": "The name of the Jenkins project.",
+        "token": "Token",
+        "tokenHelp": "Jenkins Authentication Token",
+        "csrf": "CSRF Protected",
+        "csrfHelp": "Should be checked if your Jenkins instance is csrf protected.",
+        "username": "Username",
+        "usernameHelp": "Username which is used for the authentication on the Jenkins ci server.",
         "apiToken": "API Token",
+        "apiTokenHelp": "The API Token of the user. This token is used for authentication. You could get your API Token from your Jenkins Server at http://yourjenkinsserver/jenkins/user/username/configure.",
+        "branchesHeader": "Branches",
+        "branchesHelp": "List of branches.",
         "branches": "New Branch",
         "branchesAdd": "Add branch",
-        "branchesDelete": "Delete",
-        "branchesHeader": "Branch",
-        "project": "Project",
-        "token": "Token",
-        "url": "Url",
-        "username": "Username",
-        "csrf": "CSRF Protected"
+        "branchesDelete": "Delete"
       }
     }
   }
