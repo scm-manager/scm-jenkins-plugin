@@ -5,8 +5,7 @@ import {
   AddEntryToTableField,
   Checkbox,
   Configuration,
-  DeleteButton,
-  InputField, LabelWithHelpIcon
+  InputField, LabelWithHelpIcon, RemoveEntryOfTableButton
 } from "@scm-manager/ui-components";
 import {translate} from "react-i18next";
 
@@ -54,9 +53,12 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
     }, () => this.props.onConfigurationChange({...this.state}, true));
   };
 
-  deleteBranchHandler = (branchToDelete: any) => {
+  deleteBranchHandler = (branchToDelete: String) => {
     let branches = this.state.branches == null? []: this.state.branches;
-    branches.pop(branchToDelete);
+    let index = branches.indexOf(branchToDelete);
+    if (index > -1) {
+      branches.splice(index, 1);
+    }
     this.setState({
       "branches": branches
     });
@@ -116,12 +118,14 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
           {
             branches.map(branch => {
             return (
-              <tr>
+              <tr key={branch}>
                 <td>{branch}</td>
                 <td>
-                  <DeleteButton
+                  <RemoveEntryOfTableButton
+                    entryname={branch}
+                    removeEntry={this.deleteBranchHandler}
                     label={t("scm-jenkins-plugin.local.form.branchesDelete")}
-                    action={this.deleteBranchHandler}
+                    disabled={false}
                   />
                 </td>
               </tr>
