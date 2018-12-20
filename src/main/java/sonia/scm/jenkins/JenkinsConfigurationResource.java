@@ -34,6 +34,8 @@ package sonia.scm.jenkins;
 //~--- non-JDK imports --------------------------------------------------------
 
 import com.google.inject.Inject;
+import com.webcohesion.enunciate.metadata.rs.ResponseCode;
+import com.webcohesion.enunciate.metadata.rs.StatusCodes;
 import sonia.scm.config.ConfigurationPermissions;
 import sonia.scm.config.ScmConfiguration;
 import sonia.scm.repository.NamespaceAndName;
@@ -81,6 +83,12 @@ public class JenkinsConfigurationResource {
   @GET
   @Path("/")
   @Produces({MediaType.APPLICATION_JSON})
+  @StatusCodes({
+    @ResponseCode(code = 200, condition = "success"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 403, condition = "not authorized, the current user has no privileges to read the configuration"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
   public Response get() {
     ConfigurationPermissions.read(configuration).check();
 
@@ -90,6 +98,13 @@ public class JenkinsConfigurationResource {
   @PUT
   @Path("/")
   @Consumes({MediaType.APPLICATION_JSON})
+  @StatusCodes({
+    @ResponseCode(code = 204, condition = "update success"),
+    @ResponseCode(code = 400, condition = "Invalid body,"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 403, condition = "not authorized, the current user does not have the privilege to change the configuration"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
   public Response update(GlobalJenkinsConfigurationDto updatedConfig) {
     ConfigurationPermissions.write(configuration).check();
     context.storeConfiguration(globalJenkinsConfigurationMapper.map(updatedConfig));
@@ -100,6 +115,13 @@ public class JenkinsConfigurationResource {
   @GET
   @Path("/{namespace}/{name}")
   @Produces({MediaType.APPLICATION_JSON})
+  @StatusCodes({
+    @ResponseCode(code = 200, condition = "success"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 403, condition = "not authorized, the current user has no privileges to read the configuration"),
+    @ResponseCode(code = 404, condition = "not found, no repository with the specified namespace and name available"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
   public Response getForRepository(@PathParam("namespace") String namespace, @PathParam("name") String name) {
     Repository repository = loadRepository(namespace, name);
     RepositoryPermissions.modify(repository).check();
@@ -110,6 +132,14 @@ public class JenkinsConfigurationResource {
   @PUT
   @Path("/{namespace}/{name}")
   @Consumes({MediaType.APPLICATION_JSON})
+  @StatusCodes({
+    @ResponseCode(code = 204, condition = "update success"),
+    @ResponseCode(code = 400, condition = "Invalid body,"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 403, condition = "not authorized, the current user does not have the privilege to change the configuration"),
+    @ResponseCode(code = 404, condition = "not found, no repository with the specified namespace and name available"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
   public Response updateForRepository(@PathParam("namespace") String namespace, @PathParam("name") String name, JenkinsConfigurationDto updatedConfig) {
     Repository repository = loadRepository(namespace, name);
     context.storeConfiguration(jenkinsConfigurationMapper.map(updatedConfig), repository);
