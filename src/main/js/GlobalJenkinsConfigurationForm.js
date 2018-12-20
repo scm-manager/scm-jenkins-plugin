@@ -18,7 +18,9 @@ type Props = {
   t: (string) => string
 }
 
-type State = GlobalConfiguration
+type State = GlobalConfiguration & {
+  configurationChanged: boolean
+}
 
 class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
 
@@ -39,6 +41,7 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
     const {t, readOnly} = this.props;
     return (
       <>
+        {this.renderConfigChangedNotification()}
         <InputField name={"url"}
                     label={t("scm-jenkins-plugin.global.form.url")}
                     helpText={t("scm-jenkins-plugin.global.form.urlHelp")}
@@ -66,6 +69,23 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
       </>
     );
   }
+
+  renderConfigChangedNotification = () => {
+    if (this.state.configurationChanged) {
+      return (
+        <div className="notification is-info">
+          <button
+            className="delete"
+            onClick={() =>
+              this.setState({...this.state, configurationChanged: false})
+            }
+          />
+          {this.props.t("scm-jenkins-plugin.configurationChangedSuccess")}
+        </div>
+      );
+    }
+    return null;
+  };
 }
 
 export default translate("plugins")(GlobalJenkinsConfigurationForm);

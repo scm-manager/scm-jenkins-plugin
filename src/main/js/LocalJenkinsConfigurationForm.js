@@ -27,7 +27,9 @@ type Props = {
   t: (string) => string
 }
 
-type State = LocalConfiguration
+type State = LocalConfiguration & {
+  configurationChanged: boolean
+}
 
 class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
 
@@ -45,22 +47,16 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
   };
 
   addBranchHandler = (newBranch: string) => {
-    console.log("ADD BRANCH");
     let branches = this.state.branches == null? []: this.state.branches;
-    console.log(branches);
     branches.push(newBranch);
-    console.log(branches);
     this.setState({
       "branches": branches
     }, () => this.props.onConfigurationChange({...this.state}, true));
   };
 
   deleteBranchHandler = (branchToDelete: any) => {
-    console.log(branchToDelete);
     let branches = this.state.branches == null? []: this.state.branches;
-    console.log(branches);
     branches.pop(branchToDelete);
-    console.log(branches);
     this.setState({
       "branches": branches
     });
@@ -72,6 +68,7 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
     const branches = this.state.branches == null ? [] : this.state.branches;
     return (
       <>
+        {this.renderConfigChangedNotification()}
         <InputField name={"url"}
                     label={t("scm-jenkins-plugin.local.form.url")}
                     helpText={t("scm-jenkins-plugin.local.form.urlHelp")}
@@ -140,6 +137,23 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
       </>
     );
   }
+
+  renderConfigChangedNotification = () => {
+    if (this.state.configurationChanged) {
+      return (
+        <div className="notification is-primary">
+          <button
+            className="delete"
+            onClick={() =>
+              this.setState({...this.state, configurationChanged: false})
+            }
+          />
+          {this.props.t("scm-jenkins-plugin.configurationChangedSuccess")}
+        </div>
+      );
+    }
+    return null;
+  };
 }
 
 export default translate("plugins")(LocalJenkinsConfigurationForm);
