@@ -5,4 +5,4 @@ import GlobalJenkinsConfiguration from "./GlobalJenkinsConfiguration";
 import LocalJenkinsConfiguration from "./LocalJenkinsConfiguration";
 
 cfgBinder.bindGlobal("/jenkins", "scm-jenkins-plugin.global.nav-link", "jenkinsConfig", GlobalJenkinsConfiguration);
-cfgBinder.bindRepository("/jenkins", "scm-jenkins-plugin.local.nav-link", "jenkinsConfig", LocalJenkinsConfiguration);
+cfgBinder.bindRepositorySub("/jenkins", "scm-jenkins-plugin.local.nav-link", "jenkinsConfig", LocalJenkinsConfiguration);
