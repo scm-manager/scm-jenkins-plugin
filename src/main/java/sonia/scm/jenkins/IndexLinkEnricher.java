@@ -13,6 +13,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import static java.util.Collections.singletonMap;
+import static sonia.scm.jenkins.JenkinsContext.NAME;
 import static sonia.scm.web.VndMediaType.INDEX;
 
 @Extension
@@ -28,7 +29,7 @@ public class IndexLinkEnricher extends JsonEnricherBase {
 
   @Override
   public void enrich(JsonEnricherContext context) {
-    if (resultHasMediaType(INDEX, context) && ConfigurationPermissions.list().isPermitted()) {
+    if (resultHasMediaType(INDEX, context) && ConfigurationPermissions.read(NAME).isPermitted()) {
       String globalJenkinsConfigUrl = new LinkBuilder(scmPathInfoStore.get().get(), JenkinsConfigurationResource.class)
         .method("get")
         .parameters()

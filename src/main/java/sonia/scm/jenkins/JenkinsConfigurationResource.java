@@ -37,7 +37,6 @@ import com.google.inject.Inject;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
 import com.webcohesion.enunciate.metadata.rs.StatusCodes;
 import sonia.scm.config.ConfigurationPermissions;
-import sonia.scm.config.ScmConfiguration;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
@@ -54,6 +53,7 @@ import javax.ws.rs.core.Response;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
+import static sonia.scm.jenkins.JenkinsContext.NAME;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -69,12 +69,10 @@ public class JenkinsConfigurationResource {
   @Inject
   public JenkinsConfigurationResource(
     JenkinsContext context,
-    ScmConfiguration configuration,
     GlobalJenkinsConfigurationMapperImpl globalJenkinsConfigurationMapper,
     JenkinsConfigurationMapperImpl jenkinsConfigurationMapper,
     RepositoryManager repositoryManager) {
     this.context = context;
-    this.configuration = configuration;
     this.globalJenkinsConfigurationMapper = globalJenkinsConfigurationMapper;
     this.jenkinsConfigurationMapper = jenkinsConfigurationMapper;
     this.repositoryManager = repositoryManager;
@@ -90,9 +88,9 @@ public class JenkinsConfigurationResource {
     @ResponseCode(code = 500, condition = "internal server error")
   })
   public Response get() {
-    ConfigurationPermissions.read(configuration).check();
+    ConfigurationPermissions.read(NAME).check();
 
-    return Response.ok(globalJenkinsConfigurationMapper.map(context.getConfiguration(), configuration)).build();
+    return Response.ok(globalJenkinsConfigurationMapper.map(context.getConfiguration())).build();
   }
 
   @PUT
@@ -106,7 +104,7 @@ public class JenkinsConfigurationResource {
     @ResponseCode(code = 500, condition = "internal server error")
   })
   public Response update(GlobalJenkinsConfigurationDto updatedConfig) {
-    ConfigurationPermissions.write(configuration).check();
+    ConfigurationPermissions.write(NAME).check();
     context.storeConfiguration(globalJenkinsConfigurationMapper.map(updatedConfig));
 
     return Response.noContent().build();
@@ -124,7 +122,7 @@ public class JenkinsConfigurationResource {
   })
   public Response getForRepository(@PathParam("namespace") String namespace, @PathParam("name") String name) {
     Repository repository = loadRepository(namespace, name);
-    RepositoryPermissions.modify(repository).check();
+    RepositoryPermissions.custom(NAME, repository).check();
 
     return Response.ok(jenkinsConfigurationMapper.map(context.getConfiguration(repository), repository)).build();
   }
@@ -156,7 +154,6 @@ public class JenkinsConfigurationResource {
   }
 
   private final JenkinsContext context;
-  private final ScmConfiguration configuration;
   private final GlobalJenkinsConfigurationMapper globalJenkinsConfigurationMapper;
   private final JenkinsConfigurationMapper jenkinsConfigurationMapper;
   private final RepositoryManager repositoryManager;

@@ -1,0 +1,68 @@
+{
+  "scm-jenkins-plugin": {
+    "global": {
+      "nav-link": "Jenkins",
+      "form": {
+        "header": "Globale Jenkins Konfiguration",
+        "url": "Url",
+        "urlHelp": "Url der Jenkins Installation (mit Kontextpfad).",
+        "disableRepositoryConfiguration": "Verbieten repository-spezifischer Konfiguration",
+        "disableRepositoryConfigurationHelp": "Verbietet die repository-spezifische Konfiguration durch die Owner von Repositories.",
+        "disableGitTrigger": "Git-Trigger deaktivieren",
+        "disableGitTriggerHelp": "Deaktiviert Triffer für Git-Repositories.",
+        "disableMercurialTrigger": "Mercurial-Trigger deaktivieren",
+        "disableMercurialTriggerHelp": "Deaktiviert Triffer für Mercurial-Repositories."
+      }
+    },
+    "local": {
+      "nav-link": "Jenkins",
+      "form": {
+        "header": "Jenkins Konfiguration",
+        "url": "Url",
+        "urlHelp": "Url der Jenkins Installation (mit Kontextpfad).",
+        "project": "Projekt",
+        "projectHelp": "Der Name des Projekts in Jenkins.",
+        "token": "Token",
+        "tokenHelp": "Jenkins Authentifikations-Token",
+        "csrf": "CSRF Absicherung",
+        "csrfHelp": "Auswählen, wenn für die Jenkins-Instanz eine CSRF-Absicherung konfiguriert ist.",
+        "username": "Benutzername",
+        "usernameHelp": "Benutzername, der für die Authentifikation auf dem Jenkins-CI-Server genutzt wird.",
+        "apiToken": "API Token",
+        "apiTokenHelp": "API Token für den Benutzer. Dieser Token wird für die Authentifikation genutzt. Der API Token kann auf dem Jenkins-Server unter der folgenden URL erstellt werden: http://yourjenkinsserver/jenkins/user/username/configure.",
+        "branchesHeader": "Branches",
+        "branchesHelp": "Liste von Branches.",
+        "branches": "Neuer Branch",
+        "branchesAdd": "Branch hinzufügen",
+        "branchesDelete": "Löschen"
+      }
+    },
+    "configurationChangedSuccess": "Konfiguration gespeichert"
+  },
+  "permissions": {
+    "configuration": {
+      "read,write": {
+        "jenkins": {
+          "displayName": "Globale Jenkins Konfiguiration ändern",
+          "description": "Darf die globale Jenkins Konfiguration verändern"
+        }
+      }
+    },
+    "repository": {
+      "jenkins": {
+        "*": {
+          "displayName": "Repository-spezifische Jenkins Konfiguiration ändern",
+          "description": "Darf die repository-spezifischen Jenkins Konfiguration verändern (falls nicht global deaktiviert)"
+        }
+      }
+    }
+  },
+  "verbs": {
+    "repository": {
+      "jenkins": {
+        "displayName": "Jenkins Konfiguration ändern",
+        "description": "Darf die Jenkins Konfiguration verändern (falls nicht global deaktiviert)"
+      }
+    }
+  }
+}

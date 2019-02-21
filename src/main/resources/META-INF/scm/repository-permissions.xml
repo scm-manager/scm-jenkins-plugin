@@ -1,0 +1,5 @@
+<repository-permissions>
+  <verbs>
+    <verb>jenkins</verb>
+  </verbs>
+</repository-permissions>
