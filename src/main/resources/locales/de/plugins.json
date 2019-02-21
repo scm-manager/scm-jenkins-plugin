@@ -38,5 +38,31 @@
       }
     },
     "configurationChangedSuccess": "Konfiguration gespeichert"
+  },
+  "permissions": {
+    "configuration": {
+      "read,write": {
+        "jenkins": {
+          "displayName": "Globale Jenkins Konfiguiration ändern",
+          "description": "Darf die globale Jenkins Konfiguration verändern"
+        }
+      }
+    },
+    "repository": {
+      "jenkins": {
+        "*": {
+          "displayName": "Repository-spezifische Jenkins Konfiguiration ändern",
+          "description": "Darf die repository-spezifischen Jenkins Konfiguration verändern (falls nicht global deaktiviert)"
+        }
+      }
+    }
+  },
+  "verbs": {
+    "repository": {
+      "jenkins": {
+        "displayName": "Jenkins Konfiguration ändern",
+        "description": "Darf die Jenkins Konfiguration verändern (falls nicht global deaktiviert)"
+      }
+    }
   }
 }

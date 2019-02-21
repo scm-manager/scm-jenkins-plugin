@@ -1,0 +1,8 @@
+<permissions>
+  <permission>
+    <value>configuration:read,write:jenkins</value>
+  </permission>
+  <permission>
+    <value>repository:jenkins:*</value>
+  </permission>
+</permissions>

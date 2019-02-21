@@ -38,5 +38,31 @@
       }
     },
     "configurationChangedSuccess": "Configuration changed"
+  },
+  "permissions": {
+    "configuration": {
+      "read,write": {
+        "jenkins": {
+          "displayName": "Modify global Jenkins configuration",
+          "description": "May modify the global Jenkins configuration"
+        }
+      }
+    },
+    "repository": {
+      "jenkins": {
+        "*": {
+          "displayName": "Modify repository specific Jenkins configuration",
+          "description": "May modify the repository specific Jenkins configuration for all repositories (if not disabled globally)"
+        }
+      }
+    }
+  },
+  "verbs": {
+    "repository": {
+      "jenkins": {
+        "displayName": "configure Jenkins",
+        "description": "May modify the repository specific jenkins configurations (if not disabled globally)"
+      }
+    }
   }
 }

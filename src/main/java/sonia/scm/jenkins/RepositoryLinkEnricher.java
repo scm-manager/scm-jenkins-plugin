@@ -6,26 +6,36 @@ import com.google.inject.Inject;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.plugin.Extension;
+import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryManager;
+import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.web.AbstractRepositoryJsonEnricher;
 
 import javax.inject.Provider;
+
+import static sonia.scm.jenkins.JenkinsContext.NAME;
 
 @Extension
 public class RepositoryLinkEnricher extends AbstractRepositoryJsonEnricher {
 
   private final JenkinsContext jenkinsContext;
   private final Provider<ScmPathInfoStore> scmPathInfoStore;
+  private final RepositoryManager repositoryManager;
 
   @Inject
-  public RepositoryLinkEnricher(ObjectMapper objectMapper, JenkinsContext jenkinsContext, Provider<ScmPathInfoStore> scmPathInfoStore) {
+  public RepositoryLinkEnricher(ObjectMapper objectMapper, JenkinsContext jenkinsContext, Provider<ScmPathInfoStore> scmPathInfoStore, RepositoryManager repositoryManager) {
     super(objectMapper);
     this.jenkinsContext = jenkinsContext;
     this.scmPathInfoStore = scmPathInfoStore;
+    this.repositoryManager = repositoryManager;
   }
 
   @Override
   protected void enrichRepositoryNode(JsonNode repositoryNode, String namespace, String name) {
-    if (!jenkinsContext.getConfiguration().isDisableRepositoryConfiguration()) {
+    Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
+    if (!jenkinsContext.getConfiguration().isDisableRepositoryConfiguration()
+      && RepositoryPermissions.custom(NAME, repository).isPermitted()) {
       String linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), JenkinsConfigurationResource.class)
         .method("getForRepository")
         .parameters(namespace, name)

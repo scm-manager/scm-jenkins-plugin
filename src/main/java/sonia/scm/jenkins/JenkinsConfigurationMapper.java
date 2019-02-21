@@ -14,6 +14,8 @@ import javax.inject.Inject;
 
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
+import static sonia.scm.config.ScmConfiguration.PERMISSION;
+import static sonia.scm.jenkins.JenkinsContext.NAME;
 
 @Mapper
 public abstract class JenkinsConfigurationMapper {
@@ -28,10 +30,10 @@ public abstract class JenkinsConfigurationMapper {
   @AfterMapping
   void appendLinks(@MappingTarget JenkinsConfigurationDto target, @Context Repository repository) {
     Links.Builder linksBuilder = linkingTo().self(self(repository));
-    if (RepositoryPermissions.modify(repository).isPermitted()) {
+    if (RepositoryPermissions.custom(NAME, repository).isPermitted()) {
       linksBuilder.single(link("update", update(repository)));
     }
-    if (RepositoryPermissions.read(repository).isPermitted()) {
+    if (RepositoryPermissions.custom(NAME, repository).isPermitted()) {
       target.add(linksBuilder.build());
     }
   }
