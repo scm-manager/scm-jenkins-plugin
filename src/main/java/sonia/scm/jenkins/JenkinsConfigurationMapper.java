@@ -14,7 +14,6 @@ import javax.inject.Inject;
 
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
-import static sonia.scm.config.ScmConfiguration.PERMISSION;
 import static sonia.scm.jenkins.JenkinsContext.NAME;
 
 @Mapper
