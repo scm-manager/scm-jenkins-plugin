@@ -4,8 +4,8 @@
       "nav-link": "Jenkins",
       "form": {
         "header": "Globale Jenkins Konfiguration",
-        "url": "Url",
-        "urlHelp": "Url der Jenkins Installation (mit Kontextpfad).",
+        "url": "URL",
+        "urlHelp": "URL der Jenkins Installation (mit Kontextpfad).",
         "disableRepositoryConfiguration": "Verbieten repository-spezifischer Konfiguration",
         "disableRepositoryConfigurationHelp": "Verbietet die repository-spezifische Konfiguration durch die Owner von Repositories.",
         "disableGitTrigger": "Git-Trigger deaktivieren",
@@ -18,8 +18,8 @@
       "nav-link": "Jenkins",
       "form": {
         "header": "Jenkins Konfiguration",
-        "url": "Url",
-        "urlHelp": "Url der Jenkins Installation (mit Kontextpfad).",
+        "url": "URL",
+        "urlHelp": "URL der Jenkins Installation (mit Kontextpfad).",
         "project": "Projekt",
         "projectHelp": "Der Name des Projekts in Jenkins.",
         "token": "Token",
