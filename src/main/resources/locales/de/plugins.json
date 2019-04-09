@@ -6,12 +6,12 @@
         "header": "Globale Jenkins Konfiguration",
         "url": "URL",
         "urlHelp": "URL der Jenkins Installation (mit Kontextpfad).",
-        "disableRepositoryConfiguration": "Verbieten repository-spezifischer Konfiguration",
-        "disableRepositoryConfigurationHelp": "Verbietet die repository-spezifische Konfiguration durch die Owner von Repositories.",
+        "disableRepositoryConfiguration": "Repository-spezifische Konfiguration verbieten",
+        "disableRepositoryConfigurationHelp": "Repository-spezifische Konfiguration durch Owner von Repositories verbieten. Hinweis: Der Anwendungsserver muss nach einer Änderung dieses Wertes neu gestartet werden.",
         "disableGitTrigger": "Git-Trigger deaktivieren",
-        "disableGitTriggerHelp": "Deaktiviert Triffer für Git-Repositories.",
+        "disableGitTriggerHelp": "Deaktiviert Trigger für Git-Repositories. Hinweis: Der Git-Trigger erfordert Version 1.1.14 oder höher des Jenkins-Git-Plugins.",
         "disableMercurialTrigger": "Mercurial-Trigger deaktivieren",
-        "disableMercurialTriggerHelp": "Deaktiviert Triffer für Mercurial-Repositories."
+        "disableMercurialTriggerHelp": "Deaktiviert Trigger für Mercurial-Repositories. Hinweis: Der Mercurial-Trigger erfordert Version 1.38 oder höher des Jenkins-Mercurial-Plugins."
       }
     },
     "local": {
@@ -43,7 +43,7 @@
     "configuration": {
       "read,write": {
         "jenkins": {
-          "displayName": "Globale Jenkins Konfiguiration ändern",
+          "displayName": "Globale Jenkins Konfiguration ändern",
           "description": "Darf die globale Jenkins Konfiguration verändern"
         }
       }
@@ -51,7 +51,7 @@
     "repository": {
       "jenkins": {
         "*": {
-          "displayName": "Repository-spezifische Jenkins Konfiguiration ändern",
+          "displayName": "Repository-spezifische Jenkins Konfiguration ändern",
           "description": "Darf die repository-spezifischen Jenkins Konfiguration verändern (falls nicht global deaktiviert)"
         }
       }

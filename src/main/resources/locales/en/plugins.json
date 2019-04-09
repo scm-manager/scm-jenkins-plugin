@@ -6,12 +6,12 @@
         "header": "Global Jenkins Configuration",
         "url": "URL",
         "urlHelp": "URL of Jenkins installation (with contextpath).",
-        "disableRepositoryConfiguration": "Do not allow repository configuration",
-        "disableRepositoryConfigurationHelp": "Do not allow repository owners to configure jenkins hooks. You have to restart your application server after changing this value.",
+        "disableRepositoryConfiguration": "Do not allow repository configuration.",
+        "disableRepositoryConfigurationHelp": "Do not allow repository owners to configure jenkins hooks. Note: You have to restart your application server after changing this value.",
         "disableGitTrigger": "Disable Git trigger",
-        "disableGitTriggerHelp": "Disable trigger for git repositories. Note: the git trigger requires version 1.1.14 or above of the jenkins git plugin.",
+        "disableGitTriggerHelp": "Disable trigger for git repositories. Note: The git trigger requires version 1.1.14 or above of the jenkins git plugin.",
         "disableMercurialTrigger": "Disable Mercurial trigger",
-        "disableMercurialTriggerHelp": "Disable trigger for mercurial repositories. Note: the mercurial trigger requires version 1.38 or above of the jenkins mercurial plugin."
+        "disableMercurialTriggerHelp": "Disable trigger for mercurial repositories. Note: The mercurial trigger requires version 1.38 or above of the jenkins mercurial plugin."
       }
     },
     "local": {
