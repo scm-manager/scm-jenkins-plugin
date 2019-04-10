@@ -7,7 +7,7 @@
         "url": "URL",
         "urlHelp": "URL der Jenkins Installation (mit Kontextpfad).",
         "disableRepositoryConfiguration": "Repository-spezifische Konfiguration verbieten",
-        "disableRepositoryConfigurationHelp": "Repository-spezifische Konfiguration durch Owner von Repositories verbieten. Hinweis: Der Anwendungsserver muss nach einer Änderung dieses Wertes neu gestartet werden.",
+        "disableRepositoryConfigurationHelp": "Repository-spezifische Konfiguration durch Owner von Repositories verbieten.",
         "disableGitTrigger": "Git-Trigger deaktivieren",
         "disableGitTriggerHelp": "Deaktiviert Trigger für Git-Repositories. Hinweis: Der Git-Trigger erfordert Version 1.1.14 oder höher des Jenkins-Git-Plugins.",
         "disableMercurialTrigger": "Mercurial-Trigger deaktivieren",
