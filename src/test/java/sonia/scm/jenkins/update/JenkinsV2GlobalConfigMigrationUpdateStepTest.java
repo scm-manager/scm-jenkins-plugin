@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(MockitoExtension.class)
 class JenkinsV2GlobalConfigMigrationUpdateStepTest {
 
-  JenkinsV2GlobalConfigMigrationUpdateStep updateStep;
+  private JenkinsV2GlobalConfigMigrationUpdateStep updateStep;
   private static String STORE_NAME = "jenkins";
 
   private InMemoryConfigurationStoreFactory storeFactory = new InMemoryConfigurationStoreFactory();
@@ -39,7 +39,7 @@ class JenkinsV2GlobalConfigMigrationUpdateStepTest {
     @Test
     void shouldMigrateGlobalConfigurationWithoutFlags() {
       updateStep.doUpdate();
-      ConfigurationStore<GlobalJenkinsConfiguration> testStore = storeFactory.get(STORE_NAME);
+      ConfigurationStore<GlobalJenkinsConfiguration> testStore = storeFactory.get(STORE_NAME, null);
       GlobalJenkinsConfiguration jenkinsGlobalConfiguration = testStore.get();
       assertThat(jenkinsGlobalConfiguration.getUrl()).isEqualToIgnoringCase("jenkins-test.org");
       assertThat(jenkinsGlobalConfiguration.isDisableGitTrigger()).isFalse();
@@ -49,11 +49,11 @@ class JenkinsV2GlobalConfigMigrationUpdateStepTest {
 
     @Test
     void shouldMigrateGlobalConfigurationWithFlags() {
-      GlobalJenkinsConfiguration jenkinsGlobalConfiguration = (GlobalJenkinsConfiguration) storeFactory.get(STORE_NAME).get();
+      GlobalJenkinsConfiguration jenkinsGlobalConfiguration = (GlobalJenkinsConfiguration) storeFactory.get(STORE_NAME, null).get();
       jenkinsGlobalConfiguration.setDisableGitTrigger(true);
       jenkinsGlobalConfiguration.setDisableMercurialTrigger(true);
       jenkinsGlobalConfiguration.setDisableRepositoryConfiguration(true);
-      storeFactory.get(STORE_NAME).set(jenkinsGlobalConfiguration);
+      storeFactory.get(STORE_NAME, null).set(jenkinsGlobalConfiguration);
 
       updateStep.doUpdate();
       assertThat(jenkinsGlobalConfiguration.getUrl()).isEqualToIgnoringCase("jenkins-test.org");

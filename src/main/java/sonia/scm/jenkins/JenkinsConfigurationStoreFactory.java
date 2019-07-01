@@ -17,6 +17,14 @@ public class JenkinsConfigurationStoreFactory {
     this.dataStoreFactory = dataStoreFactory;
   }
 
+  public void storeConfiguration(JenkinsConfiguration configuration, String repositoryId) {
+    create(repositoryId).set(configuration);
+  }
+
+  private ConfigurationStore<JenkinsConfiguration> create(String repositoryId) {
+    return dataStoreFactory.withType(JenkinsConfiguration.class).withName(JENKINS_STORE_NAME).forRepository(repositoryId).build();
+  }
+
   public ConfigurationStore<JenkinsConfiguration> create(Repository repository) {
     return dataStoreFactory.withType(JenkinsConfiguration.class).withName(JENKINS_STORE_NAME).forRepository(repository).build();
   }
