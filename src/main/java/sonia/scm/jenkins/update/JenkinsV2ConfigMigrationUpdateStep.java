@@ -6,7 +6,6 @@ import sonia.scm.jenkins.JenkinsConfiguration;
 import sonia.scm.jenkins.JenkinsConfigurationStoreFactory;
 import sonia.scm.migration.UpdateStep;
 import sonia.scm.plugin.Extension;
-import sonia.scm.store.ConfigurationStore;
 import sonia.scm.update.V1Properties;
 import sonia.scm.update.V1PropertyDAO;
 import sonia.scm.version.Version;
@@ -36,7 +35,6 @@ public class JenkinsV2ConfigMigrationUpdateStep implements UpdateStep {
     private static final String JENKINS_URL = "jenkins.url";
     private static final String JENKINS_USERNAME = "jenkins.username";
     private static final String JENKINS_CSRF = "jenkins.csrf";
-
 
     @Inject
     public JenkinsV2ConfigMigrationUpdateStep(V1PropertyDAO v1PropertyDAO, JenkinsConfigurationStoreFactory configStoreFactory) {
