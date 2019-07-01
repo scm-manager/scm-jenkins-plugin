@@ -63,7 +63,7 @@ public class JenkinsV2GlobalConfigMigrationUpdateStep implements UpdateStep {
     return "sonia.scm.jenkins.config.global.xml";
   }
 
-  @XmlRootElement(name = "jenkins")
+  @XmlRootElement(name = "jenkins-config")
   @XmlAccessorType(XmlAccessType.FIELD)
   static class V1JenkinsGlobalConfiguration extends GlobalJenkinsConfiguration {
   }
