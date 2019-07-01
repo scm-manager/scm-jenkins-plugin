@@ -13,7 +13,10 @@ import sonia.scm.version.Version;
 
 import javax.inject.Inject;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static sonia.scm.update.V1PropertyReader.REPOSITORY_PROPERTY_READER;
 import static sonia.scm.version.Version.parse;
@@ -51,6 +54,8 @@ public class JenkinsV2ConfigMigrationUpdateStep implements UpdateStep {
 
     private JenkinsConfiguration buildConfig(String repositoryId, V1Properties properties) {
       LOG.debug("migrating repository specific jenkins configuration for repository id {}", repositoryId);
+      Set<String> branches = new HashSet<>(Arrays.asList(properties.get(JENKINS_BRANCHES).split(",")));
+
       JenkinsConfiguration configuration = new JenkinsConfiguration();
       configuration.setApiToken(properties.get(JENKINS_API_TOKEN));
       configuration.setBranches(Collections.singleton(properties.get(JENKINS_BRANCHES)));
@@ -58,6 +63,7 @@ public class JenkinsV2ConfigMigrationUpdateStep implements UpdateStep {
       configuration.setToken(properties.get(JENKINS_TOKEN));
       configuration.setUrl(properties.get(JENKINS_URL));
       configuration.setUsername(properties.get(JENKINS_USERNAME));
+      configuration.setBranches(branches);
       configuration.setCsrf(properties.getBoolean(JENKINS_CSRF).orElse(false));
       return configuration;
     }

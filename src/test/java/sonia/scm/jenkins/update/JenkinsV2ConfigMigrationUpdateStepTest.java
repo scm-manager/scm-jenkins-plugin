@@ -57,7 +57,7 @@ class JenkinsV2ConfigMigrationUpdateStepTest {
         .put("jenkins.url", "http://jenkins.io")
         .put("jenkins.username", "admin")
         .put("jenkins.csrf", "true")
-        .put("jenkins.branches", "master")
+        .put("jenkins.branches", "master,develop")
         .build();
 
     testUtil.mockRepositoryProperties(new V1PropertyDaoTestUtil.PropertiesForRepository("repo", (Map) mockedValues));
@@ -66,7 +66,7 @@ class JenkinsV2ConfigMigrationUpdateStepTest {
 
     verify(configurationStoreFactory).storeConfiguration(any(), eq("repo"));
 
-    Set<String> branches = ImmutableSet.of("master");
+    Set<String> branches = ImmutableSet.of("master","develop");
 
     assertThat(globalConfigurationCaptor.getValue())
       .hasFieldOrPropertyWithValue("apiToken", "123")
