@@ -33,9 +33,6 @@
 
 package sonia.scm.jenkins;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import sonia.scm.Validateable;
 import sonia.scm.util.Util;
 
@@ -53,11 +50,123 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "jenkins-config")
-@Getter
-@Setter
-@NoArgsConstructor
 public class JenkinsConfiguration implements Validateable
 {
+
+  //~--- get methods ----------------------------------------------------------
+
+  /**
+   * Returns the api token which is used for authentication.
+   * Note the authentication is only used if the username and
+   * the api token are non null.
+   *
+   *
+   * @return api token of the user
+   */
+  public String getApiToken()
+  {
+    return apiToken;
+  }
+
+  /**
+   * Returns comma separated list of branches. The hook will only be executed,
+   * if the branch is listed. If the set is empty the hook will be executed on
+   * every push.
+   *
+   *
+   * @return comma separated list of branches
+   *
+   * @since 1.10
+   */
+  public Set<String> getBranches()
+  {
+    return branches;
+  }
+
+  /**
+   * Returns the name of the jenkins project.
+   *
+   *
+   * @return name of the jenkins project
+   */
+  public String getProject()
+  {
+    return project;
+  }
+
+  /**
+   * Returns the jenkins authentication token.
+   *
+   *
+   * @return jenkins authentication token
+   */
+  public String getToken()
+  {
+    return token;
+  }
+
+  /**
+   * Return the url of the jenkins ci server.
+   *
+   *
+   * @return url of the jenkins ci server
+   */
+  public String getUrl()
+  {
+    return url;
+  }
+
+  /**
+   * Returns the username which is used for authentication.
+   * Note the authentication is only used if the username and
+   * the api token are non null.
+   *
+   *
+   * @return username for authentication
+   */
+  public String getUsername()
+  {
+    return username;
+  }
+
+  /**
+   * Returns {@code true} if the jenkins instance is csrf protected.
+   *
+   * @since 1.12
+   * @return {@code true} if jenkins is csrf protected
+   */
+  public boolean isCsrf()
+  {
+    return csrf;
+  }
+
+  public void setApiToken(String apiToken) {
+    this.apiToken = apiToken;
+  }
+
+  public void setBranches(Set<String> branches) {
+    this.branches = branches;
+  }
+
+  public void setProject(String project) {
+    this.project = project;
+  }
+
+  public void setToken(String token) {
+    this.token = token;
+  }
+
+  public void setUrl(String url) {
+    this.url = url;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  public void setCsrf(boolean csrf) {
+    this.csrf = csrf;
+  }
 
   /**
    * Return true, if the configuration is valid.
