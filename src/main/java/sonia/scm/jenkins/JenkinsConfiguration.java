@@ -69,7 +69,7 @@ public class JenkinsConfiguration implements Validateable
   }
 
   /**
-   * Returns comma separated list of branches. The hook will only be executed, 
+   * Returns comma separated list of branches. The hook will only be executed,
    * if the branch is listed. If the set is empty the hook will be executed on
    * every push.
    *
@@ -131,7 +131,7 @@ public class JenkinsConfiguration implements Validateable
 
   /**
    * Returns {@code true} if the jenkins instance is csrf protected.
-   * 
+   *
    * @since 1.12
    * @return {@code true} if jenkins is csrf protected
    */

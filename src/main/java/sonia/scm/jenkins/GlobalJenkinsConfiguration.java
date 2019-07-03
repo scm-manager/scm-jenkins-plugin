@@ -35,6 +35,9 @@ package sonia.scm.jenkins;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import sonia.scm.Validateable;
 import sonia.scm.util.Util;
 
@@ -51,109 +54,23 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "jenkins-config")
+@Getter
+@Setter
+@NoArgsConstructor
 public class GlobalJenkinsConfiguration implements Validateable
 {
 
-  /**
-   * Method description
-   *
-   *
-   * @return
-   */
-  public String getUrl()
-  {
-    return url;
+  public GlobalJenkinsConfiguration(String url, boolean disableGitTrigger, boolean disableMercurialTrigger, boolean disableRepositoryConfiguration) {
+    this.url = url;
+    this.disableGitTrigger = disableGitTrigger;
+    this.disableMercurialTrigger = disableMercurialTrigger;
+    this.disableRepositoryConfiguration = disableRepositoryConfiguration;
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @return
-   */
-  public boolean isDisableGitTrigger()
-  {
-    return disableGitTrigger;
-  }
-
-  /**
-   * Method description
-   *
-   *
-   * @return
-   */
-  public boolean isDisableMercurialTrigger()
-  {
-    return disableMercurialTrigger;
-  }
-
-  /**
-   * Method description
-   *
-   *
-   * @return
-   */
-  public boolean isDisableRepositoryConfiguration()
-  {
-    return disableRepositoryConfiguration;
-  }
-
-  /**
-   * Method description
-   *
-   *
-   * @return
-   */
   @Override
   public boolean isValid()
   {
     return Util.isNotEmpty(url);
-  }
-
-  //~--- set methods ----------------------------------------------------------
-
-  /**
-   * Method description
-   *
-   *
-   * @param disableGitTrigger
-   */
-  public void setDisableGitTrigger(boolean disableGitTrigger)
-  {
-    this.disableGitTrigger = disableGitTrigger;
-  }
-
-  /**
-   * Method description
-   *
-   *
-   * @param disableMercurialTrigger
-   */
-  public void setDisableMercurialTrigger(boolean disableMercurialTrigger)
-  {
-    this.disableMercurialTrigger = disableMercurialTrigger;
-  }
-
-  /**
-   * Method description
-   *
-   *
-   * @param disableRepositoryConfiguration
-   */
-  public void setDisableRepositoryConfiguration(boolean disableRepositoryConfiguration)
-  {
-    this.disableRepositoryConfiguration = disableRepositoryConfiguration;
-  }
-
-  /**
-   * Method description
-   *
-   *
-   * @param url
-   */
-  public void setUrl(String url)
-  {
-    this.url = url;
   }
 
   //~--- fields ---------------------------------------------------------------
