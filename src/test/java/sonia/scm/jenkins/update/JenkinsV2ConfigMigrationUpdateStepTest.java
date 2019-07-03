@@ -79,6 +79,37 @@ class JenkinsV2ConfigMigrationUpdateStepTest {
   }
 
   @Test
+  void shouldMigrateRepositoryConfigWithoutBranchesIfBranchesAreEmpty() {
+    ImmutableMap<Object, Object> mockedValues =
+      ImmutableMap.builder()
+        .put("jenkins.api-token", "123")
+        .put("jenkins.project", "testproject")
+        .put("jenkins.token", "abc")
+        .put("jenkins.url", "http://jenkins.io")
+        .put("jenkins.username", "admin")
+        .put("jenkins.csrf", "true")
+        .put("jenkins.branches", "")
+        .build();
+
+    testUtil.mockRepositoryProperties(new V1PropertyDaoTestUtil.PropertiesForRepository("repo", (Map) mockedValues));
+
+    updateStep.doUpdate();
+
+    verify(configurationStoreFactory).storeConfiguration(any(), eq("repo"));
+
+    Set<String> branches = ImmutableSet.of();
+
+    assertThat(globalConfigurationCaptor.getValue())
+      .hasFieldOrPropertyWithValue("apiToken", "123")
+      .hasFieldOrPropertyWithValue("project", "testproject")
+      .hasFieldOrPropertyWithValue("token", "abc")
+      .hasFieldOrPropertyWithValue("url", "http://jenkins.io")
+      .hasFieldOrPropertyWithValue("username", "admin")
+      .hasFieldOrPropertyWithValue("csrf", true)
+      .hasFieldOrPropertyWithValue("branches", branches);
+  }
+
+  @Test
   void shouldSkipRepositoriesWithoutJenkinsConfig() {
     ImmutableMap<String, String> mockedValues =
       ImmutableMap.of(

@@ -52,7 +52,10 @@ public class JenkinsV2ConfigMigrationUpdateStep implements UpdateStep {
 
     private JenkinsConfiguration buildConfig(String repositoryId, V1Properties properties) {
       LOG.debug("migrating repository specific jenkins configuration for repository id {}", repositoryId);
-      Set<String> branches = new HashSet<>(Arrays.asList(properties.get(JENKINS_BRANCHES).split(",")));
+      Set<String> branches= new HashSet<>();
+      if(!properties.get(JENKINS_BRANCHES).isEmpty()) {
+        branches.addAll(Arrays.asList(properties.get(JENKINS_BRANCHES).split(",")));
+      }
 
       JenkinsConfiguration configuration = new JenkinsConfiguration();
       configuration.setApiToken(properties.get(JENKINS_API_TOKEN));
