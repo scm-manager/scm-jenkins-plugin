@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!DOCTYPE plugin SYSTEM "https://download.scm-manager.org/dtd/plugin/2.0.0-01.dtd">
 <plugin>
 
@@ -10,7 +10,8 @@
     are automatically added from the pom.xml by a maven plugin (since 1.5).
   -->
   <information>
-    <author>Sebastian Sdorra</author>
+    <displayName>Jenkins</displayName>
+    <author>Cloudogu GmbH</author>
     <category>Continuous Integration</category>
   </information>
 
