@@ -31,7 +31,7 @@
   <packaging>smp</packaging>
   <name>scm-jenkins-plugin</name>
   <url>https://github.com/scm-manager/scm-jenkins-plugin</url>
-  <description>This plugin will ping your Jenkins CI server when a new commit is pushed to SCM-Manager</description>
+  <description>Ping your Jenkins CI server when a new commit is pushed to SCM-Manager</description>
   
   <!--
     Informations for the source code repository of the plugin.
