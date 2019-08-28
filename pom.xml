@@ -30,7 +30,7 @@
   <version>2.0-SNAPSHOT</version>
   <packaging>smp</packaging>
   <name>scm-jenkins-plugin</name>
-  <url>https://bitbucket.org/sdorra/scm-jenkins-plugin</url>
+  <url>https://github.com/scm-manager/scm-jenkins-plugin</url>
   <description>This plugin will ping your Jenkins CI server when a new commit is pushed to SCM-Manager</description>
   
   <!--
@@ -38,9 +38,9 @@
     For more informations have a look at: http://maven.apache.org/pom.html#SCM
   -->
   <scm>
-    <connection>scm:hg:https://bitbucket.org/sdorra/scm-jenkins-plugin</connection>
-    <developerConnection>scm:hg:https://bitbucket.org/sdorra/scm-jenkins-plugin</developerConnection>
-    <url>https://bitbucket.org/sdorra/scm-jenkins-plugin</url>
+    <connection>scm:git:https://github.com/scm-manager/scm-jenkins-plugin</connection>
+    <developerConnection>scm:git:https://github.com/scm-manager/scm-jenkins-plugin</developerConnection>
+    <url>https://github.com/scm-manager/scm-jenkins-plugin</url>
   </scm>
   
   <!--
