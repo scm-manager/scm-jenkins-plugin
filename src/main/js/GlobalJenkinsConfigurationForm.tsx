@@ -1,29 +1,22 @@
-//@flow
-
 import React from "react";
-import {
-  Checkbox,
-  Configuration,
-  InputField
-} from "@scm-manager/ui-components";
-import { translate } from "react-i18next";
+import { Checkbox, InputField } from "@scm-manager/ui-components";
+import { WithTranslation, withTranslation } from "react-i18next";
 
 type GlobalConfiguration = {
-  url: string,
-  disableRepositoryConfiguration: boolean,
-  disableMercurialTrigger: boolean,
-  disableGitTrigger: boolean
+  url: string;
+  disableRepositoryConfiguration: boolean;
+  disableMercurialTrigger: boolean;
+  disableGitTrigger: boolean;
 };
 
-type Props = {
-  initialConfiguration: Configuration,
-  readOnly: boolean,
-  onConfigurationChange: (Configuration, boolean) => void,
-  t: string => string
+type Props = WithTranslation & {
+  initialConfiguration: Configuration;
+  readOnly: boolean;
+  onConfigurationChange: (p1: Configuration, p2: boolean) => void;
 };
 
 type State = GlobalConfiguration & {
-  configurationChanged: boolean
+  configurationChanged: boolean;
 };
 
 class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
@@ -39,7 +32,13 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
       {
         [name]: value
       },
-      () => this.props.onConfigurationChange({ ...this.state }, true)
+      () =>
+        this.props.onConfigurationChange(
+          {
+            ...this.state
+          },
+          true
+        )
     );
   };
 
@@ -58,12 +57,8 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
         />
         <Checkbox
           name={"disableRepositoryConfiguration"}
-          label={t(
-            "scm-jenkins-plugin.global.form.disableRepositoryConfiguration"
-          )}
-          helpText={t(
-            "scm-jenkins-plugin.global.form.disableRepositoryConfigurationHelp"
-          )}
+          label={t("scm-jenkins-plugin.global.form.disableRepositoryConfiguration")}
+          helpText={t("scm-jenkins-plugin.global.form.disableRepositoryConfigurationHelp")}
           checked={this.state.disableRepositoryConfiguration}
           disabled={readOnly}
           onChange={this.valueChangeHandler}
@@ -79,9 +74,7 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
         <Checkbox
           name={"disableMercurialTrigger"}
           label={t("scm-jenkins-plugin.global.form.disableMercurialTrigger")}
-          helpText={t(
-            "scm-jenkins-plugin.global.form.disableMercurialTriggerHelp"
-          )}
+          helpText={t("scm-jenkins-plugin.global.form.disableMercurialTriggerHelp")}
           checked={this.state.disableMercurialTrigger}
           disabled={readOnly}
           onChange={this.valueChangeHandler}
@@ -97,7 +90,10 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
           <button
             className="delete"
             onClick={() =>
-              this.setState({ ...this.state, configurationChanged: false })
+              this.setState({
+                ...this.state,
+                configurationChanged: false
+              })
             }
           />
           {this.props.t("scm-jenkins-plugin.configurationChangedSuccess")}
@@ -108,4 +104,4 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
   };
 }
 
-export default translate("plugins")(GlobalJenkinsConfigurationForm);
+export default withTranslation("plugins")(GlobalJenkinsConfigurationForm);

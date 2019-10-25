@@ -1,5 +1,3 @@
-//@flow
-
 import React from "react";
 import {
   AddEntryToTableField,
@@ -9,27 +7,27 @@ import {
   LabelWithHelpIcon,
   RemoveEntryOfTableButton
 } from "@scm-manager/ui-components";
-import { translate } from "react-i18next";
+import { WithTranslation, withTranslation } from "react-i18next";
 
 type LocalConfiguration = {
-  apiToken: string,
-  branches: string[],
-  project: string,
-  token: string,
-  url: string,
-  username: string,
-  csrf: boolean
+  apiToken: string;
+  branches: string[];
+  project: string;
+  token: string;
+  url: string;
+  username: string;
+  csrf: boolean;
 };
 
-type Props = {
-  initialConfiguration: Configuration,
-  readOnly: boolean,
-  onConfigurationChange: (Configuration, boolean) => void,
-  t: string => string
+type Props = WithTranslation & {
+  initialConfiguration: Configuration;
+  readOnly: boolean;
+  onConfigurationChange: (p1: Configuration, p2: boolean) => void;
+  t: (p: string) => string;
 };
 
 type State = LocalConfiguration & {
-  configurationChanged: boolean
+  configurationChanged: boolean;
 };
 
 class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
@@ -45,31 +43,48 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
       {
         [name]: value
       },
-      () => this.props.onConfigurationChange({ ...this.state }, true)
+      () =>
+        this.props.onConfigurationChange(
+          {
+            ...this.state
+          },
+          true
+        )
     );
   };
 
   addBranchHandler = (newBranch: string) => {
-    let branches = this.state.branches == null ? [] : this.state.branches;
+    const branches = this.state.branches == null ? [] : this.state.branches;
     branches.push(newBranch);
     this.setState(
       {
         branches: branches
       },
-      () => this.props.onConfigurationChange({ ...this.state }, true)
+      () =>
+        this.props.onConfigurationChange(
+          {
+            ...this.state
+          },
+          true
+        )
     );
   };
 
-  deleteBranchHandler = (branchToDelete: String) => {
-    let branches = this.state.branches == null ? [] : this.state.branches;
-    let index = branches.indexOf(branchToDelete);
+  deleteBranchHandler = (branchToDelete: string) => {
+    const branches = this.state.branches == null ? [] : this.state.branches;
+    const index = branches.indexOf(branchToDelete);
     if (index > -1) {
       branches.splice(index, 1);
     }
     this.setState({
       branches: branches
     });
-    this.props.onConfigurationChange({ ...this.state }, true);
+    this.props.onConfigurationChange(
+      {
+        ...this.state
+      },
+      true
+    );
   };
 
   render(): React.ReactNode {
@@ -168,7 +183,10 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
           <button
             className="delete"
             onClick={() =>
-              this.setState({ ...this.state, configurationChanged: false })
+              this.setState({
+                ...this.state,
+                configurationChanged: false
+              })
             }
           />
           {this.props.t("scm-jenkins-plugin.configurationChangedSuccess")}
@@ -179,4 +197,4 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
   };
 }
 
-export default translate("plugins")(LocalJenkinsConfigurationForm);
+export default withTranslation("plugins")(LocalJenkinsConfigurationForm);
