@@ -36,11 +36,19 @@ package sonia.scm.jenkins;
 import com.google.inject.Inject;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
 import com.webcohesion.enunciate.metadata.rs.StatusCodes;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.config.ConfigurationPermissions;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.RepositoryPermissions;
+import sonia.scm.web.VndMediaType;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -61,6 +69,9 @@ import static sonia.scm.jenkins.JenkinsContext.NAME;
  *
  * @author Sebastian Sdorra
  */
+@OpenAPIDefinition(tags = {
+  @Tag(name = "Jenkins Plugin", description = "Jenkins plugin provided endpoints")
+})
 @Path(JenkinsConfigurationResource.JENKINS_CONFIG_PATH_V2)
 public class JenkinsConfigurationResource {
 
@@ -81,12 +92,25 @@ public class JenkinsConfigurationResource {
   @GET
   @Path("/")
   @Produces({MediaType.APPLICATION_JSON})
-  @StatusCodes({
-    @ResponseCode(code = 200, condition = "success"),
-    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
-    @ResponseCode(code = 403, condition = "not authorized, the current user has no privileges to read the configuration"),
-    @ResponseCode(code = 500, condition = "internal server error")
-  })
+  @Operation(summary = "Get global jenkins configuration", description = "Returns the global jenkins configuration.", tags = "Jenkins Plugin")
+  @ApiResponse(
+    responseCode = "200",
+    description = "success",
+    content = @Content(
+      mediaType = MediaType.APPLICATION_JSON,
+      schema = @Schema(implementation = GlobalJenkinsConfigurationDto.class)
+    )
+  )
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user has no privileges to read the configuration")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public Response get() {
     ConfigurationPermissions.read(NAME).check();
 
@@ -96,13 +120,19 @@ public class JenkinsConfigurationResource {
   @PUT
   @Path("/")
   @Consumes({MediaType.APPLICATION_JSON})
-  @StatusCodes({
-    @ResponseCode(code = 204, condition = "update success"),
-    @ResponseCode(code = 400, condition = "Invalid body,"),
-    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
-    @ResponseCode(code = 403, condition = "not authorized, the current user does not have the privilege to change the configuration"),
-    @ResponseCode(code = 500, condition = "internal server error")
-  })
+  @Operation(summary = "Update global jenkins configuration", description = "Modifies the global jenkins configuration.", tags = "Jenkins Plugin")
+  @ApiResponse(responseCode = "204", description = "update success")
+  @ApiResponse(responseCode = "400", description = "invalid body")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the privilege to change the configuration")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public Response update(GlobalJenkinsConfigurationDto updatedConfig) {
     ConfigurationPermissions.write(NAME).check();
     context.storeConfiguration(globalJenkinsConfigurationMapper.map(updatedConfig));
@@ -113,13 +143,32 @@ public class JenkinsConfigurationResource {
   @GET
   @Path("/{namespace}/{name}")
   @Produces({MediaType.APPLICATION_JSON})
-  @StatusCodes({
-    @ResponseCode(code = 200, condition = "success"),
-    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
-    @ResponseCode(code = 403, condition = "not authorized, the current user has no privileges to read the configuration"),
-    @ResponseCode(code = 404, condition = "not found, no repository with the specified namespace and name available"),
-    @ResponseCode(code = 500, condition = "internal server error")
-  })
+  @Operation(summary = "Get jenkins repository configuration", description = "Returns the repository specific jenkins configuration.", tags = "Jenkins Plugin")
+  @ApiResponse(
+    responseCode = "200",
+    description = "success",
+    content = @Content(
+      mediaType = MediaType.APPLICATION_JSON,
+      schema = @Schema(implementation = JenkinsConfigurationDto.class)
+    )
+  )
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user has no privileges to read the configuration")
+  @ApiResponse(
+    responseCode = "404",
+    description = "not found, no repository with the specified namespace and name available",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    ))
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public Response getForRepository(@PathParam("namespace") String namespace, @PathParam("name") String name) {
     Repository repository = loadRepository(namespace, name);
     RepositoryPermissions.custom(NAME, repository).check();
@@ -130,14 +179,26 @@ public class JenkinsConfigurationResource {
   @PUT
   @Path("/{namespace}/{name}")
   @Consumes({MediaType.APPLICATION_JSON})
-  @StatusCodes({
-    @ResponseCode(code = 204, condition = "update success"),
-    @ResponseCode(code = 400, condition = "Invalid body,"),
-    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
-    @ResponseCode(code = 403, condition = "not authorized, the current user does not have the privilege to change the configuration"),
-    @ResponseCode(code = 404, condition = "not found, no repository with the specified namespace and name available"),
-    @ResponseCode(code = 500, condition = "internal server error")
-  })
+  @Operation(summary = "Update jenkins repository configuration", description = "Modifies the repository specific jenkins configuration.", tags = "Jenkins Plugin")
+  @ApiResponse(responseCode = "204", description = "update success")
+  @ApiResponse(responseCode = "400", description = "invalid body")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the privilege to change the configuration")
+  @ApiResponse(
+    responseCode = "404",
+    description = "not found, no repository with the specified namespace and name available",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    ))
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public Response updateForRepository(@PathParam("namespace") String namespace, @PathParam("name") String name, JenkinsConfigurationDto updatedConfig) {
     Repository repository = loadRepository(namespace, name);
     context.storeConfiguration(jenkinsConfigurationMapper.map(updatedConfig), repository);
