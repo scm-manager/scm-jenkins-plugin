@@ -28,40 +28,33 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class EncryptionUtilTest {
+class XmlEncryptionAdapterTest {
 
   private final static String API_TOKEN = "113bb79d12c179301b93e9ff1ad32181a0";
 
-  @Test
-  void shouldEncrypt() {
-    String encryptedToken = EncryptionUtil.encrypt(API_TOKEN);
+  private XmlEncryptionAdapter xmlEncryptionAdapter = new XmlEncryptionAdapter();
 
-    assertThat(API_TOKEN).isNotEqualTo(encryptedToken);
-    assertThat(encryptedToken).startsWith("{enc}");
+  @Test
+  void shouldEncryptTokenOnMarshalling() {
+    String marshalledToken = xmlEncryptionAdapter.marshal(API_TOKEN);
+
+    assertThat(marshalledToken).isNotEqualTo(API_TOKEN);
+    assertThat(marshalledToken).startsWith("{enc}");
   }
 
   @Test
-  void shouldReturnDecryptedApiToken() {
-    String encryptedToken = EncryptionUtil.encrypt(API_TOKEN);
-    String decryptedToken = EncryptionUtil.decrypt(encryptedToken);
+  void shouldUnmarshallEncryptedToken() {
+    String marshalledToken = xmlEncryptionAdapter.marshal(API_TOKEN);
 
-    assertThat(decryptedToken).isEqualTo(API_TOKEN);
+    String unmarshalledToken = xmlEncryptionAdapter.unmarshal(marshalledToken);
+
+    assertThat(unmarshalledToken).isEqualTo(API_TOKEN);
   }
 
   @Test
-  void shouldReturnApiTokenIfNotEncrypted() {
-    String token = EncryptionUtil.decrypt(API_TOKEN);
+  void shouldUnmarshallNotEncryptedToken() {
+    String unmarshalledToken = xmlEncryptionAdapter.unmarshal(API_TOKEN);
 
-    assertThat(token).isEqualTo(API_TOKEN);
-  }
-
-  @Test
-  void shouldCheckIfTokenIsEncrypted() {
-    String encryptedToken = EncryptionUtil.encrypt(API_TOKEN);
-    boolean encrypted = EncryptionUtil.isEncrypted(encryptedToken);
-    boolean notEncrypted = EncryptionUtil.isEncrypted(API_TOKEN);
-
-    assertThat(encrypted).isEqualTo(true);
-    assertThat(notEncrypted).isEqualTo(false);
+    assertThat(unmarshalledToken).isEqualTo(API_TOKEN);
   }
 }
