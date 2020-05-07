@@ -26,6 +26,7 @@ package sonia.scm.jenkins;
 
 import sonia.scm.Validateable;
 import sonia.scm.util.Util;
+import sonia.scm.xml.XmlEncryptionAdapter;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
