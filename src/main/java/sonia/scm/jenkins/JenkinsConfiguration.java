@@ -26,10 +26,12 @@ package sonia.scm.jenkins;
 
 import sonia.scm.Validateable;
 import sonia.scm.util.Util;
+import sonia.scm.xml.XmlEncryptionAdapter;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,8 +43,17 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "jenkins-config")
-public class JenkinsConfiguration implements Validateable
-{
+public class JenkinsConfiguration implements Validateable {
+
+  @XmlJavaTypeAdapter(XmlEncryptionAdapter.class)
+  private String apiToken;
+  private Set<String> branches = new HashSet<>();
+  private String project;
+  @XmlJavaTypeAdapter(XmlEncryptionAdapter.class)
+  private String token;
+  private String url;
+  private String username;
+  private boolean csrf;
 
   //~--- get methods ----------------------------------------------------------
 
@@ -51,11 +62,9 @@ public class JenkinsConfiguration implements Validateable
    * Note the authentication is only used if the username and
    * the api token are non null.
    *
-   *
    * @return api token of the user
    */
-  public String getApiToken()
-  {
+  public String getApiToken() {
     return apiToken;
   }
 
@@ -64,46 +73,37 @@ public class JenkinsConfiguration implements Validateable
    * if the branch is listed. If the set is empty the hook will be executed on
    * every push.
    *
-   *
    * @return comma separated list of branches
-   *
    * @since 1.10
    */
-  public Set<String> getBranches()
-  {
+  public Set<String> getBranches() {
     return branches;
   }
 
   /**
    * Returns the name of the jenkins project.
    *
-   *
    * @return name of the jenkins project
    */
-  public String getProject()
-  {
+  public String getProject() {
     return project;
   }
 
   /**
    * Returns the jenkins authentication token.
    *
-   *
    * @return jenkins authentication token
    */
-  public String getToken()
-  {
+  public String getToken() {
     return token;
   }
 
   /**
    * Return the url of the jenkins ci server.
    *
-   *
    * @return url of the jenkins ci server
    */
-  public String getUrl()
-  {
+  public String getUrl() {
     return url;
   }
 
@@ -112,22 +112,19 @@ public class JenkinsConfiguration implements Validateable
    * Note the authentication is only used if the username and
    * the api token are non null.
    *
-   *
    * @return username for authentication
    */
-  public String getUsername()
-  {
+  public String getUsername() {
     return username;
   }
 
   /**
    * Returns {@code true} if the jenkins instance is csrf protected.
    *
-   * @since 1.12
    * @return {@code true} if jenkins is csrf protected
+   * @since 1.12
    */
-  public boolean isCsrf()
-  {
+  public boolean isCsrf() {
     return csrf;
   }
 
@@ -162,35 +159,10 @@ public class JenkinsConfiguration implements Validateable
   /**
    * Return true, if the configuration is valid.
    *
-   *
    * @return true, if the configuration is valid
    */
   @Override
-  public boolean isValid()
-  {
+  public boolean isValid() {
     return Util.isNotEmpty(url) && Util.isNotEmpty(project);
   }
-
-  //~--- fields ---------------------------------------------------------------
-
-  /** Field description */
-  private String apiToken;
-
-  /** Field description */
-  private Set<String> branches = new HashSet<>();
-
-  /** Field description */
-  private String project;
-
-  /** Field description */
-  private String token;
-
-  /** Field description */
-  private String url;
-
-  /** Field description */
-  private String username;
-  
-  /** Field description */
-  private boolean csrf;
 }

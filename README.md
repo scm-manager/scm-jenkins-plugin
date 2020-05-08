@@ -123,7 +123,7 @@ curl -u scmadmin:scmadmin --data '{
     "url":"http://localhost:8082/",
     "username":"scmadmin",
     "csrf":false
-    }' --header "Content-Type: applicationjson" -X PUT http://localhost:8081/scm/api/v2/config/jenkins/scmadmin/git
+    }' --header "Content-Type: application/json" -X PUT http://localhost:8081/scm/api/v2/config/jenkins/scmadmin/git
 ```
 
 You can now clone the repository:

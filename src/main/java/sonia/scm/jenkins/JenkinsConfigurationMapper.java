@@ -23,6 +23,7 @@
  */
 package sonia.scm.jenkins;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
@@ -45,9 +46,29 @@ public abstract class JenkinsConfigurationMapper {
   @Inject
   private ScmPathInfoStore scmPathInfoStore;
 
+  @VisibleForTesting
+  @SuppressWarnings("squid:S2068")
+  static final String DUMMY_SECRET = "__DUMMY__";
+
   public abstract JenkinsConfigurationDto map(JenkinsConfiguration config, @Context Repository repository);
 
-  public abstract JenkinsConfiguration map(JenkinsConfigurationDto dto);
+  public abstract JenkinsConfiguration map(JenkinsConfigurationDto dto, @Context JenkinsConfiguration oldConfiguration);
+
+  @AfterMapping
+  public void replaceSecretsWithDummy(@MappingTarget JenkinsConfigurationDto target) {
+    target.setApiToken(DUMMY_SECRET);
+    target.setToken(DUMMY_SECRET);
+  }
+
+  @AfterMapping
+  public void restoreSecretsOnDummy(@MappingTarget JenkinsConfiguration target, @Context JenkinsConfiguration oldConfiguration) {
+    if (DUMMY_SECRET.equals(target.getApiToken())) {
+      target.setApiToken(oldConfiguration.getApiToken());
+    }
+    if (DUMMY_SECRET.equals(target.getToken())) {
+      target.setToken(oldConfiguration.getToken());
+    }
+  }
 
   @AfterMapping
   void appendLinks(@MappingTarget JenkinsConfigurationDto target, @Context Repository repository) {
