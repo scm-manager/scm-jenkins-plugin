@@ -138,6 +138,7 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
           helpText={t("scm-jenkins-plugin.local.form.tokenHelp")}
           disabled={readOnly}
           value={this.state.token}
+          type="password"
           onChange={this.valueChangeHandler}
         />
         <Checkbox

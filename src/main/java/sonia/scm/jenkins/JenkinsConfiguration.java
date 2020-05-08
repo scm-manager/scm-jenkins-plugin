@@ -49,6 +49,7 @@ public class JenkinsConfiguration implements Validateable {
   private String apiToken;
   private Set<String> branches = new HashSet<>();
   private String project;
+  @XmlJavaTypeAdapter(XmlEncryptionAdapter.class)
   private String token;
   private String url;
   private String username;

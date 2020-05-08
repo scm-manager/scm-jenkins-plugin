@@ -191,7 +191,7 @@ public class JenkinsConfigurationResource {
   )
   public Response updateForRepository(@PathParam("namespace") String namespace, @PathParam("name") String name, JenkinsConfigurationDto updatedConfig) {
     Repository repository = loadRepository(namespace, name);
-    context.storeConfiguration(jenkinsConfigurationMapper.map(updatedConfig), repository);
+    context.storeConfiguration(jenkinsConfigurationMapper.map(updatedConfig, context.getConfiguration(repository)), repository);
 
     return Response.noContent().build();
   }
