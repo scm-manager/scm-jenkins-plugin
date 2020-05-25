@@ -41,7 +41,7 @@
   <parent>
     <groupId>sonia.scm.plugins</groupId>
     <artifactId>scm-plugins</artifactId>
-    <version>2.0.0-rc8</version>
+    <version>2.0.0-SNAPSHOT</version>
   </parent>
 
   <!--
@@ -51,7 +51,7 @@
     and http://maven.apache.org/pom.html.
   -->
   <artifactId>scm-jenkins-plugin</artifactId>
-  <version>2.1.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
   <packaging>smp</packaging>
   <name>scm-jenkins-plugin</name>
   <url>https://github.com/scm-manager/scm-jenkins-plugin</url>
@@ -72,11 +72,11 @@
     plugins and must be available in each pom of a SCM-Manager plugin.
   -->
   <repositories>
-    
+
     <repository>
-      <id>maven.scm-manager.org</id>
+      <id>packages.scm-manager.org</id>
       <name>scm-manager release repository</name>
-      <url>http://maven.scm-manager.org/nexus/content/groups/public</url>
+      <url>http://packages.scm-manager.org/repository/public/</url>
     </repository>
   
   </repositories>
