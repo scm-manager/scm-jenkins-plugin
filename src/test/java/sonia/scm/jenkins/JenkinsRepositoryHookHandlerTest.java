@@ -24,10 +24,8 @@
 
 package sonia.scm.jenkins;
 
-import com.google.common.collect.Multimap;
-import com.google.common.io.ByteSource;
-import org.jboss.resteasy.mock.MockHttpRequest;
-import org.jboss.resteasy.mock.MockHttpResponse;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +34,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.net.ahc.AdvancedHttpRequestWithBody;
 import sonia.scm.net.ahc.AdvancedHttpResponse;
-import sonia.scm.net.ahc.ContentTransformer;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.repository.RepositoryHookType;
@@ -44,12 +41,9 @@ import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.HookContext;
 
 import javax.inject.Provider;
-import javax.ws.rs.core.MediaType;
-
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -109,12 +103,14 @@ public class JenkinsRepositoryHookHandlerTest {
     when(request.request()).thenReturn(response);
     when(response.getStatus()).thenReturn(200);
     when(advancedHttpClient.post(anyString())).thenReturn(request);
-    configuration.addBuildParameter("author", "trillian");
+    configuration.setBuildParameters(ImmutableSet.of(
+      new BuildParameter("author", "trillian @hitchhiker/42")
+    ));
 
     Repository repository = RepositoryTestData.createHeartOfGold();
     handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
 
-    verify(advancedHttpClient).post(configuration.getUrl() + "/job/" + configuration.getProject() + "/buildWithParameters?author=trillian");
+    verify(advancedHttpClient).post(configuration.getUrl() + "/job/" + configuration.getProject() + "/buildWithParameters?author=trillian+%40hitchhiker%2F42");
   }
 
   @Test
@@ -123,9 +119,12 @@ public class JenkinsRepositoryHookHandlerTest {
     when(request.request()).thenReturn(response);
     when(response.getStatus()).thenReturn(200);
     when(advancedHttpClient.post(anyString())).thenReturn(request);
-    configuration.addBuildParameter("author", "trillian");
-    configuration.addBuildParameter("version", "42");
-    configuration.addBuildParameter("environment", "Betelgeuse");
+
+    configuration.setBuildParameters(ImmutableSet.of(
+      new BuildParameter("author", "trillian"),
+      new BuildParameter("version", "42"),
+      new BuildParameter("environment", "Betelgeuse")
+    ));
 
     Repository repository = RepositoryTestData.createHeartOfGold();
     handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));

@@ -33,6 +33,7 @@ import sonia.scm.net.ahc.AdvancedHttpResponse;
 import sonia.scm.net.ahc.BaseHttpRequest;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.RepositoryHookEvent;
+import sonia.scm.util.HttpUtil;
 import sonia.scm.util.IOUtil;
 import sonia.scm.util.Util;
 
@@ -44,7 +45,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -274,12 +274,18 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
   }
 
   private String appendBuildParameters(JenkinsConfiguration configuration, String url) {
-    Map<String, String> buildParameters = configuration.getBuildParameters();
-    StringBuilder builder = new StringBuilder(url);
+    Set<BuildParameter> buildParameters = configuration.getBuildParameters();
 
     if (!buildParameters.isEmpty()) {
+      StringBuilder builder = new StringBuilder(url);
       builder.append("WithParameters?");
-      buildParameters.forEach((key, value) -> builder.append(key).append("=").append(value).append("&"));
+      buildParameters.forEach(
+        parameter -> builder
+          .append(HttpUtil.encode(parameter.getName()))
+          .append("=")
+          .append(HttpUtil.encode(parameter.getValue()))
+          .append("&")
+      );
       url = builder.toString().substring(0, builder.toString().length() - 1);
     }
 

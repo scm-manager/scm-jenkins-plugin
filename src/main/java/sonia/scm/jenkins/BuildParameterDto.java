@@ -21,34 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package sonia.scm.jenkins;
 
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Links;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-import java.util.Set;
-
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public class JenkinsConfigurationDto extends HalRepresentation {
-  private String apiToken;
-  private Set<String> branches;
-  private String project;
-  private String token;
-  private String url;
-  private String username;
-  private boolean csrf;
-  private Set<BuildParameterDto> buildParameters;
-
-  @Override
-  @SuppressWarnings("squid:S1185") // We want to have this method available in this package
-  protected HalRepresentation add(Links links) {
-    return super.add(links);
-  }
+public class BuildParameterDto {
+  private String name;
+  private String value;
 }
