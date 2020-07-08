@@ -28,6 +28,7 @@ import de.otto.edison.hal.Links;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Map;
 import java.util.Set;
 
 @Getter @Setter
@@ -39,6 +40,7 @@ public class JenkinsConfigurationDto extends HalRepresentation {
   private String url;
   private String username;
   private boolean csrf;
+  private Map<String, String> buildParameters;
 
   @Override
   @SuppressWarnings("squid:S1185") // We want to have this method available in this package

@@ -32,7 +32,10 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -54,6 +57,7 @@ public class JenkinsConfiguration implements Validateable {
   private String url;
   private String username;
   private boolean csrf;
+  private final LinkedHashMap<String, String> buildParameters = new LinkedHashMap<>();
 
   //~--- get methods ----------------------------------------------------------
 
@@ -128,6 +132,10 @@ public class JenkinsConfiguration implements Validateable {
     return csrf;
   }
 
+  public Map<String, String> getBuildParameters() {
+    return buildParameters;
+  }
+
   public void setApiToken(String apiToken) {
     this.apiToken = apiToken;
   }
@@ -154,6 +162,14 @@ public class JenkinsConfiguration implements Validateable {
 
   public void setCsrf(boolean csrf) {
     this.csrf = csrf;
+  }
+
+  public void addBuildParameter(String key, String value) {
+    buildParameters.put(key, value);
+  }
+
+  public void removeBuildParameter(String key) {
+    buildParameters.remove(key);
   }
 
   /**

@@ -24,71 +24,112 @@
 
 package sonia.scm.jenkins;
 
-//~--- non-JDK imports --------------------------------------------------------
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
+import com.google.common.collect.Multimap;
+import com.google.common.io.ByteSource;
+import org.jboss.resteasy.mock.MockHttpRequest;
+import org.jboss.resteasy.mock.MockHttpResponse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.net.ahc.AdvancedHttpClient;
+import sonia.scm.net.ahc.AdvancedHttpRequestWithBody;
+import sonia.scm.net.ahc.AdvancedHttpResponse;
+import sonia.scm.net.ahc.ContentTransformer;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryHookEvent;
+import sonia.scm.repository.RepositoryHookType;
+import sonia.scm.repository.RepositoryTestData;
+import sonia.scm.repository.api.HookContext;
 
 import javax.inject.Provider;
+import javax.ws.rs.core.MediaType;
 
-import static org.junit.Assert.*;
+import java.io.IOException;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
-/**
- *
- * @author Sebastian Sdorra
- */
-@RunWith(MockitoJUnitRunner.class)
-public class JenkinsRepositoryHookHandlerTest
-{
+@ExtendWith(MockitoExtension.class)
+public class JenkinsRepositoryHookHandlerTest {
 
-  /**
-   * Method description
-   *
-   */
-  @Test
-  public void testEscape()
-  {
-    assertEquals("https://ci.scm-manager.org",
-      handler.escape("https://ci.scm-manager.org"));
-    assertEquals("https://ci.scm-manager.org/path",
-      handler.escape("https://ci.scm-manager.org/path"));
-    assertEquals("https://ci.scm-manager.org/some/deep/path",
-      handler.escape("https://ci.scm-manager.org/some/deep/path"));
-    assertEquals("https://ci.scm-manager.org/path?with=query&param=true",
-      handler.escape("https://ci.scm-manager.org/path?with=query&param=true"));
-    assertEquals("https://ci.scm-manager.org/with%20spaces",
-      handler.escape("https://ci.scm-manager.org/with spaces"));
-  }
+  private JenkinsConfiguration configuration;
+  @Mock
+  private Provider<AdvancedHttpClient> httpClientProvider;
+  @Mock
+  private AdvancedHttpClient advancedHttpClient;
+  @Mock
+  private AdvancedHttpRequestWithBody request;
+  @Mock
+  private AdvancedHttpResponse response;
+  @Mock
+  private HookContext hookContext;
 
-  //~--- set methods ----------------------------------------------------------
+  private JenkinsRepositoryHookHandler handler;
 
-  /**
-   * Method description
-   *
-   */
-  @Before
-  public void setUp()
-  {
+  @BeforeEach
+  void setUp() {
+    configuration = new JenkinsConfiguration();
+    configuration.setUrl("http://hitchhiker.org/jenkins");
+    configuration.setProject("HeartOfGold");
     handler = new JenkinsRepositoryHookHandler(httpClientProvider,
       configuration);
   }
 
-  //~--- fields ---------------------------------------------------------------
+  @Test
+  void testEscape() {
+    assertThat(handler.escape("https://ci.scm-manager.org")).isEqualTo("https://ci.scm-manager.org");
+    assertThat(handler.escape("https://ci.scm-manager.org/path")).isEqualTo("https://ci.scm-manager.org/path");
+    assertThat(handler.escape("https://ci.scm-manager.org/some/deep/path")).isEqualTo("https://ci.scm-manager.org/some/deep/path");
+    assertThat(handler.escape("https://ci.scm-manager.org/path?with=query&param=true")).isEqualTo("https://ci.scm-manager.org/path?with=query&param=true");
+    assertThat(handler.escape("https://ci.scm-manager.org/with spaces")).isEqualTo("https://ci.scm-manager.org/with%20spaces");
+  }
 
-  /** Field description */
-  @Mock
-  private JenkinsConfiguration configuration;
+  @Test
+  void shouldSendWithoutBuildParameters() throws IOException {
+    when(httpClientProvider.get()).thenReturn(advancedHttpClient);
+    when(request.request()).thenReturn(response);
+    when(response.getStatus()).thenReturn(200);
+    when(advancedHttpClient.post(anyString())).thenReturn(request);
 
-  /** Field description */
-  private JenkinsRepositoryHookHandler handler;
+    Repository repository = RepositoryTestData.createHeartOfGold();
+    handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
 
-  /** Field description */
-  @Mock
-  private Provider<AdvancedHttpClient> httpClientProvider;
+    verify(advancedHttpClient).post(configuration.getUrl() + "/job/" + configuration.getProject() + "/build");
+  }
+
+  @Test
+  void shouldSendWithSingleBuildParameter() throws IOException {
+    when(httpClientProvider.get()).thenReturn(advancedHttpClient);
+    when(request.request()).thenReturn(response);
+    when(response.getStatus()).thenReturn(200);
+    when(advancedHttpClient.post(anyString())).thenReturn(request);
+    configuration.addBuildParameter("author", "trillian");
+
+    Repository repository = RepositoryTestData.createHeartOfGold();
+    handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
+
+    verify(advancedHttpClient).post(configuration.getUrl() + "/job/" + configuration.getProject() + "/buildWithParameters?author=trillian");
+  }
+
+  @Test
+  void shouldSendWithMultipleBuildParameters() throws IOException {
+    when(httpClientProvider.get()).thenReturn(advancedHttpClient);
+    when(request.request()).thenReturn(response);
+    when(response.getStatus()).thenReturn(200);
+    when(advancedHttpClient.post(anyString())).thenReturn(request);
+    configuration.addBuildParameter("author", "trillian");
+    configuration.addBuildParameter("version", "42");
+    configuration.addBuildParameter("environment", "Betelgeuse");
+
+    Repository repository = RepositoryTestData.createHeartOfGold();
+    handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
+
+    verify(advancedHttpClient).post(configuration.getUrl() + "/job/" + configuration.getProject() + "/buildWithParameters?author=trillian&version=42&environment=Betelgeuse");
+  }
 }
