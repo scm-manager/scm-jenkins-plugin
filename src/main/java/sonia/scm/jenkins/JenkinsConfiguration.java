@@ -24,6 +24,7 @@
 
 package sonia.scm.jenkins;
 
+import lombok.EqualsAndHashCode;
 import sonia.scm.Validateable;
 import sonia.scm.util.Util;
 import sonia.scm.xml.XmlEncryptionAdapter;
@@ -43,6 +44,7 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "jenkins-config")
+@EqualsAndHashCode
 public class JenkinsConfiguration implements Validateable {
 
   @XmlJavaTypeAdapter(XmlEncryptionAdapter.class)
@@ -54,8 +56,7 @@ public class JenkinsConfiguration implements Validateable {
   private String url;
   private String username;
   private boolean csrf;
-
-  //~--- get methods ----------------------------------------------------------
+  private Set<BuildParameter> buildParameters;
 
   /**
    * Returns the api token which is used for authentication.
@@ -128,6 +129,13 @@ public class JenkinsConfiguration implements Validateable {
     return csrf;
   }
 
+  public Set<BuildParameter> getBuildParameters() {
+    if (buildParameters == null) {
+      return new HashSet<>();
+    }
+    return buildParameters;
+  }
+
   public void setApiToken(String apiToken) {
     this.apiToken = apiToken;
   }
@@ -154,6 +162,10 @@ public class JenkinsConfiguration implements Validateable {
 
   public void setCsrf(boolean csrf) {
     this.csrf = csrf;
+  }
+
+  public void setBuildParameters(Set<BuildParameter> buildParameters) {
+    this.buildParameters = buildParameters;
   }
 
   /**
