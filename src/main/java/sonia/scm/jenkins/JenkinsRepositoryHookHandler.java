@@ -35,7 +35,10 @@ import sonia.scm.repository.Changeset;
 import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.util.HttpUtil;
 import sonia.scm.util.IOUtil;
+import sonia.scm.util.JexlUrlParser;
 import sonia.scm.util.Util;
+import sonia.scm.web.data.ImmutableEncodedChangeset;
+import sonia.scm.web.data.ImmutableEncodedRepository;
 
 import javax.inject.Provider;
 import java.io.IOException;
@@ -44,7 +47,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -57,21 +62,24 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
 
   private final JenkinsConfiguration configuration;
   private final Provider<AdvancedHttpClient> httpClientProvider;
+  private final JexlUrlParser urlParser;
 
   public JenkinsRepositoryHookHandler(Provider<AdvancedHttpClient> httpClientProvider,
-                                      JenkinsConfiguration configuration) {
+                                      JenkinsConfiguration configuration,
+                                      JexlUrlParser urlParser) {
     this.httpClientProvider = httpClientProvider;
     this.configuration = configuration;
+    this.urlParser = urlParser;
   }
 
   @Override
   public void sendRequest(RepositoryHookEvent event) {
     if (configuration.getBranches().isEmpty()) {
       logger.debug("branch list is empty, send request");
-      handleRepositoryEvent(configuration);
+      handleRepositoryEvent(configuration, event);
     } else {
       if (isInBranchSet(configuration.getBranches(), event.getContext().getChangesetProvider().getChangesets())) {
-        handleRepositoryEvent(configuration);
+        handleRepositoryEvent(configuration, event);
       } else {
         logger.debug("changesets does not contain configured branches");
       }
@@ -145,7 +153,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
    *
    * @param configuration jenkins configuration
    */
-  private void handleRepositoryEvent(JenkinsConfiguration configuration) {
+  private void handleRepositoryEvent(JenkinsConfiguration configuration, RepositoryHookEvent event) {
 
     String url = createUrl(configuration);
 
@@ -154,7 +162,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
     }
 
     try {
-      sendRequest(configuration, url);
+      sendRequest(configuration, event, url);
     } catch (IOException ex) {
       logger.error("could not send request to jenkins", ex);
     }
@@ -236,14 +244,14 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
    * @param url           url of the jenkins server
    * @throws IOException
    */
-  private void sendRequest(JenkinsConfiguration configuration, String url)
+  private void sendRequest(JenkinsConfiguration configuration, RepositoryHookEvent event, String url)
     throws IOException {
 
     /**
      * Create a new http client from the Guice Provider.
      */
     AdvancedHttpClient httpClient = httpClientProvider.get();
-    url = appendBuildParameters(configuration, url);
+    url = appendBuildParameters(configuration, event, url);
 
     // retrive authentication token
     AdvancedHttpRequestWithBody request = httpClient.post(url);
@@ -273,8 +281,26 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
     }
   }
 
-  private String appendBuildParameters(JenkinsConfiguration configuration, String url) {
+  private boolean hasChangeset(RepositoryHookEvent event) {
+    return event.getContext() != null
+      && event.getContext().getChangesetProvider().getChangesets() != null
+      && event.getContext().getChangesetProvider().getChangesets().iterator().hasNext();
+  }
+
+  private String appendBuildParameters(JenkinsConfiguration configuration, RepositoryHookEvent event, String url) {
     Set<BuildParameter> buildParameters = configuration.getBuildParameters();
+
+    Map<String, Object> env = new HashMap<>();
+
+    env.put("repository", new ImmutableEncodedRepository(event.getRepository()));
+
+    if (hasChangeset(event)) {
+      ImmutableEncodedChangeset iec = new ImmutableEncodedChangeset(
+        event.getContext().getChangesetProvider().getChangesets().iterator().next()
+      );
+      env.put("changeset", iec);
+      env.put("commit", iec);
+    }
 
     if (!buildParameters.isEmpty()) {
       StringBuilder builder = new StringBuilder(url);
@@ -283,7 +309,8 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
         parameter -> builder
           .append(HttpUtil.encode(parameter.getName()))
           .append("=")
-          .append(HttpUtil.encode(parameter.getValue()))
+          // First decode before encode to avoid parsing errors from jexl like "@"
+          .append(HttpUtil.encode(HttpUtil.decode(urlParser.parse(parameter.getValue()).evaluate(env))))
           .append("&")
       );
       url = builder.toString().substring(0, builder.toString().length() - 1);

@@ -24,24 +24,29 @@
 
 package sonia.scm.jenkins;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.net.ahc.AdvancedHttpRequestWithBody;
 import sonia.scm.net.ahc.AdvancedHttpResponse;
+import sonia.scm.repository.Changeset;
+import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.repository.RepositoryHookType;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.HookContext;
+import sonia.scm.util.HttpUtil;
+import sonia.scm.util.JexlUrlParser;
 
 import javax.inject.Provider;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -50,9 +55,9 @@ import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
-public class JenkinsRepositoryHookHandlerTest {
+class JenkinsRepositoryHookHandlerTest {
 
-  private JenkinsConfiguration configuration;
+  private JenkinsConfiguration config;
   @Mock
   private Provider<AdvancedHttpClient> httpClientProvider;
   @Mock
@@ -61,18 +66,20 @@ public class JenkinsRepositoryHookHandlerTest {
   private AdvancedHttpRequestWithBody request;
   @Mock
   private AdvancedHttpResponse response;
-  @Mock
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private HookContext hookContext;
+
+  private final JexlUrlParser urlParser = new JexlUrlParser();
 
   private JenkinsRepositoryHookHandler handler;
 
   @BeforeEach
   void setUp() {
-    configuration = new JenkinsConfiguration();
-    configuration.setUrl("http://hitchhiker.org/jenkins");
-    configuration.setProject("HeartOfGold");
+    config = new JenkinsConfiguration();
+    config.setUrl("http://hitchhiker.org/jenkins");
+    config.setProject("HeartOfGold");
     handler = new JenkinsRepositoryHookHandler(httpClientProvider,
-      configuration);
+      config, urlParser);
   }
 
   @Test
@@ -90,11 +97,12 @@ public class JenkinsRepositoryHookHandlerTest {
     when(request.request()).thenReturn(response);
     when(response.getStatus()).thenReturn(200);
     when(advancedHttpClient.post(anyString())).thenReturn(request);
+    when(hookContext.getChangesetProvider().getChangesets()).thenReturn(null);
 
     Repository repository = RepositoryTestData.createHeartOfGold();
     handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
 
-    verify(advancedHttpClient).post(configuration.getUrl() + "/job/" + configuration.getProject() + "/build");
+    verify(advancedHttpClient).post(config.getUrl() + "/job/" + config.getProject() + "/build");
   }
 
   @Test
@@ -103,14 +111,15 @@ public class JenkinsRepositoryHookHandlerTest {
     when(request.request()).thenReturn(response);
     when(response.getStatus()).thenReturn(200);
     when(advancedHttpClient.post(anyString())).thenReturn(request);
-    configuration.setBuildParameters(ImmutableSet.of(
+    when(hookContext.getChangesetProvider().getChangesets()).thenReturn(null);
+    config.setBuildParameters(ImmutableSet.of(
       new BuildParameter("author", "trillian @hitchhiker/42")
     ));
 
     Repository repository = RepositoryTestData.createHeartOfGold();
     handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
 
-    verify(advancedHttpClient).post(configuration.getUrl() + "/job/" + configuration.getProject() + "/buildWithParameters?author=trillian+%40hitchhiker%2F42");
+    verify(advancedHttpClient).post(config.getUrl() + "/job/" + config.getProject() + "/buildWithParameters?author=trillian+%40hitchhiker%2F42");
   }
 
   @Test
@@ -119,8 +128,9 @@ public class JenkinsRepositoryHookHandlerTest {
     when(request.request()).thenReturn(response);
     when(response.getStatus()).thenReturn(200);
     when(advancedHttpClient.post(anyString())).thenReturn(request);
+    when(hookContext.getChangesetProvider().getChangesets()).thenReturn(null);
 
-    configuration.setBuildParameters(ImmutableSet.of(
+    config.setBuildParameters(ImmutableSet.of(
       new BuildParameter("author", "trillian"),
       new BuildParameter("version", "42"),
       new BuildParameter("environment", "Betelgeuse")
@@ -129,6 +139,42 @@ public class JenkinsRepositoryHookHandlerTest {
     Repository repository = RepositoryTestData.createHeartOfGold();
     handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
 
-    verify(advancedHttpClient).post(configuration.getUrl() + "/job/" + configuration.getProject() + "/buildWithParameters?author=trillian&version=42&environment=Betelgeuse");
+    verify(advancedHttpClient).post(config.getUrl() + "/job/" + config.getProject() + "/buildWithParameters?author=trillian&version=42&environment=Betelgeuse");
+  }
+
+  @Test
+  void shouldSendWithVariables() throws IOException {
+    when(httpClientProvider.get()).thenReturn(advancedHttpClient);
+    when(request.request()).thenReturn(response);
+    when(response.getStatus()).thenReturn(200);
+    when(advancedHttpClient.post(anyString())).thenReturn(request);
+    ArrayList<Changeset> changesets = new ArrayList<>();
+    Changeset changeset = new Changeset("1", 1L, new Person("trillian", "trillian@hitchhiker.org"));
+    changesets.add(changeset);
+    when(hookContext.getChangesetProvider().getChangesets()).thenReturn(changesets);
+
+    config.setBuildParameters(ImmutableSet.of(
+      new BuildParameter("author", "${changeset.author.name}"),
+      new BuildParameter("commitId", "${commit.id}"),
+      new BuildParameter("repoName", "${repository.name}"),
+      new BuildParameter("mail", "${commit.author.mail}")
+    ));
+
+    Repository repository = RepositoryTestData.createHeartOfGold();
+    handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
+
+    verify(advancedHttpClient).post(
+      config.getUrl()
+        + "/job/"
+        + config.getProject()
+        + "/buildWithParameters?author="
+        + changeset.getAuthor().getName()
+        + "&commitId="
+        + changeset.getId()
+        + "&repoName="
+        + repository.getName()
+        + "&mail="
+        + HttpUtil.encode(changeset.getAuthor().getMail())
+    );
   }
 }
