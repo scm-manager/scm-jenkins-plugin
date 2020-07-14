@@ -34,7 +34,15 @@
         "branchesHelp": "Liste von Branches.",
         "branches": "Neuer Branch",
         "branchesAdd": "Branch hinzufügen",
-        "branchesDelete": "Löschen"
+        "branchesDelete": "Löschen",
+        "parameterLabel": "Build Job Parameter",
+        "parameterHelpText": "Diese Build Job Parameter werden mit jeder Anfrage zum Triggern der Build Jobs mitgeschickt.\nDer Jenkins kann nur mit Parametern umgehen, die im Build Job definiert sind.\nParameter Namen müssen exakt übereinstimmen!",
+        "parameterName": "Name",
+        "parameterNameHelp": "Der Name des Parameters.\nDer Name muss exakt mit dem Namen im Jenkins Build Job übereinstimmen!",
+        "parameterValue": "Wert",
+        "parameterValueHelp": "Der Wert des Parameters:\n - Als boolsche Parameter werden \"true\" oder \"false\" erwartet\n - Für Run Parameter wird das Format \"jobname#buildnummer\" erwartet",
+        "addParameter": "Parameter hinzufügen",
+        "deleteParameter": "Entfernen"
       }
     },
     "configurationChangedSuccess": "Konfiguration gespeichert"

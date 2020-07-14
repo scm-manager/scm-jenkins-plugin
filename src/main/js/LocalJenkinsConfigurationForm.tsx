@@ -24,13 +24,21 @@
 import React from "react";
 import {
   AddEntryToTableField,
+  AddKeyValueEntryToTableField,
   Checkbox,
+  Column,
   Configuration,
   InputField,
   LabelWithHelpIcon,
-  RemoveEntryOfTableButton
+  RemoveEntryOfTableButton,
+  Table
 } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
+
+type BuildParameter = {
+  name: string;
+  value: string;
+};
 
 type LocalConfiguration = {
   apiToken: string;
@@ -40,6 +48,7 @@ type LocalConfiguration = {
   url: string;
   username: string;
   csrf: boolean;
+  buildParameters: BuildParameter[];
 };
 
 type Props = WithTranslation & {
@@ -65,6 +74,28 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
     this.setState(
       {
         [name]: value
+      },
+      () =>
+        this.props.onConfigurationChange(
+          {
+            ...this.state
+          },
+          true
+        )
+    );
+  };
+
+  addBuildParameterHandler = (name: string, value: string) => {
+    let params: BuildParameter[] = [];
+
+    if (this.state.buildParameters?.length > 0) {
+      params = [...this.state.buildParameters];
+    }
+    params.push({ name, value });
+
+    this.setState(
+      {
+        buildParameters: params
       },
       () =>
         this.props.onConfigurationChange(
@@ -110,9 +141,26 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
     );
   };
 
-  render(): React.ReactNode {
+  removeBuildParameter = (parameter: BuildParameter) => {
+    const params = this.state.buildParameters;
+    const index = params.indexOf(parameter);
+    if (index !== -1) {
+      params.splice(index, 1);
+      this.setState({ buildParameters: params }, () =>
+        this.props.onConfigurationChange(
+          {
+            ...this.state
+          },
+          true
+        )
+      );
+    }
+  };
+
+  render() {
     const { t, readOnly } = this.props;
     const branches = this.state.branches == null ? [] : this.state.branches;
+    const buildParams = !this.state.buildParameters ? [] : this.state.buildParameters;
     return (
       <>
         {this.renderConfigChangedNotification()}
@@ -196,6 +244,39 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
           fieldLabel={t("scm-jenkins-plugin.local.form.branches")}
           addEntry={this.addBranchHandler}
           buttonLabel={t("scm-jenkins-plugin.local.form.branchesAdd")}
+          errorMessage=""
+        />
+        <LabelWithHelpIcon
+          label={t("scm-jenkins-plugin.local.form.parameterLabel")}
+          helpText={t("scm-jenkins-plugin.local.form.parameterHelpText")}
+        />
+        {buildParams.length > 0 && (
+          <Table data={buildParams}>
+            <Column header={t("scm-jenkins-plugin.local.form.parameterName")}>
+              {(row: BuildParameter) => <p className="is-word-break">{row.name}</p>}
+            </Column>
+            <Column header={t("scm-jenkins-plugin.local.form.parameterValue")}>
+              {(row: BuildParameter) => <p className="is-word-break">{row.value}</p>}
+            </Column>
+            <Column header={""}>
+              {(row: BuildParameter) => (
+                <RemoveEntryOfTableButton
+                  entryname={row.name}
+                  removeEntry={() => this.removeBuildParameter(row)}
+                  label={t("scm-jenkins-plugin.local.form.deleteParameter")}
+                  disabled={false}
+                />
+              )}
+            </Column>
+          </Table>
+        )}
+        <AddKeyValueEntryToTableField
+          keyFieldLabel={t("scm-jenkins-plugin.local.form.parameterName")}
+          keyHelpText={t("scm-jenkins-plugin.local.form.parameterNameHelp")}
+          valueFieldLabel={t("scm-jenkins-plugin.local.form.parameterValue")}
+          valueHelpText={t("scm-jenkins-plugin.local.form.parameterValueHelp")}
+          addEntry={(name, value) => this.addBuildParameterHandler(name, value)}
+          buttonLabel={t("scm-jenkins-plugin.local.form.addParameter")}
         />
       </>
     );

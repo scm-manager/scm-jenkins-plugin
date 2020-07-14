@@ -83,6 +83,10 @@ class JenkinsConfigurationMapperTest {
     assertThat(dto.isCsrf()).isEqualTo(configuration.isCsrf());
     assertThat(dto.getUrl()).isEqualTo(configuration.getUrl());
     assertThat(dto.getUsername()).isEqualTo(configuration.getUsername());
+    assertThat(dto.getBuildParameters().iterator().next().getName())
+      .isEqualTo(configuration.getBuildParameters().iterator().next().getName());
+    assertThat(dto.getBuildParameters().iterator().next().getValue())
+      .isEqualTo(configuration.getBuildParameters().iterator().next().getValue());
   }
 
   @Test
@@ -113,6 +117,10 @@ class JenkinsConfigurationMapperTest {
     assertThat(configuration.getUrl()).isEqualTo(dto.getUrl());
     assertThat(configuration.getUsername()).isEqualTo(dto.getUsername());
     assertThat(configuration.getProject()).isEqualTo(dto.getProject());
+    assertThat(configuration.getBuildParameters().iterator().next().getName())
+      .isEqualTo(dto.getBuildParameters().iterator().next().getName());
+    assertThat(configuration.getBuildParameters().iterator().next().getValue())
+      .isEqualTo(dto.getBuildParameters().iterator().next().getValue());
   }
 
   @Test
@@ -143,6 +151,7 @@ class JenkinsConfigurationMapperTest {
     configuration.setUrl("http://jenkins.io/scm");
     configuration.setUsername("trillian");
     configuration.setCsrf(false);
+    configuration.setBuildParameters(ImmutableSet.of(new BuildParameter("author", "trillian")));
     return configuration;
   }
 
@@ -155,6 +164,7 @@ class JenkinsConfigurationMapperTest {
     configuration.setUrl("http://jenkins.io/scm2");
     configuration.setUsername("dent");
     configuration.setCsrf(true);
+    configuration.setBuildParameters(ImmutableSet.of(new BuildParameterDto("env", "testing")));
     return configuration;
   }
 }

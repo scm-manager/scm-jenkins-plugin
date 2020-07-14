@@ -34,7 +34,15 @@
         "branchesHelp": "List of branches.",
         "branches": "New Branch",
         "branchesAdd": "Add branch",
-        "branchesDelete": "Delete"
+        "branchesDelete": "Delete",
+        "parameterLabel": "Build Job Parameter",
+        "parameterHelpText": "The build job parameters will be send on each request.\nJenkins can only process parameters which are defined in the build job.\nParameter names are case sensitive!",
+        "parameterName": "Name",
+        "parameterNameHelp": "The name of the parameter.\nIt must match the defined build job parameter name in jenkins exactly.",
+        "parameterValue": "Value",
+        "parameterValueHelp": "The value of the parameter:\n - Use \"true\" or \"false\" as boolean parameters\n - To use a Run Parameter, the value should be in the format \"jobname#buildNumber\"",
+        "addParameter": "Add parameter",
+        "deleteParameter": "Delete"
       }
     },
     "configurationChangedSuccess": "Configuration changed"
