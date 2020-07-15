@@ -26,6 +26,7 @@ package sonia.scm.jenkins;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
+import com.sun.org.apache.regexp.internal.RE;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -50,12 +51,15 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class JenkinsPullRequestEventRelayTest {
+class JenkinsPullRequestEventRelayTest {
+
+  private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
 
   @Mock
   private JenkinsContext jenkinsContext;
@@ -77,56 +81,55 @@ public class JenkinsPullRequestEventRelayTest {
   private JenkinsPullRequestEventRelay eventRelay;
 
   @Test
-  void shouldNotSendDto() {
-    Repository repo = RepositoryTestData.create42Puzzle();
+  void shouldNotSend() {
     PullRequest pr = new PullRequest();
-    PullRequestEvent event = new PullRequestEvent(repo, pr, pr, HandlerEventType.BEFORE_CREATE);
-    eventRelay.handle(event);
+
+    eventRelay.handle(new PullRequestEvent(REPOSITORY, pr, pr, HandlerEventType.BEFORE_CREATE));
+
     verify(httpClient, never()).post(anyString());
   }
 
   @Test
   void shouldSendForGlobalConfig() throws IOException {
     mockRequest();
-
-    Repository repo = mockRepo();
-    GlobalJenkinsConfiguration globalJenkinsConfiguration = new GlobalJenkinsConfiguration();
-    globalJenkinsConfiguration.setDisableRepositoryConfiguration(true);
-    globalJenkinsConfiguration.setUrl("http://hitchhiker.org/");
-    when(jenkinsContext.getConfiguration()).thenReturn(globalJenkinsConfiguration);
-
+    mockRepo();
+    String jenkinsUrl = mockJenkinsConfig(true);
     PullRequest pr = new PullRequest();
-    PullRequestEvent event = new PullRequestEvent(repo, pr, pr, HandlerEventType.CREATE);
 
-    eventRelay.handle(event);
+    eventRelay.handle(new PullRequestEvent(REPOSITORY, pr, pr, HandlerEventType.CREATE));
 
-    verify(httpClient).post("http://hitchhiker.org/");
+    verify(httpClient).post(jenkinsUrl);
 
-    JenkinsEventRelay.JenkinsEventDto dto = captor.getValue();
-    assertThat(dto.getLinks().getLinkBy("dummy").isPresent()).isTrue();
+    JenkinsPullRequestEventRelay.JenkinsEventDto dto = (JenkinsPullRequestEventRelay.JenkinsEventDto) captor.getValue();
+    assertThat(dto.getLinks().getLinkBy("dummy")).isPresent();
   }
 
   @Test
   void shouldSendForRepositoryConfig() throws IOException {
     mockRequest();
-
-    Repository repo = mockRepo();
-    GlobalJenkinsConfiguration globalJenkinsConfiguration = new GlobalJenkinsConfiguration();
-    globalJenkinsConfiguration.setDisableRepositoryConfiguration(false);
-    JenkinsConfiguration jenkinsConfiguration = new JenkinsConfiguration();
-    jenkinsConfiguration.setUrl("http://hitchhiker.org/");
-    when(jenkinsContext.getConfiguration()).thenReturn(globalJenkinsConfiguration);
-    when(jenkinsContext.getConfiguration(repo)).thenReturn(jenkinsConfiguration);
-
+    mockRepo();
+    String jenkinsUrl = mockJenkinsConfig(false);
     PullRequest pr = new PullRequest();
-    PullRequestEvent event = new PullRequestEvent(repo, pr, pr, HandlerEventType.CREATE);
 
-    eventRelay.handle(event);
+    eventRelay.handle(new PullRequestEvent(REPOSITORY, pr, pr, HandlerEventType.CREATE));
 
-    verify(httpClient).post("http://hitchhiker.org/");
+    verify(httpClient).post(jenkinsUrl);
 
     JenkinsEventRelay.JenkinsEventDto dto = captor.getValue();
     assertThat(dto.getLinks().getLinkBy("dummy").isPresent()).isTrue();
+  }
+
+  private String mockJenkinsConfig(boolean disableRepoConfig) {
+    String jenkinsUrl = "http://hitchhiker.org/";
+    GlobalJenkinsConfiguration globalJenkinsConfiguration = new GlobalJenkinsConfiguration();
+    globalJenkinsConfiguration.setDisableRepositoryConfiguration(disableRepoConfig);
+    globalJenkinsConfiguration.setUrl(jenkinsUrl);
+    JenkinsConfiguration jenkinsConfiguration = new JenkinsConfiguration();
+    jenkinsConfiguration.setUrl(jenkinsUrl);
+    lenient().when(jenkinsContext.getConfiguration()).thenReturn(globalJenkinsConfiguration);
+    lenient().when(jenkinsContext.getConfiguration(REPOSITORY)).thenReturn(jenkinsConfiguration);
+
+    return jenkinsUrl;
   }
 
   private void mockRequest() throws IOException {
@@ -135,16 +138,14 @@ public class JenkinsPullRequestEventRelayTest {
     when(request.jsonContent(captor.capture())).thenReturn(request);
   }
 
-  private Repository mockRepo() {
-    Repository repo = RepositoryTestData.create42Puzzle();
+  private void mockRepo() {
     List<ScmProtocol> protocols = new ArrayList<>();
     protocols.add(new DummyScmProtocol());
-    when(repositoryServiceFactory.create(repo)).thenReturn(repositoryService);
+    when(repositoryServiceFactory.create(REPOSITORY)).thenReturn(repositoryService);
     when(repositoryService.getSupportedProtocols()).thenReturn(protocols.stream());
-    return repo;
   }
 
-  private static class DummyScmProtocol implements ScmProtocol {
+  public static class DummyScmProtocol implements ScmProtocol {
 
     @Override
     public String getType() {
@@ -156,5 +157,4 @@ public class JenkinsPullRequestEventRelayTest {
       return "dummyUrl";
     }
   }
-
 }
