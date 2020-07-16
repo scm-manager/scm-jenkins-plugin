@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 public class JenkinsEventRelay {
 
   private static final Logger logger = LoggerFactory.getLogger(JenkinsEventRelay.class);
+  public static final String EVENT_ENDPOINT = "scm-manager-hook/notify";
 
   protected final JenkinsContext jenkinsContext;
   protected final RepositoryServiceFactory repositoryServiceFactory;
@@ -56,17 +57,23 @@ public class JenkinsEventRelay {
 
   protected final void send(Repository repository, JenkinsEventDto eventDto) {
     String url;
-    if (jenkinsContext.getConfiguration().isDisableRepositoryConfiguration()) {
-      url = jenkinsContext.getConfiguration().getUrl();
-    } else {
-      url = jenkinsContext.getConfiguration(repository).getUrl();
-    }
+    if (!jenkinsContext.getConfiguration().isDisableEventTrigger()) {
+      if (jenkinsContext.getConfiguration().isDisableRepositoryConfiguration()) {
+        url = jenkinsContext.getConfiguration().getUrl();
+      } else {
+        url = jenkinsContext.getConfiguration(repository).getUrl();
+      }
+      if (!url.endsWith("/")) {
+        url = url + "/";
+      }
+      url = url + "scm-manager-hook/notify";
 
-    try {
-      httpClient.post(url).jsonContent(eventDto).request();
-    } catch (IOException e) {
-      if (logger.isWarnEnabled()) {
-        logger.warn("Failed to relay event to Jenkins server");
+      try {
+        httpClient.post(url).jsonContent(eventDto).request();
+      } catch (IOException e) {
+        if (logger.isWarnEnabled()) {
+          logger.warn("Failed to relay event to Jenkins server");
+        }
       }
     }
   }

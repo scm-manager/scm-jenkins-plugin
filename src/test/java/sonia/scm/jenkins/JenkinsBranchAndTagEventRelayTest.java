@@ -58,6 +58,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static sonia.scm.jenkins.JenkinsEventRelay.EVENT_ENDPOINT;
 
 @ExtendWith(MockitoExtension.class)
 class JenkinsBranchAndTagEventRelayTest {
@@ -108,7 +109,7 @@ class JenkinsBranchAndTagEventRelayTest {
 
     eventRelay.handle(new PostReceiveRepositoryHookEvent(new RepositoryHookEvent(hookContext, REPOSITORY, RepositoryHookType.POST_RECEIVE)));
 
-    verify(httpClient).post(jenkinsUrl);
+    verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
     JenkinsBranchAndTagEventRelay.JenkinsEventDto eventDto = (JenkinsBranchAndTagEventRelay.JenkinsEventDto) captor.getValue();
     assertThat((eventDto).getCreatedOrModifiedBranches().get(0)).isEqualTo("master");
@@ -128,7 +129,7 @@ class JenkinsBranchAndTagEventRelayTest {
 
     eventRelay.handle(new PostReceiveRepositoryHookEvent(new RepositoryHookEvent(hookContext, REPOSITORY, RepositoryHookType.POST_RECEIVE)));
 
-    verify(httpClient).post(jenkinsUrl);
+    verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
     JenkinsBranchAndTagEventRelay.JenkinsEventDto eventDto = (JenkinsBranchAndTagEventRelay.JenkinsEventDto) captor.getValue();
     assertThat((eventDto).getCreateOrModifiedTags().get(0).getName()).isEqualTo("snapshot");
@@ -150,7 +151,7 @@ class JenkinsBranchAndTagEventRelayTest {
 
     eventRelay.handle(new PostReceiveRepositoryHookEvent(new RepositoryHookEvent(hookContext, REPOSITORY, RepositoryHookType.POST_RECEIVE)));
 
-    verify(httpClient).post(jenkinsUrl);
+    verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
     JenkinsBranchAndTagEventRelay.JenkinsEventDto eventDto = (JenkinsBranchAndTagEventRelay.JenkinsEventDto) captor.getValue();
     assertThat((eventDto).getCreateOrModifiedTags().get(0).getName()).isEqualTo("snapshot");

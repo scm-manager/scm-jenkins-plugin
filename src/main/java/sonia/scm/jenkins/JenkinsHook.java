@@ -120,7 +120,7 @@ public class JenkinsHook {
         handler = new JenkinsGlobalHookHandler(httpClientProvider, globalConfig, repository, repositoryServiceFactory);
       }
 
-      handler.sendRequest(event);
+//      handler.sendRequest(event);
     } else if (logger.isWarnEnabled()) {
       logger.warn("receive repository hook without repository");
     }

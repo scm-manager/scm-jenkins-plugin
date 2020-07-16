@@ -26,7 +26,6 @@ package sonia.scm.jenkins;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
-import com.sun.org.apache.regexp.internal.RE;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -55,6 +54,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static sonia.scm.jenkins.JenkinsEventRelay.EVENT_ENDPOINT;
 
 @ExtendWith(MockitoExtension.class)
 class JenkinsPullRequestEventRelayTest {
@@ -81,10 +81,23 @@ class JenkinsPullRequestEventRelayTest {
   private JenkinsPullRequestEventRelay eventRelay;
 
   @Test
-  void shouldNotSend() {
+  void shouldNotSendIfNotPostEvent() {
     PullRequest pr = new PullRequest();
 
     eventRelay.handle(new PullRequestEvent(REPOSITORY, pr, pr, HandlerEventType.BEFORE_CREATE));
+
+    verify(httpClient, never()).post(anyString());
+  }
+
+  @Test
+  void shouldNotSendIfEventTriggerDisabled() {
+    mockRepo();
+    GlobalJenkinsConfiguration configuration = new GlobalJenkinsConfiguration();
+    configuration.setDisableEventTrigger(true);
+    when(jenkinsContext.getConfiguration()).thenReturn(configuration);
+    PullRequest pr = new PullRequest();
+
+    eventRelay.handle(new PullRequestEvent(REPOSITORY, pr, pr, HandlerEventType.CREATE));
 
     verify(httpClient, never()).post(anyString());
   }
@@ -98,7 +111,7 @@ class JenkinsPullRequestEventRelayTest {
 
     eventRelay.handle(new PullRequestEvent(REPOSITORY, pr, pr, HandlerEventType.CREATE));
 
-    verify(httpClient).post(jenkinsUrl);
+    verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
     JenkinsPullRequestEventRelay.JenkinsEventDto dto = (JenkinsPullRequestEventRelay.JenkinsEventDto) captor.getValue();
     assertThat(dto.getLinks().getLinkBy("dummy")).isPresent();
@@ -113,10 +126,10 @@ class JenkinsPullRequestEventRelayTest {
 
     eventRelay.handle(new PullRequestEvent(REPOSITORY, pr, pr, HandlerEventType.CREATE));
 
-    verify(httpClient).post(jenkinsUrl);
+    verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
     JenkinsEventRelay.JenkinsEventDto dto = captor.getValue();
-    assertThat(dto.getLinks().getLinkBy("dummy").isPresent()).isTrue();
+    assertThat(dto.getLinks().getLinkBy("dummy")).isPresent();
   }
 
   private String mockJenkinsConfig(boolean disableRepoConfig) {

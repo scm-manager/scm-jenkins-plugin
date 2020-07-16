@@ -25,16 +25,19 @@ package sonia.scm.jenkins;
 
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@EqualsAndHashCode(callSuper = true)
 public class GlobalJenkinsConfigurationDto extends HalRepresentation {
 
   private boolean disableRepositoryConfiguration = false;
   private boolean disableMercurialTrigger = false;
   private boolean disableGitTrigger = false;
+  private boolean disableEventTrigger = false;
   private String url;
 
   @Override

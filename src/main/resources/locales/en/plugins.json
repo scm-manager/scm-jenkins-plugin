@@ -9,9 +9,11 @@
         "disableRepositoryConfiguration": "Do not allow repository configuration.",
         "disableRepositoryConfigurationHelp": "Do not allow repository owners to configure jenkins hooks.",
         "disableGitTrigger": "Disable Git trigger",
-        "disableGitTriggerHelp": "Disable trigger for git repositories. Note: The git trigger requires version 1.1.14 or above of the jenkins git plugin.",
+        "disableGitTriggerHelp": "Disable trigger for git repositories. \nNote: The git trigger requires version 1.1.14 or above of the jenkins git plugin.",
         "disableMercurialTrigger": "Disable Mercurial trigger",
-        "disableMercurialTriggerHelp": "Disable trigger for mercurial repositories. Note: The mercurial trigger requires version 1.38 or above of the jenkins mercurial plugin."
+        "disableMercurialTriggerHelp": "Disable trigger for mercurial repositories. \nNote: The mercurial trigger requires version 1.38 or above of the jenkins mercurial plugin.",
+        "disableEventTrigger": "Disable event trigger",
+        "disableEventTriggerHelp": "Disable trigger for SCM-Manager events. \nNote: This events are only processed if the Jenkins-SCM-Manager-Plugin is installed. \nThe events informs Jenkins about changes regarding branches, tags or pull requests."
       }
     },
     "local": {
