@@ -26,7 +26,6 @@ package sonia.scm.jenkins;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
-import com.sun.org.apache.regexp.internal.RE;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -81,10 +80,23 @@ class JenkinsPullRequestEventRelayTest {
   private JenkinsPullRequestEventRelay eventRelay;
 
   @Test
-  void shouldNotSend() {
+  void shouldNotSendIfNotPostEvent() {
     PullRequest pr = new PullRequest();
 
     eventRelay.handle(new PullRequestEvent(REPOSITORY, pr, pr, HandlerEventType.BEFORE_CREATE));
+
+    verify(httpClient, never()).post(anyString());
+  }
+
+  @Test
+  void shouldNotSendIfEventTriggerDisabled() {
+    mockRepo();
+    GlobalJenkinsConfiguration configuration = new GlobalJenkinsConfiguration();
+    configuration.setDisableEventTrigger(true);
+    when(jenkinsContext.getConfiguration()).thenReturn(configuration);
+    PullRequest pr = new PullRequest();
+
+    eventRelay.handle(new PullRequestEvent(REPOSITORY, pr, pr, HandlerEventType.CREATE));
 
     verify(httpClient, never()).post(anyString());
   }

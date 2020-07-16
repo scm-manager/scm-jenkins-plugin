@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React from "react";
-import { Checkbox, InputField } from "@scm-manager/ui-components";
+import { Checkbox, InputField, Configuration } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 
 type GlobalConfiguration = {
@@ -30,6 +30,7 @@ type GlobalConfiguration = {
   disableRepositoryConfiguration: boolean;
   disableMercurialTrigger: boolean;
   disableGitTrigger: boolean;
+  disableEventTrigger: boolean;
 };
 
 type Props = WithTranslation & {
@@ -99,6 +100,14 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
           label={t("scm-jenkins-plugin.global.form.disableMercurialTrigger")}
           helpText={t("scm-jenkins-plugin.global.form.disableMercurialTriggerHelp")}
           checked={this.state.disableMercurialTrigger}
+          disabled={readOnly}
+          onChange={this.valueChangeHandler}
+        />
+        <Checkbox
+          name={"disableEventTrigger"}
+          label={t("scm-jenkins-plugin.global.form.disableEventTrigger")}
+          helpText={t("scm-jenkins-plugin.global.form.disableEventTriggerHelp")}
+          checked={this.state.disableEventTrigger}
           disabled={readOnly}
           onChange={this.valueChangeHandler}
         />

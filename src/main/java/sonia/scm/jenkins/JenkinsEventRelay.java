@@ -56,17 +56,19 @@ public class JenkinsEventRelay {
 
   protected final void send(Repository repository, JenkinsEventDto eventDto) {
     String url;
-    if (jenkinsContext.getConfiguration().isDisableRepositoryConfiguration()) {
-      url = jenkinsContext.getConfiguration().getUrl();
-    } else {
-      url = jenkinsContext.getConfiguration(repository).getUrl();
-    }
+    if (!jenkinsContext.getConfiguration().isDisableEventTrigger()) {
+      if (jenkinsContext.getConfiguration().isDisableRepositoryConfiguration()) {
+        url = jenkinsContext.getConfiguration().getUrl();
+      } else {
+        url = jenkinsContext.getConfiguration(repository).getUrl();
+      }
 
-    try {
-      httpClient.post(url).jsonContent(eventDto).request();
-    } catch (IOException e) {
-      if (logger.isWarnEnabled()) {
-        logger.warn("Failed to relay event to Jenkins server");
+      try {
+        httpClient.post(url).jsonContent(eventDto).request();
+      } catch (IOException e) {
+        if (logger.isWarnEnabled()) {
+          logger.warn("Failed to relay event to Jenkins server");
+        }
       }
     }
   }
