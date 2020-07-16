@@ -24,6 +24,7 @@
 
 package sonia.scm.jenkins;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
@@ -44,10 +45,12 @@ public class JenkinsEventRelay {
 
   private static final Logger logger = LoggerFactory.getLogger(JenkinsEventRelay.class);
   public static final String EVENT_ENDPOINT = "scm-manager-hook/notify";
+  private final ObjectMapper mapper = new ObjectMapper();
 
   protected final JenkinsContext jenkinsContext;
   protected final RepositoryServiceFactory repositoryServiceFactory;
   protected final AdvancedHttpClient httpClient;
+
 
   public JenkinsEventRelay(JenkinsContext jenkinsContext, RepositoryServiceFactory repositoryServiceFactory, AdvancedHttpClient httpClient) {
     this.jenkinsContext = jenkinsContext;
@@ -58,7 +61,8 @@ public class JenkinsEventRelay {
   protected final void send(Repository repository, JenkinsEventDto eventDto) {
     if (!jenkinsContext.getConfiguration().isDisableEventTrigger()) {
       try {
-        httpClient.post(createEventHookUrl(repository)).jsonContent(eventDto).request();
+        String json = mapper.writer().writeValueAsString(eventDto);
+        httpClient.post(createEventHookUrl(repository)).formContent().field("json", json).build().request();
       } catch (IOException e) {
         if (logger.isWarnEnabled()) {
           logger.warn("Failed to relay event to Jenkins server");

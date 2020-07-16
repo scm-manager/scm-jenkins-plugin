@@ -32,6 +32,7 @@ import lombok.Getter;
 import lombok.Setter;
 import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
+import sonia.scm.config.ScmConfiguration;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.plugin.Extension;
 import sonia.scm.plugin.Requires;
@@ -49,9 +50,12 @@ import java.util.stream.Collectors;
 @Requires("scm-review-plugin")
 public class JenkinsPullRequestEventRelay extends JenkinsEventRelay {
 
+  private final ScmConfiguration configuration;
+
   @Inject
-  public JenkinsPullRequestEventRelay(JenkinsContext jenkinsContext, RepositoryServiceFactory repositoryServiceFactory, AdvancedHttpClient httpClient) {
+  public JenkinsPullRequestEventRelay(JenkinsContext jenkinsContext, RepositoryServiceFactory repositoryServiceFactory, AdvancedHttpClient httpClient, ScmConfiguration configuration) {
     super(jenkinsContext, repositoryServiceFactory, httpClient);
+    this.configuration = configuration;
   }
 
   @Subscribe
@@ -62,11 +66,13 @@ public class JenkinsPullRequestEventRelay extends JenkinsEventRelay {
       try (final RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
         final List<ScmProtocol> supportedProtocols = repositoryService.getSupportedProtocols().collect(Collectors.toList());
 
-        final JenkinsEventDto eventDto = new JenkinsEventDto(
+        final JenkinsPullRequestEventDto eventDto = new JenkinsPullRequestEventDto(
           event.getEventType(),
           event.getPullRequest().getId(),
           event.getRepository().getName(),
           event.getRepository().getNamespace(),
+          event.getRepository().getType(),
+          configuration.getBaseUrl(),
           supportedProtocols
         );
 
@@ -79,18 +85,22 @@ public class JenkinsPullRequestEventRelay extends JenkinsEventRelay {
   @Setter
   @VisibleForTesting
   @EqualsAndHashCode(callSuper = true)
-  public static final class JenkinsEventDto extends JenkinsEventRelay.JenkinsEventDto {
+  public static final class JenkinsPullRequestEventDto extends JenkinsEventRelay.JenkinsEventDto {
     private HandlerEventType eventType;
     private String pullRequestId;
-    private String repositoryName;
-    private String repositoryNamespace;
+    private String name;
+    private String namespace;
+    private String type;
+    private String server;
 
-    public JenkinsEventDto(HandlerEventType eventType, String pullRequestId, String repositoryName, String repositoryNamespace, List<ScmProtocol> protocols) {
+    public JenkinsPullRequestEventDto(HandlerEventType eventType, String pullRequestId, String name, String namespace, String type, String server, List<ScmProtocol> protocols) {
       super(protocols);
       this.eventType = eventType;
       this.pullRequestId = pullRequestId;
-      this.repositoryName = repositoryName;
-      this.repositoryNamespace = repositoryNamespace;
+      this.name = name;
+      this.namespace = namespace;
+      this.type = type;
+      this.server = server;
     }
   }
 }

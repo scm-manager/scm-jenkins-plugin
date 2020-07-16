@@ -26,6 +26,9 @@ package sonia.scm.jenkins;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -35,9 +38,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.HandlerEventType;
+import sonia.scm.config.ScmConfiguration;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.net.ahc.AdvancedHttpRequestWithBody;
 import sonia.scm.net.ahc.AdvancedHttpResponse;
+import sonia.scm.net.ahc.FormContentBuilder;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.RepositoryService;
@@ -60,9 +65,14 @@ import static sonia.scm.jenkins.JenkinsEventRelay.EVENT_ENDPOINT;
 class JenkinsPullRequestEventRelayTest {
 
   private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
+  private static final String SERVER_URL = "http://scm-manager.org";
+  private final ObjectMapper objectMapper = new ObjectMapper();
+
 
   @Mock
   private JenkinsContext jenkinsContext;
+  @Mock
+  private ScmConfiguration scmConfiguration;
   @Mock
   private RepositoryServiceFactory repositoryServiceFactory;
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -73,12 +83,19 @@ class JenkinsPullRequestEventRelayTest {
   private AdvancedHttpRequestWithBody request;
   @Mock
   private AdvancedHttpResponse response;
+  @Mock
+  private FormContentBuilder formContentBuilder;
 
   @Captor
-  private ArgumentCaptor<JenkinsEventRelay.JenkinsEventDto> captor;
+  private ArgumentCaptor<String> captor;
 
   @InjectMocks
   private JenkinsPullRequestEventRelay eventRelay;
+
+  @BeforeEach
+  void initScmConfig() {
+    lenient().when(scmConfiguration.getBaseUrl()).thenReturn(SERVER_URL);
+  }
 
   @Test
   void shouldNotSendIfNotPostEvent() {
@@ -113,8 +130,9 @@ class JenkinsPullRequestEventRelayTest {
 
     verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
-    JenkinsPullRequestEventRelay.JenkinsEventDto dto = (JenkinsPullRequestEventRelay.JenkinsEventDto) captor.getValue();
-    assertThat(dto.getLinks().getLinkBy("dummy")).isPresent();
+    JsonNode dto = objectMapper.readTree(captor.getValue());
+    assertThat(dto.has("_links")).isTrue();
+    assertThat(dto.get("_links").has("dummy")).isTrue();
   }
 
   @Test
@@ -128,8 +146,13 @@ class JenkinsPullRequestEventRelayTest {
 
     verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
-    JenkinsEventRelay.JenkinsEventDto dto = captor.getValue();
-    assertThat(dto.getLinks().getLinkBy("dummy")).isPresent();
+    JsonNode dto = objectMapper.readTree(captor.getValue());
+    assertThat(dto.has("_links")).isTrue();
+    assertThat(dto.get("_links").has("dummy")).isTrue();
+    assertThat(dto.get("server").toString()).isEqualTo("\"" + SERVER_URL + "\"");
+    assertThat(dto.get("namespace").toString()).isEqualTo("\"" + REPOSITORY.getNamespace() + "\"");
+    assertThat(dto.get("name").toString()).isEqualTo("\"" + REPOSITORY.getName() + "\"");
+    assertThat(dto.get("type").toString()).isEqualTo("\"" + REPOSITORY.getType() + "\"");
   }
 
   private String mockJenkinsConfig(boolean disableRepoConfig) {
@@ -147,8 +170,10 @@ class JenkinsPullRequestEventRelayTest {
 
   private void mockRequest() throws IOException {
     when(request.request()).thenReturn(response);
+    when(request.formContent()).thenReturn(formContentBuilder);
+    when(formContentBuilder.field(anyString(), captor.capture())).thenReturn(formContentBuilder);
+    when(formContentBuilder.build()).thenReturn(request);
     when(httpClient.post(anyString())).thenReturn(request);
-    when(request.jsonContent(captor.capture())).thenReturn(request);
   }
 
   private void mockRepo() {

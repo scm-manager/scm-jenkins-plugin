@@ -24,7 +24,10 @@
 
 package sonia.scm.jenkins;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -33,9 +36,11 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.config.ScmConfiguration;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.net.ahc.AdvancedHttpRequestWithBody;
 import sonia.scm.net.ahc.AdvancedHttpResponse;
+import sonia.scm.net.ahc.FormContentBuilder;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHookEvent;
@@ -64,11 +69,15 @@ import static sonia.scm.jenkins.JenkinsEventRelay.EVENT_ENDPOINT;
 class JenkinsBranchAndTagEventRelayTest {
 
   private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
+  private static final String SERVER_URL = "http://scm-manager.org";
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Mock
   private JenkinsContext jenkinsContext;
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private HookContext hookContext;
+  @Mock
+  private ScmConfiguration scmConfiguration;
   @Mock
   private RepositoryServiceFactory repositoryServiceFactory;
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -79,12 +88,19 @@ class JenkinsBranchAndTagEventRelayTest {
   private AdvancedHttpRequestWithBody request;
   @Mock
   private AdvancedHttpResponse response;
+  @Mock
+  private FormContentBuilder formContentBuilder;
 
   @Captor
-  private ArgumentCaptor<JenkinsEventRelay.JenkinsEventDto> captor;
+  private ArgumentCaptor<String> captor;
 
   @InjectMocks
   private JenkinsBranchAndTagEventRelay eventRelay;
+
+  @BeforeEach
+  void initScmConfig() {
+    lenient().when(scmConfiguration.getBaseUrl()).thenReturn(SERVER_URL);
+  }
 
   @Test
   void shouldNotSend() {
@@ -111,9 +127,9 @@ class JenkinsBranchAndTagEventRelayTest {
 
     verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
-    JenkinsBranchAndTagEventRelay.JenkinsEventDto eventDto = (JenkinsBranchAndTagEventRelay.JenkinsEventDto) captor.getValue();
-    assertThat((eventDto).getCreatedOrModifiedBranches().get(0)).isEqualTo("master");
-    assertThat((eventDto).getDeletedBranches().get(0)).isEqualTo("develop");
+    JsonNode dto = objectMapper.readTree(captor.getValue());
+    assertThat(dto.get("createdOrModifiedBranches").get(0).toString()).isEqualTo("\"master\"");
+    assertThat(dto.get("deletedBranches").get(0).toString()).isEqualTo("\"develop\"");
   }
 
   @Test
@@ -131,9 +147,9 @@ class JenkinsBranchAndTagEventRelayTest {
 
     verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
-    JenkinsBranchAndTagEventRelay.JenkinsEventDto eventDto = (JenkinsBranchAndTagEventRelay.JenkinsEventDto) captor.getValue();
-    assertThat((eventDto).getCreateOrModifiedTags().get(0).getName()).isEqualTo("snapshot");
-    assertThat((eventDto).getDeletedTags().get(0).getName()).isEqualTo("release");
+    JsonNode dto = objectMapper.readTree(captor.getValue());
+    assertThat(dto.get("createOrModifiedTags").get(0).get("name").toString()).isEqualTo("\"snapshot\"");
+    assertThat(dto.get("deletedTags").get(0).get("name").toString()).isEqualTo("\"release\"");
   }
 
   @Test
@@ -153,11 +169,15 @@ class JenkinsBranchAndTagEventRelayTest {
 
     verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
-    JenkinsBranchAndTagEventRelay.JenkinsEventDto eventDto = (JenkinsBranchAndTagEventRelay.JenkinsEventDto) captor.getValue();
-    assertThat((eventDto).getCreateOrModifiedTags().get(0).getName()).isEqualTo("snapshot");
-    assertThat((eventDto).getDeletedTags().get(0).getName()).isEqualTo("release");
-    assertThat((eventDto).getCreatedOrModifiedBranches().get(0)).isEqualTo("master");
-    assertThat((eventDto).getDeletedBranches().get(0)).isEqualTo("develop");
+    JsonNode dto = objectMapper.readTree(captor.getValue());
+    assertThat(dto.get("createOrModifiedTags").get(0).get("name").toString()).isEqualTo("\"snapshot\"");
+    assertThat(dto.get("deletedTags").get(0).get("name").toString()).isEqualTo("\"release\"");
+    assertThat(dto.get("createdOrModifiedBranches").get(0).toString()).isEqualTo("\"master\"");
+    assertThat(dto.get("deletedBranches").get(0).toString()).isEqualTo("\"develop\"");
+    assertThat(dto.get("server").toString()).isEqualTo("\"" + SERVER_URL + "\"");
+    assertThat(dto.get("namespace").toString()).isEqualTo("\"" + REPOSITORY.getNamespace() + "\"");
+    assertThat(dto.get("name").toString()).isEqualTo("\"" + REPOSITORY.getName() + "\"");
+    assertThat(dto.get("type").toString()).isEqualTo("\"" + REPOSITORY.getType() + "\"");
   }
 
   private String mockJenkinsConfig(boolean disableRepoConfig) {
@@ -182,7 +202,9 @@ class JenkinsBranchAndTagEventRelayTest {
 
   private void mockRequest() throws IOException {
     when(request.request()).thenReturn(response);
+    when(request.formContent()).thenReturn(formContentBuilder);
+    when(formContentBuilder.field(anyString(), captor.capture())).thenReturn(formContentBuilder);
+    when(formContentBuilder.build()).thenReturn(request);
     when(httpClient.post(anyString())).thenReturn(request);
-    when(request.jsonContent(captor.capture())).thenReturn(request);
   }
 }

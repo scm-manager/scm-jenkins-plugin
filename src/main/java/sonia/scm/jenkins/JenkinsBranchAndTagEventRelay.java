@@ -30,6 +30,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import sonia.scm.EagerSingleton;
+import sonia.scm.config.ScmConfiguration;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
@@ -49,9 +50,12 @@ import java.util.stream.Collectors;
 @EagerSingleton
 public class JenkinsBranchAndTagEventRelay extends JenkinsEventRelay {
 
+  private final ScmConfiguration configuration;
+
   @Inject
-  public JenkinsBranchAndTagEventRelay(JenkinsContext jenkinsContext, RepositoryServiceFactory repositoryServiceFactory, AdvancedHttpClient httpClient) {
+  public JenkinsBranchAndTagEventRelay(JenkinsContext jenkinsContext, RepositoryServiceFactory repositoryServiceFactory, AdvancedHttpClient httpClient, ScmConfiguration configuration) {
     super(jenkinsContext, repositoryServiceFactory, httpClient);
+    this.configuration = configuration;
   }
 
   @Subscribe
@@ -63,7 +67,7 @@ public class JenkinsBranchAndTagEventRelay extends JenkinsEventRelay {
 
       if (context.isFeatureSupported(HookFeature.BRANCH_PROVIDER) || context.isFeatureSupported(HookFeature.TAG_PROVIDER)) {
         final List<ScmProtocol> supportedProtocols = repositoryService.getSupportedProtocols().collect(Collectors.toList());
-        final JenkinsEventDto eventDto = new JenkinsEventDto(supportedProtocols);
+        final JenkinsBranchAndTagEventDto eventDto = new JenkinsBranchAndTagEventDto(supportedProtocols);
 
         if (context.isFeatureSupported(HookFeature.BRANCH_PROVIDER)) {
           eventDto.setCreatedOrModifiedBranches(context.getBranchProvider().getCreatedOrModified());
@@ -75,6 +79,11 @@ public class JenkinsBranchAndTagEventRelay extends JenkinsEventRelay {
           eventDto.setDeletedTags(context.getTagProvider().getDeletedTags());
         }
 
+        eventDto.setServer(configuration.getBaseUrl());
+        eventDto.setNamespace(repository.getNamespace());
+        eventDto.setName(repository.getName());
+        eventDto.setType(repository.getType());
+
         this.send(repository, eventDto);
       }
     }
@@ -84,13 +93,18 @@ public class JenkinsBranchAndTagEventRelay extends JenkinsEventRelay {
   @Setter
   @EqualsAndHashCode(callSuper = true)
   @VisibleForTesting
-  public static final class JenkinsEventDto extends JenkinsEventRelay.JenkinsEventDto {
+  public static final class JenkinsBranchAndTagEventDto extends JenkinsEventRelay.JenkinsEventDto {
     private List<String> deletedBranches;
     private List<String> createdOrModifiedBranches;
     private List<Tag> deletedTags;
     private List<Tag> createOrModifiedTags;
 
-    public JenkinsEventDto(List<ScmProtocol> protocols) {
+    private String namespace;
+    private String name;
+    private String type;
+    private String server;
+
+    public JenkinsBranchAndTagEventDto(List<ScmProtocol> protocols) {
       super(protocols);
     }
   }
