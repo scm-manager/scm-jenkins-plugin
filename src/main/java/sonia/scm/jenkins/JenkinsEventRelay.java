@@ -56,26 +56,29 @@ public class JenkinsEventRelay {
   }
 
   protected final void send(Repository repository, JenkinsEventDto eventDto) {
-    String url;
     if (!jenkinsContext.getConfiguration().isDisableEventTrigger()) {
-      if (jenkinsContext.getConfiguration().isDisableRepositoryConfiguration()) {
-        url = jenkinsContext.getConfiguration().getUrl();
-      } else {
-        url = jenkinsContext.getConfiguration(repository).getUrl();
-      }
-      if (!url.endsWith("/")) {
-        url = url + "/";
-      }
-      url = url + "scm-manager-hook/notify";
-
       try {
-        httpClient.post(url).jsonContent(eventDto).request();
+        httpClient.post(createEventHookUrl(repository)).jsonContent(eventDto).request();
       } catch (IOException e) {
         if (logger.isWarnEnabled()) {
           logger.warn("Failed to relay event to Jenkins server");
         }
       }
     }
+  }
+
+  private String createEventHookUrl(Repository repository) {
+    String url;
+
+    if (jenkinsContext.getConfiguration().isDisableRepositoryConfiguration()) {
+      url = jenkinsContext.getConfiguration().getUrl();
+    } else {
+      url = jenkinsContext.getConfiguration(repository).getUrl();
+    }
+    if (!url.endsWith("/")) {
+      url = url + "/";
+    }
+    return url + EVENT_ENDPOINT;
   }
 
   @Getter
