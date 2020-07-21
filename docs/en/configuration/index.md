@@ -15,4 +15,10 @@ Just the Jenkins instance url and some kind of credentials are required.
 For authentication you can use an authentication token or an api token. 
 You can filter the build job triggers by branches, so only build jobs of selected branches will be triggered on a repository push.
 
+If the Jenkins build job is parametrized you may also send parameters with each request.
+The parameters consist of name and value pairs. The name must match the parameter name in the Jenkins build job exactly (case sensitiv).
+The values may be absolute or relative values. Absolute values are for example `Trillian` as string parameter or `true` as boolean parameter.
+The relative values can be used through an expression language from the repository push context (repository, commits).
+It could be used like `${repository.id}` for the repository id or `${commit.author.mail}` to get the mail address from the committer.
+
 ![Jenkins Repository Configuration](assets/repo-config.png)
