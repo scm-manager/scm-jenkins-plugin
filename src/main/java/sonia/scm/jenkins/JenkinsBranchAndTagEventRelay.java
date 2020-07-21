@@ -85,8 +85,6 @@ public class JenkinsBranchAndTagEventRelay extends JenkinsEventRelay {
 
   @Getter
   @Setter
-  @EqualsAndHashCode(callSuper = true)
-  @VisibleForTesting
   public static final class JenkinsBranchAndTagEventDto extends JenkinsEventRelay.JenkinsEventDto {
     private List<BranchDto> deletedBranches;
     private List<BranchDto> createdOrModifiedBranches;

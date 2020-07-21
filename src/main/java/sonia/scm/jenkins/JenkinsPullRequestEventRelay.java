@@ -100,8 +100,6 @@ public class JenkinsPullRequestEventRelay extends JenkinsEventRelay {
 
   @Getter
   @Setter
-  @VisibleForTesting
-  @EqualsAndHashCode(callSuper = true)
   public static final class JenkinsPullRequestEventDto extends JenkinsEventRelay.JenkinsEventDto {
 
     private List<PullRequestDto> deletedPullRequests;
