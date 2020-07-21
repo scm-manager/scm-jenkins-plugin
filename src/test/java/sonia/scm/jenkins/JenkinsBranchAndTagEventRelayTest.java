@@ -128,8 +128,8 @@ class JenkinsBranchAndTagEventRelayTest {
     verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
     JsonNode dto = objectMapper.readTree(captor.getValue());
-    assertThat(dto.get("createdOrModifiedBranches").get(0).toString()).isEqualTo("\"master\"");
-    assertThat(dto.get("deletedBranches").get(0).toString()).isEqualTo("\"develop\"");
+    assertThat(dto.get("createdOrModifiedBranches").get(0).get("name")).hasToString("\"master\"");
+    assertThat(dto.get("deletedBranches").get(0).get("name")).hasToString("\"develop\"");
   }
 
   @Test
@@ -148,8 +148,8 @@ class JenkinsBranchAndTagEventRelayTest {
     verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
     JsonNode dto = objectMapper.readTree(captor.getValue());
-    assertThat(dto.get("createOrModifiedTags").get(0).get("name").toString()).isEqualTo("\"snapshot\"");
-    assertThat(dto.get("deletedTags").get(0).get("name").toString()).isEqualTo("\"release\"");
+    assertThat(dto.get("createOrModifiedTags").get(0).get("name")).hasToString("\"snapshot\"");
+    assertThat(dto.get("deletedTags").get(0).get("name")).hasToString("\"release\"");
   }
 
   @Test
@@ -170,14 +170,14 @@ class JenkinsBranchAndTagEventRelayTest {
     verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
     JsonNode dto = objectMapper.readTree(captor.getValue());
-    assertThat(dto.get("createOrModifiedTags").get(0).get("name").toString()).isEqualTo("\"snapshot\"");
-    assertThat(dto.get("deletedTags").get(0).get("name").toString()).isEqualTo("\"release\"");
-    assertThat(dto.get("createdOrModifiedBranches").get(0).toString()).isEqualTo("\"master\"");
-    assertThat(dto.get("deletedBranches").get(0).toString()).isEqualTo("\"develop\"");
-    assertThat(dto.get("server").toString()).isEqualTo("\"" + SERVER_URL + "\"");
-    assertThat(dto.get("namespace").toString()).isEqualTo("\"" + REPOSITORY.getNamespace() + "\"");
-    assertThat(dto.get("name").toString()).isEqualTo("\"" + REPOSITORY.getName() + "\"");
-    assertThat(dto.get("type").toString()).isEqualTo("\"" + REPOSITORY.getType() + "\"");
+    assertThat(dto.get("createOrModifiedTags").get(0).get("name")).hasToString("\"snapshot\"");
+    assertThat(dto.get("deletedTags").get(0).get("name")).hasToString("\"release\"");
+    assertThat(dto.get("createdOrModifiedBranches").get(0).get("name")).hasToString("\"master\"");
+    assertThat(dto.get("deletedBranches").get(0).get("name")).hasToString("\"develop\"");
+    assertThat(dto.get("server")).hasToString("\"" + SERVER_URL + "\"");
+    assertThat(dto.get("namespace")).hasToString("\"" + REPOSITORY.getNamespace() + "\"");
+    assertThat(dto.get("name")).hasToString("\"" + REPOSITORY.getName() + "\"");
+    assertThat(dto.get("type")).hasToString("\"" + REPOSITORY.getType() + "\"");
   }
 
   private String mockJenkinsConfig(boolean disableRepoConfig) {

@@ -26,11 +26,17 @@ package sonia.scm.jenkins;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -53,6 +59,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
@@ -65,6 +72,8 @@ import static sonia.scm.jenkins.JenkinsEventRelay.EVENT_ENDPOINT;
 class JenkinsPullRequestEventRelayTest {
 
   private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
+  private static final PullRequest PULL_REQUEST = new PullRequest("42", "feature", "master");
+
   private static final String SERVER_URL = "http://scm-manager.org";
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -85,6 +94,8 @@ class JenkinsPullRequestEventRelayTest {
   private AdvancedHttpResponse response;
   @Mock
   private FormContentBuilder formContentBuilder;
+  @Mock
+  private ScmConfiguration configuration;
 
   @Captor
   private ArgumentCaptor<String> captor;
@@ -97,18 +108,26 @@ class JenkinsPullRequestEventRelayTest {
     lenient().when(scmConfiguration.getBaseUrl()).thenReturn(SERVER_URL);
   }
 
-  @Test
-  void shouldNotSendIfNotPostEvent() {
+  @BeforeEach
+  void mockRepositoryProtocols() {
+    List<ScmProtocol> protocols = new ArrayList<>();
+    protocols.add(new DummyScmProtocol());
+    lenient().when(repositoryServiceFactory.create(REPOSITORY)).thenReturn(repositoryService);
+    lenient().when(repositoryService.getSupportedProtocols()).thenReturn(protocols.stream());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"BEFORE_CREATE", "BEFORE_MODIFY", "BEFORE_DELETE", "MODIFY"})
+  void shouldNotSendForIrrelevantEvents(String eventName) {
     PullRequest pr = new PullRequest();
 
-    eventRelay.handle(new PullRequestEvent(REPOSITORY, pr, pr, HandlerEventType.BEFORE_CREATE));
+    eventRelay.handle(new PullRequestEvent(REPOSITORY, pr, pr, HandlerEventType.valueOf(eventName)));
 
     verify(httpClient, never()).post(anyString());
   }
 
   @Test
   void shouldNotSendIfEventTriggerDisabled() {
-    mockRepo();
     GlobalJenkinsConfiguration configuration = new GlobalJenkinsConfiguration();
     configuration.setDisableEventTrigger(true);
     when(jenkinsContext.getConfiguration()).thenReturn(configuration);
@@ -119,68 +138,135 @@ class JenkinsPullRequestEventRelayTest {
     verify(httpClient, never()).post(anyString());
   }
 
-  @Test
-  void shouldSendForGlobalConfig() throws IOException {
-    mockRequest();
-    mockRepo();
-    String jenkinsUrl = mockJenkinsConfig(true);
-    PullRequest pr = new PullRequest();
+  @Nested
+  class WithExpectedRequest {
 
-    eventRelay.handle(new PullRequestEvent(REPOSITORY, pr, pr, HandlerEventType.CREATE));
+    @BeforeEach
+    void mockRequest() throws IOException {
+      when(request.request()).thenReturn(response);
+      when(request.formContent()).thenReturn(formContentBuilder);
+      when(formContentBuilder.field(anyString(), captor.capture())).thenReturn(formContentBuilder);
+      when(formContentBuilder.build()).thenReturn(request);
+      when(httpClient.post(anyString())).thenReturn(request);
+    }
 
-    verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
+    @Test
+    void shouldSendForGlobalConfig() throws IOException {
+      String jenkinsUrl = mockJenkinsConfig(true);
 
-    JsonNode dto = objectMapper.readTree(captor.getValue());
-    assertThat(dto.has("_links")).isTrue();
-    assertThat(dto.get("_links").has("dummy")).isTrue();
-  }
+      eventRelay.handle(new PullRequestEvent(REPOSITORY, PULL_REQUEST, null, HandlerEventType.CREATE));
 
-  @Test
-  void shouldSendForRepositoryConfig() throws IOException {
-    mockRequest();
-    mockRepo();
-    String jenkinsUrl = mockJenkinsConfig(false);
-    PullRequest pr = new PullRequest();
+      verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
-    eventRelay.handle(new PullRequestEvent(REPOSITORY, pr, pr, HandlerEventType.CREATE));
+      JsonNode dto = objectMapper.readTree(captor.getValue());
+      assertThat(dto.has("_links")).isTrue();
+      assertThat(dto.get("_links").has("dummy")).isTrue();
+    }
 
-    verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
+    @Test
+    void shouldSendForRepositoryConfig() throws IOException {
+      String jenkinsUrl = mockJenkinsConfig(false);
 
-    JsonNode dto = objectMapper.readTree(captor.getValue());
-    assertThat(dto.has("_links")).isTrue();
-    assertThat(dto.get("_links").has("dummy")).isTrue();
-    assertThat(dto.get("server").toString()).isEqualTo("\"" + SERVER_URL + "\"");
-    assertThat(dto.get("namespace").toString()).isEqualTo("\"" + REPOSITORY.getNamespace() + "\"");
-    assertThat(dto.get("name").toString()).isEqualTo("\"" + REPOSITORY.getName() + "\"");
-    assertThat(dto.get("type").toString()).isEqualTo("\"" + REPOSITORY.getType() + "\"");
-  }
+      eventRelay.handle(new PullRequestEvent(REPOSITORY, PULL_REQUEST, null, HandlerEventType.CREATE));
 
-  private String mockJenkinsConfig(boolean disableRepoConfig) {
-    String jenkinsUrl = "http://hitchhiker.org/";
-    GlobalJenkinsConfiguration globalJenkinsConfiguration = new GlobalJenkinsConfiguration();
-    globalJenkinsConfiguration.setDisableRepositoryConfiguration(disableRepoConfig);
-    globalJenkinsConfiguration.setUrl(jenkinsUrl);
-    JenkinsConfiguration jenkinsConfiguration = new JenkinsConfiguration();
-    jenkinsConfiguration.setUrl(jenkinsUrl);
-    lenient().when(jenkinsContext.getConfiguration()).thenReturn(globalJenkinsConfiguration);
-    lenient().when(jenkinsContext.getConfiguration(REPOSITORY)).thenReturn(jenkinsConfiguration);
+      verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
-    return jenkinsUrl;
-  }
+      JsonNode dto = objectMapper.readTree(captor.getValue());
+      assertThat(dto.has("_links")).isTrue();
+      assertThat(dto.get("_links").has("dummy")).isTrue();
+      assertThat(dto.get("namespace")).hasToString("\"" + REPOSITORY.getNamespace() + "\"");
+      assertThat(dto.get("name")).hasToString("\"" + REPOSITORY.getName() + "\"");
+      assertThat(dto.get("type")).hasToString("\"" + REPOSITORY.getType() + "\"");
+    }
 
-  private void mockRequest() throws IOException {
-    when(request.request()).thenReturn(response);
-    when(request.formContent()).thenReturn(formContentBuilder);
-    when(formContentBuilder.field(anyString(), captor.capture())).thenReturn(formContentBuilder);
-    when(formContentBuilder.build()).thenReturn(request);
-    when(httpClient.post(anyString())).thenReturn(request);
-  }
+    @Test
+    void shouldSendForCreateEvent() throws IOException {
+      String jenkinsUrl = mockJenkinsConfig(false);
 
-  private void mockRepo() {
-    List<ScmProtocol> protocols = new ArrayList<>();
-    protocols.add(new DummyScmProtocol());
-    when(repositoryServiceFactory.create(REPOSITORY)).thenReturn(repositoryService);
-    when(repositoryService.getSupportedProtocols()).thenReturn(protocols.stream());
+      eventRelay.handle(new PullRequestEvent(REPOSITORY, PULL_REQUEST, null, HandlerEventType.CREATE));
+
+      verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
+
+      JsonNode dto = objectMapper.readTree(captor.getValue());
+      assertThat(dto.has("_links")).isTrue();
+      assertThat(dto.get("_links").has("dummy")).isTrue();
+      assertThat(dto.get("namespace")).hasToString("\"" + REPOSITORY.getNamespace() + "\"");
+      assertThat(dto.get("name")).hasToString("\"" + REPOSITORY.getName() + "\"");
+      assertThat(dto.get("type")).hasToString("\"" + REPOSITORY.getType() + "\"");
+      assertThat(dto.get("createOrModifiedPullRequests").get(0).get("id")).hasToString("\"42\"");
+      assertThat(dto.get("createOrModifiedPullRequests").get(0).get("source")).hasToString("\"feature\"");
+      assertThat(dto.get("createOrModifiedPullRequests").get(0).get("target")).hasToString("\"master\"");
+    }
+
+    @Test
+    void shouldSendForUpdatedEvent() throws IOException {
+      String jenkinsUrl = mockJenkinsConfig(false);
+
+      eventRelay.handleUpdatedEvent(new PullRequestUpdatedEvent(REPOSITORY, PULL_REQUEST));
+
+      verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
+
+      JsonNode dto = objectMapper.readTree(captor.getValue());
+      assertThat(dto.has("_links")).isTrue();
+      assertThat(dto.get("_links").has("dummy")).isTrue();
+      assertThat(dto.get("namespace")).hasToString("\"" + REPOSITORY.getNamespace() + "\"");
+      assertThat(dto.get("name")).hasToString("\"" + REPOSITORY.getName() + "\"");
+      assertThat(dto.get("type")).hasToString("\"" + REPOSITORY.getType() + "\"");
+      assertThat(dto.get("createOrModifiedPullRequests").get(0).get("id")).hasToString("\"42\"");
+      assertThat(dto.get("createOrModifiedPullRequests").get(0).get("source")).hasToString("\"feature\"");
+      assertThat(dto.get("createOrModifiedPullRequests").get(0).get("target")).hasToString("\"master\"");
+    }
+
+    @Test
+    void shouldSendForMergedEvent() throws IOException {
+      String jenkinsUrl = mockJenkinsConfig(false);
+
+      eventRelay.handleMergedEvent(new PullRequestMergedEvent(REPOSITORY, PULL_REQUEST));
+
+      verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
+
+      JsonNode dto = objectMapper.readTree(captor.getValue());
+      assertThat(dto.has("_links")).isTrue();
+      assertThat(dto.get("_links").has("dummy")).isTrue();
+      assertThat(dto.get("namespace")).hasToString("\"" + REPOSITORY.getNamespace() + "\"");
+      assertThat(dto.get("name")).hasToString("\"" + REPOSITORY.getName() + "\"");
+      assertThat(dto.get("type")).hasToString("\"" + REPOSITORY.getType() + "\"");
+      assertThat(dto.get("deletedPullRequests").get(0).get("id")).hasToString("\"42\"");
+      assertThat(dto.get("deletedPullRequests").get(0).get("source")).hasToString("\"feature\"");
+      assertThat(dto.get("deletedPullRequests").get(0).get("target")).hasToString("\"master\"");
+    }
+
+    @Test
+    void shouldSendForRejectedEvent() throws IOException {
+      String jenkinsUrl = mockJenkinsConfig(false);
+
+      eventRelay.handleRejectedEvent(new PullRequestRejectedEvent(REPOSITORY, PULL_REQUEST, REJECTED_BY_USER));
+
+      verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
+
+      JsonNode dto = objectMapper.readTree(captor.getValue());
+      assertThat(dto.has("_links")).isTrue();
+      assertThat(dto.get("_links").has("dummy")).isTrue();
+      assertThat(dto.get("namespace")).hasToString("\"" + REPOSITORY.getNamespace() + "\"");
+      assertThat(dto.get("name")).hasToString("\"" + REPOSITORY.getName() + "\"");
+      assertThat(dto.get("type")).hasToString("\"" + REPOSITORY.getType() + "\"");
+      assertThat(dto.get("deletedPullRequests").get(0).get("id")).hasToString("\"42\"");
+      assertThat(dto.get("deletedPullRequests").get(0).get("source")).hasToString("\"feature\"");
+      assertThat(dto.get("deletedPullRequests").get(0).get("target")).hasToString("\"master\"");
+    }
+
+    String mockJenkinsConfig(boolean disableRepoConfig) {
+      String jenkinsUrl = "http://hitchhiker.org/";
+      GlobalJenkinsConfiguration globalJenkinsConfiguration = new GlobalJenkinsConfiguration();
+      globalJenkinsConfiguration.setDisableRepositoryConfiguration(disableRepoConfig);
+      globalJenkinsConfiguration.setUrl(jenkinsUrl);
+      JenkinsConfiguration jenkinsConfiguration = new JenkinsConfiguration();
+      jenkinsConfiguration.setUrl(jenkinsUrl);
+      lenient().when(jenkinsContext.getConfiguration()).thenReturn(globalJenkinsConfiguration);
+      lenient().when(jenkinsContext.getConfiguration(REPOSITORY)).thenReturn(jenkinsConfiguration);
+
+      return jenkinsUrl;
+    }
   }
 
   public static class DummyScmProtocol implements ScmProtocol {

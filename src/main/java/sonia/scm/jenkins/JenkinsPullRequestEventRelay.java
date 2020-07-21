@@ -24,7 +24,12 @@
 
 package sonia.scm.jenkins;
 
+import com.cloudogu.scm.review.pullrequest.service.BasicPullRequestEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import com.github.legman.Subscribe;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.EqualsAndHashCode;
@@ -42,7 +47,9 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.repository.api.ScmProtocol;
 
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 @Extension
@@ -50,34 +57,44 @@ import java.util.stream.Collectors;
 @Requires("scm-review-plugin")
 public class JenkinsPullRequestEventRelay extends JenkinsEventRelay {
 
-  private final ScmConfiguration configuration;
-
   @Inject
   public JenkinsPullRequestEventRelay(JenkinsContext jenkinsContext, RepositoryServiceFactory repositoryServiceFactory, AdvancedHttpClient httpClient, ScmConfiguration configuration) {
-    super(jenkinsContext, repositoryServiceFactory, httpClient);
-    this.configuration = configuration;
+    super(configuration, jenkinsContext, repositoryServiceFactory, httpClient);
   }
 
   @Subscribe
   public void handle(PullRequestEvent event) {
-    if (event.getEventType().isPost()) {
-      final Repository repository = event.getRepository();
+    if (event.getEventType() == HandlerEventType.CREATE) {
+      handle(event, JenkinsPullRequestEventDto::setCreateOrModifiedPullRequests);
+    }
+  }
 
-      try (final RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
-        final List<ScmProtocol> supportedProtocols = repositoryService.getSupportedProtocols().collect(Collectors.toList());
+  @Subscribe
+  public void handleUpdatedEvent(PullRequestUpdatedEvent event) {
+    handle(event, JenkinsPullRequestEventDto::setCreateOrModifiedPullRequests);
+  }
 
-        final JenkinsPullRequestEventDto eventDto = new JenkinsPullRequestEventDto(
-          event.getEventType(),
-          event.getPullRequest().getId(),
-          event.getRepository().getName(),
-          event.getRepository().getNamespace(),
-          event.getRepository().getType(),
-          configuration.getBaseUrl(),
-          supportedProtocols
-        );
+  @Subscribe
+  public void handleMergedEvent(PullRequestMergedEvent event) {
+    handle(event, JenkinsPullRequestEventDto::setDeletedPullRequests);
+  }
 
-        this.send(repository, eventDto);
-      }
+  @Subscribe
+  public void handleRejectedEvent(PullRequestRejectedEvent event) {
+    handle(event, JenkinsPullRequestEventDto::setDeletedPullRequests);
+  }
+
+  private void handle(BasicPullRequestEvent event, BiConsumer<JenkinsPullRequestEventDto, List<PullRequestDto>> sender) {
+    final Repository repository = event.getRepository();
+
+    try (final RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
+      final List<ScmProtocol> supportedProtocols = repositoryService.getSupportedProtocols().collect(Collectors.toList());
+
+      final JenkinsPullRequestEventDto eventDto = new JenkinsPullRequestEventDto(supportedProtocols);
+      List<PullRequestDto> pullRequestDtos = Collections.singletonList(new PullRequestDto(event.getPullRequest()));
+      sender.accept(eventDto, pullRequestDtos);
+
+      this.send(repository, eventDto);
     }
   }
 
@@ -86,21 +103,25 @@ public class JenkinsPullRequestEventRelay extends JenkinsEventRelay {
   @VisibleForTesting
   @EqualsAndHashCode(callSuper = true)
   public static final class JenkinsPullRequestEventDto extends JenkinsEventRelay.JenkinsEventDto {
-    private HandlerEventType eventType;
-    private String pullRequestId;
-    private String name;
-    private String namespace;
-    private String type;
-    private String server;
 
-    public JenkinsPullRequestEventDto(HandlerEventType eventType, String pullRequestId, String name, String namespace, String type, String server, List<ScmProtocol> protocols) {
+    private List<PullRequestDto> deletedPullRequests;
+    private List<PullRequestDto> createOrModifiedPullRequests;
+
+    public JenkinsPullRequestEventDto(List<ScmProtocol> protocols) {
       super(protocols);
-      this.eventType = eventType;
-      this.pullRequestId = pullRequestId;
-      this.name = name;
-      this.namespace = namespace;
-      this.type = type;
-      this.server = server;
+    }
+  }
+
+  @Getter
+  public static class PullRequestDto {
+    private String id;
+    private String source;
+    private String target;
+
+    public PullRequestDto(PullRequest pullRequest) {
+      this.id = pullRequest.getId();
+      this.source = pullRequest.getSource();
+      this.target = pullRequest.getTarget();
     }
   }
 }

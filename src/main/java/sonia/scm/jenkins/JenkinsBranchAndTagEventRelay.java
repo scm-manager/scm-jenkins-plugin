@@ -26,6 +26,7 @@ package sonia.scm.jenkins;
 
 import com.github.legman.Subscribe;
 import com.google.common.annotations.VisibleForTesting;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,18 +45,16 @@ import sonia.scm.repository.api.ScmProtocol;
 
 import javax.inject.Inject;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Extension
 @EagerSingleton
 public class JenkinsBranchAndTagEventRelay extends JenkinsEventRelay {
 
-  private final ScmConfiguration configuration;
-
   @Inject
   public JenkinsBranchAndTagEventRelay(JenkinsContext jenkinsContext, RepositoryServiceFactory repositoryServiceFactory, AdvancedHttpClient httpClient, ScmConfiguration configuration) {
-    super(jenkinsContext, repositoryServiceFactory, httpClient);
-    this.configuration = configuration;
+    super(configuration, jenkinsContext, repositoryServiceFactory, httpClient);
   }
 
   @Subscribe
@@ -66,23 +65,18 @@ public class JenkinsBranchAndTagEventRelay extends JenkinsEventRelay {
       final HookContext context = event.getContext();
 
       if (context.isFeatureSupported(HookFeature.BRANCH_PROVIDER) || context.isFeatureSupported(HookFeature.TAG_PROVIDER)) {
-        final List<ScmProtocol> supportedProtocols = repositoryService.getSupportedProtocols().collect(Collectors.toList());
+        final List<ScmProtocol> supportedProtocols = repositoryService.getSupportedProtocols().collect(toList());
         final JenkinsBranchAndTagEventDto eventDto = new JenkinsBranchAndTagEventDto(supportedProtocols);
 
         if (context.isFeatureSupported(HookFeature.BRANCH_PROVIDER)) {
-          eventDto.setCreatedOrModifiedBranches(context.getBranchProvider().getCreatedOrModified());
-          eventDto.setDeletedBranches(context.getBranchProvider().getDeletedOrClosed());
+          eventDto.setCreatedOrModifiedBranches(context.getBranchProvider().getCreatedOrModified().stream().map(BranchDto::new).collect(toList()));
+          eventDto.setDeletedBranches(context.getBranchProvider().getDeletedOrClosed().stream().map(BranchDto::new).collect(toList()));
         }
 
         if (context.isFeatureSupported(HookFeature.TAG_PROVIDER)) {
-          eventDto.setCreateOrModifiedTags(context.getTagProvider().getCreatedTags());
-          eventDto.setDeletedTags(context.getTagProvider().getDeletedTags());
+          eventDto.setCreateOrModifiedTags(context.getTagProvider().getCreatedTags().stream().map(TagDto::new).collect(toList()));
+          eventDto.setDeletedTags(context.getTagProvider().getDeletedTags().stream().map(TagDto::new).collect(toList()));
         }
-
-        eventDto.setServer(configuration.getBaseUrl());
-        eventDto.setNamespace(repository.getNamespace());
-        eventDto.setName(repository.getName());
-        eventDto.setType(repository.getType());
 
         this.send(repository, eventDto);
       }
@@ -94,10 +88,10 @@ public class JenkinsBranchAndTagEventRelay extends JenkinsEventRelay {
   @EqualsAndHashCode(callSuper = true)
   @VisibleForTesting
   public static final class JenkinsBranchAndTagEventDto extends JenkinsEventRelay.JenkinsEventDto {
-    private List<String> deletedBranches;
-    private List<String> createdOrModifiedBranches;
-    private List<Tag> deletedTags;
-    private List<Tag> createOrModifiedTags;
+    private List<BranchDto> deletedBranches;
+    private List<BranchDto> createdOrModifiedBranches;
+    private List<TagDto> deletedTags;
+    private List<TagDto> createOrModifiedTags;
 
     private String namespace;
     private String name;
@@ -106,6 +100,21 @@ public class JenkinsBranchAndTagEventRelay extends JenkinsEventRelay {
 
     public JenkinsBranchAndTagEventDto(List<ScmProtocol> protocols) {
       super(protocols);
+    }
+  }
+
+  @Getter
+  @AllArgsConstructor
+  public static class BranchDto {
+    private String name;
+  }
+
+  @Getter
+  public static class TagDto {
+    private String name;
+
+    TagDto(Tag tag) {
+      this.name = tag.getName();
     }
   }
 }

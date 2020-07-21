@@ -32,6 +32,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sonia.scm.config.ScmConfiguration;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryServiceFactory;
@@ -47,12 +48,14 @@ public class JenkinsEventRelay {
   public static final String EVENT_ENDPOINT = "scm-manager-hook/notify";
   private final ObjectMapper mapper = new ObjectMapper();
 
+  private final ScmConfiguration configuration;
+
   protected final JenkinsContext jenkinsContext;
   protected final RepositoryServiceFactory repositoryServiceFactory;
   protected final AdvancedHttpClient httpClient;
 
-
-  public JenkinsEventRelay(JenkinsContext jenkinsContext, RepositoryServiceFactory repositoryServiceFactory, AdvancedHttpClient httpClient) {
+  public JenkinsEventRelay(ScmConfiguration configuration, JenkinsContext jenkinsContext, RepositoryServiceFactory repositoryServiceFactory, AdvancedHttpClient httpClient) {
+    this.configuration = configuration;
     this.jenkinsContext = jenkinsContext;
     this.repositoryServiceFactory = repositoryServiceFactory;
     this.httpClient = httpClient;
@@ -60,9 +63,17 @@ public class JenkinsEventRelay {
 
   protected final void send(Repository repository, JenkinsEventDto eventDto) {
     if (!jenkinsContext.getConfiguration().isDisableEventTrigger()) {
+      eventDto.setServer(configuration.getBaseUrl());
+      eventDto.setNamespace(repository.getNamespace());
+      eventDto.setName(repository.getName());
+      eventDto.setType(repository.getType());
+
       try {
         String json = mapper.writer().writeValueAsString(eventDto);
-        httpClient.post(createEventHookUrl(repository)).formContent().field("json", json).build().request();
+
+        httpClient.post(createEventHookUrl(repository))
+          .formContent().field("json", json).build()
+          .request();
       } catch (IOException e) {
         if (logger.isWarnEnabled()) {
           logger.warn("Failed to relay event to Jenkins server");
@@ -88,6 +99,11 @@ public class JenkinsEventRelay {
   @Getter
   @Setter
   protected static class JenkinsEventDto extends HalRepresentation {
+    private String namespace;
+    private String name;
+    private String type;
+    private String server;
+
     JenkinsEventDto(List<ScmProtocol> protocols) {
       super(new Links.Builder().array(protocols.stream().map(protocol -> Link.link(protocol.getType(), protocol.getUrl())).collect(Collectors.toList())).build());
     }
