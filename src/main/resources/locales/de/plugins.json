@@ -42,7 +42,7 @@
         "parameterName": "Name",
         "parameterNameHelp": "Der Name des Parameters.\nDer Name muss exakt mit dem Namen im Jenkins Build Job übereinstimmen!",
         "parameterValue": "Wert",
-        "parameterValueHelp": "Der Wert des Parameters:\n - Als boolsche Parameter werden \"true\" oder \"false\" erwartet\n - Für Run Parameter wird das Format \"jobname#buildnummer\" erwartet",
+        "parameterValueHelp": "Der Wert des Parameters:\n - Als boolsche Parameter werden \"true\" oder \"false\" erwartet\n - Für Run Parameter wird das Format \"jobname#buildnummer\" erwartet\n - Variable Parameter aus dem Kontext nutzen das Format ${wert}, z. B. ${repository.name}",
         "addParameter": "Parameter hinzufügen",
         "deleteParameter": "Entfernen"
       }

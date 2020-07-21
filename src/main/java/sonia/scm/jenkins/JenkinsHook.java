@@ -35,7 +35,7 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryServiceFactory;
-
+import sonia.scm.util.JexlUrlParser;
 /**
  * Jenkins post receive Hook.
  * This class is called after a changeset successfully pushed to a repository.
@@ -52,10 +52,12 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 @EagerSingleton
 public class JenkinsHook {
 
+  private static final Logger logger = LoggerFactory.getLogger(JenkinsHook.class);
+
   private final JenkinsContext context;
   private final Provider<AdvancedHttpClient> httpClientProvider;
   private final RepositoryServiceFactory repositoryServiceFactory;
-  private static final Logger logger = LoggerFactory.getLogger(JenkinsHook.class);
+  private final JexlUrlParser urlParser;
 
   /**
    * Creates a new instance of Jenkins Hook. This constructor is called by
@@ -69,14 +71,17 @@ public class JenkinsHook {
    * @param httpClientProvider       Google Guice provider for an {@link AdvancedHttpClient}
    * @param context
    * @param repositoryServiceFactory
+   * @param urlParser
    */
   @Inject
   public JenkinsHook(Provider<AdvancedHttpClient> httpClientProvider,
                      JenkinsContext context,
-                     RepositoryServiceFactory repositoryServiceFactory) {
+                     RepositoryServiceFactory repositoryServiceFactory,
+                     JexlUrlParser urlParser) {
     this.httpClientProvider = httpClientProvider;
     this.context = context;
     this.repositoryServiceFactory = repositoryServiceFactory;
+    this.urlParser = urlParser;
   }
 
   /**
@@ -108,13 +113,12 @@ public class JenkinsHook {
         // check if the configuration is valid and log error if not
         if (configuration.isValid()) {
           handler = new JenkinsRepositoryHookHandler(httpClientProvider,
-            configuration);
+            configuration, urlParser);
         } else {
           logger.debug("jenkins configuration for repository {} is not valid, try global configuration",
             repository.getName());
 
-          handler = new JenkinsGlobalHookHandler(httpClientProvider, globalConfig,
-            repository, repositoryServiceFactory);
+          handler = new JenkinsGlobalHookHandler(httpClientProvider, globalConfig, repository, repositoryServiceFactory);
         }
       } else {
         handler = new JenkinsGlobalHookHandler(httpClientProvider, globalConfig, repository, repositoryServiceFactory);
