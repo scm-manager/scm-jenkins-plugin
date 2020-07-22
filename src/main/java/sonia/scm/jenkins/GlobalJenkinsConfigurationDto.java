@@ -25,7 +25,6 @@ package sonia.scm.jenkins;
 
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -31,8 +31,6 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import com.github.legman.Subscribe;
-import com.google.common.annotations.VisibleForTesting;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import sonia.scm.EagerSingleton;

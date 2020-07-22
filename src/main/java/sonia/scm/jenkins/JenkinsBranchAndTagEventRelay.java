@@ -25,9 +25,7 @@
 package sonia.scm.jenkins;
 
 import com.github.legman.Subscribe;
-import com.google.common.annotations.VisibleForTesting;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import sonia.scm.EagerSingleton;
