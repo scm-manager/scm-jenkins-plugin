@@ -24,6 +24,9 @@
 
 package sonia.scm.jenkins;
 
+import com.cloudogu.scm.el.ElParser;
+import com.cloudogu.scm.el.env.ImmutableEncodedChangeset;
+import com.cloudogu.scm.el.env.ImmutableEncodedRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.net.ahc.AdvancedHttpClient;
@@ -35,10 +38,7 @@ import sonia.scm.repository.Changeset;
 import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.util.HttpUtil;
 import sonia.scm.util.IOUtil;
-import sonia.scm.util.JexlUrlParser;
 import sonia.scm.util.Util;
-import sonia.scm.web.data.ImmutableEncodedChangeset;
-import sonia.scm.web.data.ImmutableEncodedRepository;
 
 import javax.inject.Provider;
 import java.io.IOException;
@@ -62,14 +62,14 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
 
   private final JenkinsConfiguration configuration;
   private final Provider<AdvancedHttpClient> httpClientProvider;
-  private final JexlUrlParser urlParser;
+  private final ElParser elParser;
 
   public JenkinsRepositoryHookHandler(Provider<AdvancedHttpClient> httpClientProvider,
                                       JenkinsConfiguration configuration,
-                                      JexlUrlParser urlParser) {
+                                      ElParser elParser) {
     this.httpClientProvider = httpClientProvider;
     this.configuration = configuration;
-    this.urlParser = urlParser;
+    this.elParser = elParser;
   }
 
   @Override
@@ -310,7 +310,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
           .append(HttpUtil.encode(parameter.getName()))
           .append("=")
           // First decode before encode to avoid parsing errors from jexl like "@"
-          .append(HttpUtil.encode(HttpUtil.decode(urlParser.parse(parameter.getValue()).evaluate(env))))
+          .append(HttpUtil.encode(HttpUtil.decode(elParser.parse(parameter.getValue()).evaluate(env))))
           .append("&")
       );
       url = builder.toString().substring(0, builder.toString().length() - 1);
