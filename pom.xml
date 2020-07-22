@@ -25,16 +25,16 @@
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    
+
   <!--
     maven pom model version, should always be version 4.0.0.
   -->
   <modelVersion>4.0.0</modelVersion>
-  
+
   <!--
-    The parent module of the plugin. The parent part of the pom defines which 
-    SCM-Manager API level is used for the plugin. The groupId should always be 
-    sonia.scm.plugins and the artifactId should be scm-plugins. The version 
+    The parent module of the plugin. The parent part of the pom defines which
+    SCM-Manager API level is used for the plugin. The groupId should always be
+    sonia.scm.plugins and the artifactId should be scm-plugins. The version
     determines the api level and the minimum version of SCM-Manager.
     Further reading http://maven.apache.org/guides/introduction/introduction-to-the-pom.html#Project_Inheritance
   -->
@@ -45,8 +45,8 @@
   </parent>
 
   <!--
-    Information for the plugin backend of SCM-Manager and Maven. If the parent 
-    version 1.5 or higher this informations are copied to the plugin descriptor. 
+    Information for the plugin backend of SCM-Manager and Maven. If the parent
+    version 1.5 or higher this informations are copied to the plugin descriptor.
     For more informations read http://maven.apache.org/guides/getting-started/index.html#How_do_I_make_my_first_Maven_project
     and http://maven.apache.org/pom.html.
   -->
@@ -56,7 +56,7 @@
   <name>scm-jenkins-plugin</name>
   <url>https://github.com/scm-manager/scm-jenkins-plugin</url>
   <description>Pings your Jenkins CI server when a new commit is pushed to SCM-Manager</description>
-  
+
   <!--
     Informations for the source code repository of the plugin.
     For more informations have a look at: http://maven.apache.org/pom.html#SCM
@@ -67,8 +67,20 @@
     <url>https://github.com/scm-manager/scm-jenkins-plugin</url>
   </scm>
 
+  <dependencies>
+    <!--
+    We depend on the scm-el-plugin,
+    that we are able to use an expression language for out build parameters
+    -->
+    <dependency>
+      <groupId>sonia.scm.plugins</groupId>
+      <artifactId>scm-el-plugin</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+  </dependencies>
+
   <!--
-    SCM-Manager maven repository. This part is required to fetch the maven 
+    SCM-Manager maven repository. This part is required to fetch the maven
     plugins and must be available in each pom of a SCM-Manager plugin.
   -->
   <repositories>
@@ -78,7 +90,7 @@
       <name>scm-manager release repository</name>
       <url>https://packages.scm-manager.org/repository/public/</url>
     </repository>
-  
+
   </repositories>
 
   <build>
