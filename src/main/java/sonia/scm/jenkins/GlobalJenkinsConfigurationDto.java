@@ -31,7 +31,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = true)
 public class GlobalJenkinsConfigurationDto extends HalRepresentation {
 
   private boolean disableRepositoryConfiguration = false;
