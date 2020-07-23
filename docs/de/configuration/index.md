@@ -5,7 +5,7 @@ Wie im SCM-Manager 2 üblich, gibt es eine globale und eine repository-spezifisc
 
 ### Globale Konfiguration
 Über die globale Jenkins Konfiguration lassen sich die Jenkins Instanz-URL und die VCS Trigger konfigurieren. 
-Außerdem kann dort die repository-spezifische Konfiguration deaktiviert werden.
+Außerdem können dort die repository-spezifische Konfiguration sowie das Senden der Event-Trigger deaktiviert werden.
 
 ![Jenkins Globale Konfiguration](assets/global-config.png)
 

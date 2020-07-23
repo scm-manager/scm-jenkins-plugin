@@ -35,6 +35,7 @@ public class GlobalJenkinsConfigurationDto extends HalRepresentation {
   private boolean disableRepositoryConfiguration = false;
   private boolean disableMercurialTrigger = false;
   private boolean disableGitTrigger = false;
+  private boolean disableEventTrigger = false;
   private String url;
 
   @Override

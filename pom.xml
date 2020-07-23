@@ -77,6 +77,13 @@
       <artifactId>scm-el-plugin</artifactId>
       <version>1.0.0</version>
     </dependency>
+
+    <dependency>
+      <groupId>sonia.scm.plugins</groupId>
+      <artifactId>scm-review-plugin</artifactId>
+      <version>2.0.0</version>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
 
   <!--

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation in German ([#4](https://github.com/scm-manager/scm-jenkins-plugin/pull/4))
 - Add build job parameters to jenkins repository config ([#5](https://github.com/scm-manager/scm-jenkins-plugin/pull/5))
 - Allow variable build parameters from context ([#7](https://github.com/scm-manager/scm-jenkins-plugin/pull/7) and [#10](https://github.com/scm-manager/scm-jenkins-plugin/pull/10))
+- Triggers the web hook of the [Jenkins SCM-Manager plugin](https://github.com/jenkinsci/scm-manager-plugin) ([9](https://github.com/scm-manager/scm-jenkins-plugin/pull/9))
 
 ## [2.0.0] - 2020-06-04
 ### Changed

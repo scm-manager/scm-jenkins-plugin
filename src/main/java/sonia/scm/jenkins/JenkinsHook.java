@@ -36,7 +36,6 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryServiceFactory;
-
 /**
  * Jenkins post receive Hook.
  * This class is called after a changeset successfully pushed to a repository.
@@ -55,13 +54,8 @@ public class JenkinsHook {
 
   private static final Logger logger = LoggerFactory.getLogger(JenkinsHook.class);
 
-  /**
-   * Global jenkins configuration
-   */
-  private JenkinsContext context;
-
-  private Provider<AdvancedHttpClient> httpClientProvider;
-
+  private final JenkinsContext context;
+  private final Provider<AdvancedHttpClient> httpClientProvider;
   private final RepositoryServiceFactory repositoryServiceFactory;
   private final ElParser elParser;
 
