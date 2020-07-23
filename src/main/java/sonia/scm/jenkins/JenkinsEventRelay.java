@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class JenkinsEventRelay {
+public abstract class JenkinsEventRelay {
 
   private static final Logger logger = LoggerFactory.getLogger(JenkinsEventRelay.class);
   public static final String EVENT_ENDPOINT = "scm-manager-hook/notify";
