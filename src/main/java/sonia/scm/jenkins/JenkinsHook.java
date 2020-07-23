@@ -24,6 +24,7 @@
 
 package sonia.scm.jenkins;
 
+import com.cloudogu.scm.el.ElParser;
 import com.github.legman.Subscribe;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -35,7 +36,6 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryServiceFactory;
-import sonia.scm.util.JexlUrlParser;
 /**
  * Jenkins post receive Hook.
  * This class is called after a changeset successfully pushed to a repository.
@@ -57,7 +57,7 @@ public class JenkinsHook {
   private final JenkinsContext context;
   private final Provider<AdvancedHttpClient> httpClientProvider;
   private final RepositoryServiceFactory repositoryServiceFactory;
-  private final JexlUrlParser urlParser;
+  private final ElParser elParser;
 
   /**
    * Creates a new instance of Jenkins Hook. This constructor is called by
@@ -71,17 +71,17 @@ public class JenkinsHook {
    * @param httpClientProvider       Google Guice provider for an {@link AdvancedHttpClient}
    * @param context
    * @param repositoryServiceFactory
-   * @param urlParser
+   * @param elParser
    */
   @Inject
   public JenkinsHook(Provider<AdvancedHttpClient> httpClientProvider,
                      JenkinsContext context,
                      RepositoryServiceFactory repositoryServiceFactory,
-                     JexlUrlParser urlParser) {
+                     ElParser elParser) {
     this.httpClientProvider = httpClientProvider;
     this.context = context;
     this.repositoryServiceFactory = repositoryServiceFactory;
-    this.urlParser = urlParser;
+    this.elParser = elParser;
   }
 
   /**
@@ -112,8 +112,7 @@ public class JenkinsHook {
 
         // check if the configuration is valid and log error if not
         if (configuration.isValid()) {
-          handler = new JenkinsRepositoryHookHandler(httpClientProvider,
-            configuration, urlParser);
+          handler = new JenkinsRepositoryHookHandler(httpClientProvider, configuration, elParser);
         } else {
           logger.debug("jenkins configuration for repository {} is not valid, try global configuration",
             repository.getName());

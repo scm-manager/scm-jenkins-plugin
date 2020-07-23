@@ -24,6 +24,8 @@
 
 package sonia.scm.jenkins;
 
+import com.cloudogu.scm.el.ElParser;
+import com.cloudogu.scm.el.jexl.JexlParser;
 import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +44,6 @@ import sonia.scm.repository.RepositoryHookType;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.HookContext;
 import sonia.scm.util.HttpUtil;
-import sonia.scm.util.JexlUrlParser;
 
 import javax.inject.Provider;
 import java.io.IOException;
@@ -69,7 +70,7 @@ class JenkinsRepositoryHookHandlerTest {
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private HookContext hookContext;
 
-  private final JexlUrlParser urlParser = new JexlUrlParser();
+  private final ElParser elParser = new JexlParser();
 
   private JenkinsRepositoryHookHandler handler;
 
@@ -78,8 +79,7 @@ class JenkinsRepositoryHookHandlerTest {
     config = new JenkinsConfiguration();
     config.setUrl("http://hitchhiker.org/jenkins");
     config.setProject("HeartOfGold");
-    handler = new JenkinsRepositoryHookHandler(httpClientProvider,
-      config, urlParser);
+    handler = new JenkinsRepositoryHookHandler(httpClientProvider, config, elParser);
   }
 
   @Test
