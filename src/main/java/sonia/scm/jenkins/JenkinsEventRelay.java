@@ -40,6 +40,7 @@ import sonia.scm.repository.api.ScmProtocol;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public abstract class JenkinsEventRelay {
@@ -63,35 +64,33 @@ public abstract class JenkinsEventRelay {
 
   protected final void send(Repository repository, JenkinsEventDto eventDto) {
     if (!jenkinsContext.getConfiguration().isDisableEventTrigger()) {
-      eventDto.setServer(configuration.getBaseUrl());
-      eventDto.setNamespace(repository.getNamespace());
-      eventDto.setName(repository.getName());
-      eventDto.setType(repository.getType());
+      Optional<String> serverUrl = jenkinsContext.getServerUrl(repository);
+      serverUrl.ifPresent(s -> send(s, eventDto, repository));
+    }
+  }
 
-      try {
-        String json = mapper.writer().writeValueAsString(eventDto);
+  private void send(String serverUrl, JenkinsEventDto eventDto, Repository repository) {
+    eventDto.setServer(configuration.getBaseUrl());
+    eventDto.setNamespace(repository.getNamespace());
+    eventDto.setName(repository.getName());
+    eventDto.setType(repository.getType());
 
-        httpClient.post(createEventHookUrl(repository))
-          .formContent().field("json", json).build()
-          .request();
-      } catch (IOException e) {
-        if (logger.isWarnEnabled()) {
-          logger.warn("Failed to relay event to Jenkins server");
-        }
+    try {
+      String json = mapper.writer().writeValueAsString(eventDto);
+
+      httpClient.post(createEventHookUrl(serverUrl))
+        .formContent().field("json", json).build()
+        .request();
+    } catch (IOException e) {
+      if (logger.isWarnEnabled()) {
+        logger.warn("Failed to relay event to Jenkins server");
       }
     }
   }
 
-  private String createEventHookUrl(Repository repository) {
-    String url;
-
-    if (jenkinsContext.getConfiguration().isDisableRepositoryConfiguration()) {
-      url = jenkinsContext.getConfiguration().getUrl();
-    } else {
-      url = jenkinsContext.getConfiguration(repository).getUrl();
-    }
+  private String createEventHookUrl(String url) {
     if (!url.endsWith("/")) {
-      url = url + "/";
+      url += "/";
     }
     return url + EVENT_ENDPOINT;
   }

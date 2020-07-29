@@ -25,11 +25,14 @@ package sonia.scm.jenkins;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import sonia.scm.repository.Repository;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
+
+import java.util.Optional;
 
 /**
  *
@@ -67,6 +70,21 @@ public class JenkinsContext {
 
   private ConfigurationStore<GlobalJenkinsConfiguration> createGlobalStore() {
     return storeFactory.withType(GlobalJenkinsConfiguration.class).withName(NAME).build();
+  }
+
+  public Optional<String> getServerUrl(Repository repository) {
+    GlobalJenkinsConfiguration globalConfig = getConfiguration();
+    if (!globalConfig.isDisableRepositoryConfiguration()) {
+      JenkinsConfiguration repoConfig = getConfiguration(repository);
+      if (!Strings.isNullOrEmpty(repoConfig.getUrl())) {
+        return Optional.of(repoConfig.getUrl());
+      }
+    }
+
+    if (globalConfig.isValid()) {
+      return Optional.of(globalConfig.getUrl());
+    }
+    return Optional.empty();
   }
 
   private ConfigurationStoreFactory storeFactory;
