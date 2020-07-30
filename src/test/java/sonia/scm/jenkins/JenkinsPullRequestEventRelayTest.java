@@ -58,6 +58,7 @@ import sonia.scm.repository.api.ScmProtocol;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -138,6 +139,18 @@ class JenkinsPullRequestEventRelayTest {
     verify(httpClient, never()).post(anyString());
   }
 
+  @Test
+  void shouldNotSendWithoutValidConfiguration() {
+    when(jenkinsContext.getConfiguration()).thenReturn(new GlobalJenkinsConfiguration());
+    when(jenkinsContext.getServerUrl(REPOSITORY)).thenReturn(Optional.empty());
+
+    PullRequest pr = new PullRequest();
+    eventRelay.handle(new PullRequestEvent(REPOSITORY, pr, pr, HandlerEventType.CREATE));
+
+    verify(httpClient, never()).post(anyString());
+  }
+
+
   @Nested
   class WithExpectedRequest {
 
@@ -152,7 +165,7 @@ class JenkinsPullRequestEventRelayTest {
 
     @Test
     void shouldSendForGlobalConfig() throws IOException {
-      String jenkinsUrl = mockJenkinsConfig(true);
+      String jenkinsUrl = mockJenkinsConfig();
 
       eventRelay.handle(new PullRequestEvent(REPOSITORY, PULL_REQUEST, null, HandlerEventType.CREATE));
 
@@ -165,7 +178,7 @@ class JenkinsPullRequestEventRelayTest {
 
     @Test
     void shouldSendForRepositoryConfig() throws IOException {
-      String jenkinsUrl = mockJenkinsConfig(false);
+      String jenkinsUrl = mockJenkinsConfig();
 
       eventRelay.handle(new PullRequestEvent(REPOSITORY, PULL_REQUEST, null, HandlerEventType.CREATE));
 
@@ -181,7 +194,7 @@ class JenkinsPullRequestEventRelayTest {
 
     @Test
     void shouldSendForCreateEvent() throws IOException {
-      String jenkinsUrl = mockJenkinsConfig(false);
+      String jenkinsUrl = mockJenkinsConfig();
 
       eventRelay.handle(new PullRequestEvent(REPOSITORY, PULL_REQUEST, null, HandlerEventType.CREATE));
 
@@ -200,7 +213,7 @@ class JenkinsPullRequestEventRelayTest {
 
     @Test
     void shouldSendForUpdatedEvent() throws IOException {
-      String jenkinsUrl = mockJenkinsConfig(false);
+      String jenkinsUrl = mockJenkinsConfig();
 
       eventRelay.handleUpdatedEvent(new PullRequestUpdatedEvent(REPOSITORY, PULL_REQUEST));
 
@@ -219,7 +232,7 @@ class JenkinsPullRequestEventRelayTest {
 
     @Test
     void shouldSendForMergedEvent() throws IOException {
-      String jenkinsUrl = mockJenkinsConfig(false);
+      String jenkinsUrl = mockJenkinsConfig();
 
       eventRelay.handleMergedEvent(new PullRequestMergedEvent(REPOSITORY, PULL_REQUEST));
 
@@ -238,7 +251,7 @@ class JenkinsPullRequestEventRelayTest {
 
     @Test
     void shouldSendForRejectedEvent() throws IOException {
-      String jenkinsUrl = mockJenkinsConfig(false);
+      String jenkinsUrl = mockJenkinsConfig();
 
       eventRelay.handleRejectedEvent(new PullRequestRejectedEvent(REPOSITORY, PULL_REQUEST, REJECTED_BY_USER));
 
@@ -255,16 +268,11 @@ class JenkinsPullRequestEventRelayTest {
       assertThat(dto.get("deletedPullRequests").get(0).get("target")).hasToString("\"master\"");
     }
 
-    String mockJenkinsConfig(boolean disableRepoConfig) {
+    String mockJenkinsConfig() {
       String jenkinsUrl = "http://hitchhiker.org/";
+      when(jenkinsContext.getServerUrl(REPOSITORY)).thenReturn(Optional.of(jenkinsUrl));
       GlobalJenkinsConfiguration globalJenkinsConfiguration = new GlobalJenkinsConfiguration();
-      globalJenkinsConfiguration.setDisableRepositoryConfiguration(disableRepoConfig);
-      globalJenkinsConfiguration.setUrl(jenkinsUrl);
-      JenkinsConfiguration jenkinsConfiguration = new JenkinsConfiguration();
-      jenkinsConfiguration.setUrl(jenkinsUrl);
-      lenient().when(jenkinsContext.getConfiguration()).thenReturn(globalJenkinsConfiguration);
-      lenient().when(jenkinsContext.getConfiguration(REPOSITORY)).thenReturn(jenkinsConfiguration);
-
+      when(jenkinsContext.getConfiguration()).thenReturn(globalJenkinsConfiguration);
       return jenkinsUrl;
     }
   }

@@ -56,6 +56,7 @@ import sonia.scm.repository.api.ScmProtocol;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -105,7 +106,6 @@ class JenkinsBranchAndTagEventRelayTest {
   @Test
   void shouldNotSend() {
     mockRepo();
-    mockJenkinsConfig(false);
 
     eventRelay.handle(new PostReceiveRepositoryHookEvent(new RepositoryHookEvent(hookContext, REPOSITORY, RepositoryHookType.POST_RECEIVE)));
 
@@ -121,7 +121,7 @@ class JenkinsBranchAndTagEventRelayTest {
     when(hookContext.getBranchProvider().getCreatedOrModified()).thenReturn(ImmutableList.of("master"));
     when(hookContext.getBranchProvider().getDeletedOrClosed()).thenReturn(ImmutableList.of("develop"));
 
-    String jenkinsUrl = mockJenkinsConfig(false);
+    String jenkinsUrl = mockJenkinsConfig();
 
     eventRelay.handle(new PostReceiveRepositoryHookEvent(new RepositoryHookEvent(hookContext, REPOSITORY, RepositoryHookType.POST_RECEIVE)));
 
@@ -136,7 +136,7 @@ class JenkinsBranchAndTagEventRelayTest {
   void shouldSendIfTagsAvailable() throws IOException {
     mockRepo();
     mockRequest();
-    String jenkinsUrl = mockJenkinsConfig(false);
+    String jenkinsUrl = mockJenkinsConfig();
 
     when(hookContext.isFeatureSupported(HookFeature.TAG_PROVIDER)).thenReturn(true);
     when(hookContext.isFeatureSupported(HookFeature.BRANCH_PROVIDER)).thenReturn(false);
@@ -156,7 +156,7 @@ class JenkinsBranchAndTagEventRelayTest {
   void shouldSendIfBranchesAndTagsAreAvailable() throws IOException {
     mockRepo();
     mockRequest();
-    String jenkinsUrl = mockJenkinsConfig(true);
+    String jenkinsUrl = mockJenkinsConfig();
 
     when(hookContext.isFeatureSupported(HookFeature.TAG_PROVIDER)).thenReturn(true);
     when(hookContext.isFeatureSupported(HookFeature.BRANCH_PROVIDER)).thenReturn(true);
@@ -180,16 +180,16 @@ class JenkinsBranchAndTagEventRelayTest {
     assertThat(dto.get("type")).hasToString("\"" + REPOSITORY.getType() + "\"");
   }
 
-  private String mockJenkinsConfig(boolean disableRepoConfig) {
+  private String mockJenkinsConfig() {
     String jenkinsUrl = "http://hitchhiker.org/";
-    GlobalJenkinsConfiguration globalJenkinsConfiguration = new GlobalJenkinsConfiguration();
-    globalJenkinsConfiguration.setDisableRepositoryConfiguration(disableRepoConfig);
-    globalJenkinsConfiguration.setUrl(jenkinsUrl);
-    JenkinsConfiguration jenkinsConfiguration = new JenkinsConfiguration();
-    jenkinsConfiguration.setUrl(jenkinsUrl);
-    lenient().when(jenkinsContext.getConfiguration()).thenReturn(globalJenkinsConfiguration);
-    lenient().when(jenkinsContext.getConfiguration(REPOSITORY)).thenReturn(jenkinsConfiguration);
+    when(jenkinsContext.getServerUrl(REPOSITORY)).thenReturn(Optional.of(jenkinsUrl));
+    mockGlobalConfiguration();
     return jenkinsUrl;
+  }
+
+  private void mockGlobalConfiguration() {
+    GlobalJenkinsConfiguration globalJenkinsConfiguration = new GlobalJenkinsConfiguration();
+    when(jenkinsContext.getConfiguration()).thenReturn(globalJenkinsConfiguration);
   }
 
   private void mockRepo() {
