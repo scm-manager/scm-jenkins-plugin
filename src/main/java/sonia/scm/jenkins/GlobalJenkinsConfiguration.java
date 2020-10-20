@@ -50,6 +50,9 @@ public class GlobalJenkinsConfiguration implements Validateable {
   @XmlElement(name = "disable-git-trigger")
   private boolean disableGitTrigger = false;
 
+  @XmlElement(name = "disable-subversion-trigger")
+  private boolean disableSubversionTrigger = false;
+
   @XmlElement(name = "disable-event-trigger")
   private boolean disableEventTrigger = false;
 
@@ -60,6 +63,11 @@ public class GlobalJenkinsConfiguration implements Validateable {
     this.disableGitTrigger = disableGitTrigger;
     this.disableMercurialTrigger = disableMercurialTrigger;
     this.disableRepositoryConfiguration = disableRepositoryConfiguration;
+  }
+
+  public GlobalJenkinsConfiguration(String url, boolean disableGitTrigger, boolean disableMercurialTrigger, boolean disableSubversionTrigger, boolean disableRepositoryConfiguration) {
+    this(url, disableGitTrigger, disableMercurialTrigger, disableRepositoryConfiguration);
+    this.disableSubversionTrigger = disableSubversionTrigger;
   }
 
   @Override

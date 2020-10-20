@@ -10,6 +10,8 @@
         "disableRepositoryConfigurationHelp": "Do not allow repository owners to configure jenkins hooks.",
         "disableGitTrigger": "Disable Git trigger",
         "disableGitTriggerHelp": "Disable trigger for git repositories. \nNote: The git trigger requires version 1.1.14 or above of the jenkins git plugin.",
+        "disableSubversionTrigger": "Disable Subversion trigger",
+        "disableSubversionTriggerHelp": "Disable trigger for Subversion repositories.",
         "disableMercurialTrigger": "Disable Mercurial trigger",
         "disableMercurialTriggerHelp": "Disable trigger for mercurial repositories. \nNote: The mercurial trigger requires version 1.38 or above of the jenkins mercurial plugin.",
         "disableEventTrigger": "Disable event trigger",
