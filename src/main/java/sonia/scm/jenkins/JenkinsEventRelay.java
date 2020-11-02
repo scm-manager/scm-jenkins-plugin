@@ -33,7 +33,6 @@ import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.Optional;
 
 class JenkinsEventRelay {
 
@@ -54,19 +53,30 @@ class JenkinsEventRelay {
     this.httpClient = httpClient;
   }
 
-  void send(Repository repository, JenkinsEventDto eventDto) {
+  void send(JenkinsEventDto eventDto) {
+    doIfEnabled(() -> jenkinsContext.getServerUrl().ifPresent(s -> send(s, eventDto)));
+  }
+
+  void send(Repository repository, JenkinsRepositoryEventDto eventDto) {
+    doIfEnabled(() -> jenkinsContext.getServerUrl(repository).ifPresent(s -> send(s, eventDto, repository)));
+  }
+
+  private void doIfEnabled(Runnable callback) {
     if (!jenkinsContext.getConfiguration().isDisableEventTrigger()) {
-      Optional<String> serverUrl = jenkinsContext.getServerUrl(repository);
-      serverUrl.ifPresent(s -> send(s, eventDto, repository));
+      callback.run();
     }
   }
 
-  private void send(String serverUrl, JenkinsEventDto eventDto, Repository repository) {
-    eventDto.setServer(configuration.getBaseUrl());
+  private void send(String serverUrl, JenkinsRepositoryEventDto eventDto, Repository repository) {
     eventDto.setNamespace(repository.getNamespace());
     eventDto.setName(repository.getName());
     eventDto.setType(repository.getType());
 
+    send(serverUrl, eventDto);
+  }
+
+  private void send(String serverUrl, JenkinsEventDto eventDto) {
+    eventDto.setServer(configuration.getBaseUrl());
     try {
       String json = mapper.writer().writeValueAsString(eventDto);
 

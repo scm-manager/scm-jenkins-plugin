@@ -95,7 +95,7 @@ public class JenkinsPullRequestEventRelay {
 
   @Getter
   @Setter
-  public static final class JenkinsPullRequestEventDto extends JenkinsEventDto {
+  public static final class JenkinsPullRequestEventDto extends JenkinsRepositoryEventDto {
 
     private List<PullRequestDto> deletedPullRequests;
     private List<PullRequestDto> createOrModifiedPullRequests;

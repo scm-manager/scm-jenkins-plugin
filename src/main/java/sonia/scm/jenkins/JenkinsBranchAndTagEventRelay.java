@@ -81,7 +81,7 @@ public class JenkinsBranchAndTagEventRelay {
 
   @Getter
   @Setter
-  public static final class JenkinsBranchAndTagEventDto extends JenkinsEventDto {
+  public static final class JenkinsBranchAndTagEventDto extends JenkinsRepositoryEventDto {
     private List<BranchDto> deletedBranches;
     private List<BranchDto> createdOrModifiedBranches;
     private List<TagDto> deletedTags;

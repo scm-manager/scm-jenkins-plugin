@@ -87,5 +87,13 @@ public class JenkinsContext {
     return Optional.empty();
   }
 
+  public Optional<String> getServerUrl() {
+    GlobalJenkinsConfiguration globalConfig = getConfiguration();
+    if (globalConfig.isValid()) {
+      return Optional.of(globalConfig.getUrl());
+    }
+    return Optional.empty();
+  }
+
   private ConfigurationStoreFactory storeFactory;
 }

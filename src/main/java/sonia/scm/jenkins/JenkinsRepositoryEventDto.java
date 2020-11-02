@@ -24,34 +24,24 @@
 
 package sonia.scm.jenkins;
 
-import com.github.legman.Subscribe;
-import sonia.scm.EagerSingleton;
-import sonia.scm.plugin.Extension;
-import sonia.scm.repository.RepositoryModificationEvent;
-import sonia.scm.security.AuthorizationChangedEvent;
+import de.otto.edison.hal.Link;
+import de.otto.edison.hal.Links;
+import lombok.Getter;
+import lombok.Setter;
+import sonia.scm.repository.api.ScmProtocol;
 
-import javax.inject.Inject;
+import java.util.List;
+import java.util.stream.Collectors;
 
-@Extension
-@EagerSingleton
-public class JenkinsRepositoryEventRelay {
+@Getter
+@Setter
+class JenkinsRepositoryEventDto extends JenkinsEventDto {
+  private String namespace;
+  private String name;
+  private String type;
+  private String server;
 
-  private final JenkinsEventRelay jenkinsEventRelay;
-
-  @Inject
-  public JenkinsRepositoryEventRelay(JenkinsEventRelay jenkinsEventRelay) {
-    this.jenkinsEventRelay = jenkinsEventRelay;
-  }
-
-  @Subscribe
-  public void handleAuthorizationEvent(AuthorizationChangedEvent event) {
-    jenkinsEventRelay.send(new JenkinsEventDto(EventTarget.NAVIGATOR));
-  }
-
-  @Subscribe
-  public void handleRepositoryModificationEvent(RepositoryModificationEvent event) {
-    if (!event.getItem().getName().equals(event.getItemBeforeModification().getName())) {
-      jenkinsEventRelay.send(new JenkinsEventDto(EventTarget.NAVIGATOR));
-    }
+  JenkinsRepositoryEventDto(EventTarget eventTarget, List<ScmProtocol> protocols) {
+    super(new Links.Builder().array(protocols.stream().map(protocol -> Link.link(protocol.getType(), protocol.getUrl())).collect(Collectors.toList())).build(), eventTarget);
   }
 }

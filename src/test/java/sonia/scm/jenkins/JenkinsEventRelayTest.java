@@ -94,7 +94,7 @@ class JenkinsEventRelayTest {
     configuration.setDisableEventTrigger(true);
     when(jenkinsContext.getConfiguration()).thenReturn(configuration);
 
-    sender.send(REPOSITORY, new JenkinsEventDto(EventTarget.SOURCE, Collections.singletonList(new ProtocolResolverTest.DummyScmProtocol())));
+    sender.send(REPOSITORY, new JenkinsRepositoryEventDto(EventTarget.SOURCE, Collections.singletonList(new ProtocolResolverTest.DummyScmProtocol())));
 
     verify(httpClient, never()).post(anyString());
   }
@@ -104,7 +104,7 @@ class JenkinsEventRelayTest {
     when(jenkinsContext.getConfiguration()).thenReturn(new GlobalJenkinsConfiguration());
     when(jenkinsContext.getServerUrl(REPOSITORY)).thenReturn(Optional.empty());
 
-    sender.send(REPOSITORY, new JenkinsEventDto(EventTarget.SOURCE, Collections.singletonList(new ProtocolResolverTest.DummyScmProtocol())));
+    sender.send(REPOSITORY, new JenkinsRepositoryEventDto(EventTarget.SOURCE, Collections.singletonList(new ProtocolResolverTest.DummyScmProtocol())));
 
     verify(httpClient, never()).post(anyString());
   }
@@ -125,7 +125,7 @@ class JenkinsEventRelayTest {
     void shouldPostRequest() throws JsonProcessingException {
       String jenkinsUrl = mockJenkinsConfig();
 
-      sender.send(REPOSITORY, new JenkinsEventDto(EventTarget.SOURCE, Collections.singletonList(new ProtocolResolverTest.DummyScmProtocol())));
+      sender.send(REPOSITORY, new JenkinsRepositoryEventDto(EventTarget.SOURCE, Collections.singletonList(new ProtocolResolverTest.DummyScmProtocol())));
 
       verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
 
