@@ -114,8 +114,8 @@ public class JenkinsHook {
         if (configuration.isValid()) {
           handler = new JenkinsRepositoryHookHandler(httpClientProvider, configuration, elParser);
         } else {
-          logger.debug("jenkins configuration for repository {} is not valid, try global configuration",
-            repository.getName());
+          logger.debug("jenkins configuration for repository {}/{} is not valid, try global configuration",
+            repository.getNamespace(), repository.getName());
 
           handler = new JenkinsGlobalHookHandler(httpClientProvider, globalConfig, repository, repositoryServiceFactory);
         }
