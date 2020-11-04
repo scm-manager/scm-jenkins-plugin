@@ -31,7 +31,6 @@ import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.net.ahc.AdvancedHttpResponse;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHookEvent;
-import sonia.scm.repository.api.LookupCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.repository.api.ScmProtocol;
@@ -39,136 +38,92 @@ import sonia.scm.util.HttpUtil;
 import sonia.scm.util.Util;
 
 import java.io.IOException;
-import java.util.Optional;
+
+import static sonia.scm.jenkins.Urls.fix;
 
 public class JenkinsGlobalHookHandler implements JenkinsHookHandler {
 
   public static final String TYPE_GIT = "git";
   public static final String TYPE_MERCURIAL = "hg";
-  public static final String TYPE_SUBVERSION = "svn";
   public static final String URL_GIT = "/git/notifyCommit";
   public static final String URL_MERCURIAL = "/mercurial/notifyCommit";
-  public static final String URL_SUBVERSION = "/subversion/{UUID}/notifyCommit";
   private static final Logger logger = LoggerFactory.getLogger(JenkinsGlobalHookHandler.class);
-
 
   private final GlobalJenkinsConfiguration configuration;
   private final Provider<AdvancedHttpClient> httpClientProvider;
-  private final Repository repository;
   private final RepositoryServiceFactory repositoryServiceFactory;
 
-
   public JenkinsGlobalHookHandler(Provider<AdvancedHttpClient> httpClientProvider,
-                                  GlobalJenkinsConfiguration configuration, Repository repository, RepositoryServiceFactory repositoryServiceFactory) {
+                                  GlobalJenkinsConfiguration configuration, RepositoryServiceFactory repositoryServiceFactory) {
     this.httpClientProvider = httpClientProvider;
     this.configuration = configuration;
-    this.repository = repository;
     this.repositoryServiceFactory = repositoryServiceFactory;
-  }
-
-  /**
-   * Fix duplicated slashes in repository url.
-   *
-   * @param url url to fix
-   * @return fixed url
-   * @see <a target="_blank" href="https://bitbucket.org/sdorra/scm-manager/issue/510/wrong-git-notification-url-to-many-slashes">Issue 510</a>
-   */
-  static String fixUrl(String url) {
-    int index = url.indexOf("://");
-
-    // absolute url
-    if (index > 0) {
-      String suffix = url.substring(index + 3).replaceAll("//", "/");
-
-      url = url.substring(0, index + 3).concat(suffix);
-    }
-
-    // relative url
-    else {
-      url = url.replaceAll("//", "/");
-    }
-
-    return url;
   }
 
   @Override
   public void sendRequest(RepositoryHookEvent event) {
     if (configuration.isValid()) {
-      String urlSuffix = null;
-      String type = repository.getType();
+      String type = event.getRepository().getType();
+      logGlobalJenkinsHook(type);
 
-      if (logger.isDebugEnabled()) {
-        //J-
-        logger.debug(
-          "check for global jenkins hook: type={}, hg disabled={}, git disabled={}",
-          type,
-          configuration.isDisableMercurialTrigger(),
-          configuration.isDisableGitTrigger()
-        );
-        //J+
-      }
-
-      if (TYPE_MERCURIAL.equalsIgnoreCase(type)
-        && !configuration.isDisableMercurialTrigger()) {
-        urlSuffix = URL_MERCURIAL;
-      } else if (TYPE_GIT.equalsIgnoreCase(type)
-        && !configuration.isDisableGitTrigger()) {
-        urlSuffix = URL_GIT;
-      } else if (isSvnRepository(repository) && !configuration.isDisableSubversionTrigger()) {
-        try (RepositoryService repositoryService = repositoryServiceFactory.create(event.getRepository())) {
-          Optional<String> uuid = lookupUUID(repositoryService);
-          if (uuid.isPresent()) {
-            logger.debug("Lookup for svn repository uuid: {}", uuid.get());
-            urlSuffix = URL_SUBVERSION.replace("{UUID}", uuid.get());
-          }
-        }
-      }
-
+      String urlSuffix = createUrlSuffix(type);
       if (Util.isNotEmpty(urlSuffix)) {
-        String url = HttpUtil.getUriWithoutEndSeperator(
-          configuration.getUrl()).concat(urlSuffix);
         AdvancedHttpClient client = httpClientProvider.get();
-        String repositoryUrl = createRepositoryUrl(repository);
 
-        if (Util.isNotEmpty(repositoryUrl)) {
-          url = url.concat("?url=").concat(fixUrl(repositoryUrl));
-        }
-
-        try {
-          if (logger.isDebugEnabled()) {
-            logger.debug("try to access url {}", url);
-          }
-
-          AdvancedHttpResponse response;
-            if (isSvnRepository(repository)) {
-              response = client.post(url).request();
-            } else {
-              response = client.get(url).request();
-            }
-          int statusCode = response.getStatus();
-
-          if (logger.isInfoEnabled()) {
-            logger.info("request returned {}", statusCode);
-          }
-        } catch (IOException ex) {
-          logger.error("could not execute http request", ex);
-        }
-      } else if (logger.isWarnEnabled()) {
+        String url = createUrl(event.getRepository(), urlSuffix);
+        sendRequest(client, url);
+      } else {
         logger.warn("repository type {} is not supported or is disabled", type);
       }
-    } else if (logger.isWarnEnabled()) {
+    } else {
       logger.warn("global configuration is not valid");
     }
   }
 
-  private boolean isSvnRepository(Repository repository) {
-    return TYPE_SUBVERSION.equalsIgnoreCase(repository.getType());
+  private void sendRequest(AdvancedHttpClient client, String url) {
+    try {
+      logger.debug("try to access url {}", url);
+      AdvancedHttpResponse response = client.get(url).request();
+      int statusCode = response.getStatus();
+      logger.info("request returned {}", statusCode);
+    } catch (IOException ex) {
+      logger.error("could not execute http request", ex);
+    }
+  }
+
+  private void logGlobalJenkinsHook(String type) {
+    //J-
+    logger.debug(
+      "check for global jenkins hook: type={}, hg disabled={}, git disabled={}",
+      type,
+      configuration.isDisableMercurialTrigger(),
+      configuration.isDisableGitTrigger()
+    );
+    //J+
+  }
+
+  private String createUrl(Repository repository, String urlSuffix) {
+    String url = HttpUtil.getUriWithoutEndSeperator(configuration.getUrl()).concat(urlSuffix);
+    String repositoryUrl = createRepositoryUrl(repository);
+    if (Util.isNotEmpty(repositoryUrl)) {
+      url = url.concat("?url=").concat(fix(repositoryUrl));
+    }
+    return url;
+  }
+
+  private String createUrlSuffix(String type) {
+    String urlSuffix = null;
+    if (TYPE_MERCURIAL.equalsIgnoreCase(type)
+      && !configuration.isDisableMercurialTrigger()) {
+      urlSuffix = URL_MERCURIAL;
+    } else if (TYPE_GIT.equalsIgnoreCase(type)
+      && !configuration.isDisableGitTrigger()) {
+      urlSuffix = URL_GIT;
+    }
+    return urlSuffix;
   }
 
   private String createRepositoryUrl(Repository repository) {
-    if (isSvnRepository(repository)) {
-      return "";
-    }
     try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
       return repositoryService
         .getSupportedProtocols()
@@ -177,10 +132,5 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler {
         .findFirst()
         .orElse(null);
     }
-  }
-
-  private Optional<String> lookupUUID(RepositoryService repositoryService) {
-    LookupCommandBuilder command = repositoryService.getLookupCommand();
-    return command.lookup(String.class, "props", "/", "uuid");
   }
 }

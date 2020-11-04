@@ -36,6 +36,9 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryServiceFactory;
+
+import static sonia.scm.jenkins.JenkinsSvnGlobalHookHandler.TYPE_SUBVERSION;
+
 /**
  * Jenkins post receive Hook.
  * This class is called after a changeset successfully pushed to a repository.
@@ -117,15 +120,23 @@ public class JenkinsHook {
           logger.debug("jenkins configuration for repository {} is not valid, try global configuration",
             repository.getName());
 
-          handler = new JenkinsGlobalHookHandler(httpClientProvider, globalConfig, repository, repositoryServiceFactory);
+          handler = getGlobalHookHandler(repository, globalConfig);
         }
       } else {
-        handler = new JenkinsGlobalHookHandler(httpClientProvider, globalConfig, repository, repositoryServiceFactory);
+        handler = getGlobalHookHandler(repository, globalConfig);
       }
 
       handler.sendRequest(event);
     } else if (logger.isWarnEnabled()) {
       logger.warn("receive repository hook without repository");
+    }
+  }
+
+  private JenkinsHookHandler getGlobalHookHandler(Repository repository, GlobalJenkinsConfiguration globalConfig) {
+    if (TYPE_SUBVERSION.equalsIgnoreCase(repository.getType())) {
+      return new JenkinsSvnGlobalHookHandler(httpClientProvider, globalConfig, repositoryServiceFactory);
+    } else {
+      return new JenkinsGlobalHookHandler(httpClientProvider, globalConfig, repositoryServiceFactory);
     }
   }
 }
