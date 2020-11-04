@@ -23,26 +23,25 @@
  */
 package sonia.scm.jenkins;
 
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Links;
-import lombok.Getter;
-import lombok.Setter;
+import com.cloudogu.scm.ssh.ConfigStore;
+import sonia.scm.plugin.Extension;
+import sonia.scm.plugin.Requires;
 
-import java.util.List;
+import javax.inject.Inject;
 
-@Getter
-@Setter
-public class JenkinsEventDto extends HalRepresentation  {
-  private String server;
-  private List<AdditionalServerIdentification.Identification> identifications;
-  private final EventTarget eventTarget;
+@Extension
+@Requires("scm-ssh-plugin")
+public class SshAdditionalServerIdentification implements AdditionalServerIdentification {
 
-  public JenkinsEventDto(EventTarget eventTarget) {
-    this.eventTarget = eventTarget;
+  private final ConfigStore sshConfigStore;
+
+  @Inject
+  public SshAdditionalServerIdentification(ConfigStore sshConfigStore) {
+    this.sshConfigStore = sshConfigStore;
   }
 
-  JenkinsEventDto(Links links, EventTarget eventTarget) {
-    super(links);
-    this.eventTarget = eventTarget;
+  @Override
+  public Identification get() {
+    return new Identification("ssh", sshConfigStore.getBaseUrl() + ":" + sshConfigStore.getPort());
   }
 }

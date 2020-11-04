@@ -34,7 +34,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.config.ScmConfiguration;
@@ -47,7 +46,9 @@ import sonia.scm.repository.RepositoryTestData;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -77,15 +78,21 @@ class JenkinsEventRelayTest {
   @Mock
   private FormContentBuilder formContentBuilder;
 
+  private Set<AdditionalServerIdentification> serverIdentifications = new HashSet<>();
+
   @Captor
   private ArgumentCaptor<String> captor;
 
-  @InjectMocks
   private JenkinsEventRelay sender;
 
   @BeforeEach
   void initScmConfig() {
     lenient().when(configuration.getBaseUrl()).thenReturn(SERVER_URL);
+  }
+
+  @BeforeEach
+  void createSender() {
+    sender = new JenkinsEventRelay(configuration, jenkinsContext, httpClient, serverIdentifications);
   }
 
   @Test
@@ -135,6 +142,24 @@ class JenkinsEventRelayTest {
       assertThat(dto.get("namespace")).hasToString("\"" + REPOSITORY.getNamespace() + "\"");
       assertThat(dto.get("name")).hasToString("\"" + REPOSITORY.getName() + "\"");
       assertThat(dto.get("type")).hasToString("\"" + REPOSITORY.getType() + "\"");
+    }
+
+    @Test
+    void shouldPostRequestWithAdditionalServerInformation() throws JsonProcessingException {
+      String jenkinsUrl = mockJenkinsConfig();
+      serverIdentifications.add(new AdditionalServerIdentification() {
+        @Override
+        public Identification get() {
+          return new Identification("ssh", "hog:2222");
+        }
+      });
+
+      sender.send(REPOSITORY, new JenkinsRepositoryEventDto(EventTarget.SOURCE, Collections.singletonList(new ProtocolResolverTest.DummyScmProtocol())));
+
+      verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
+
+      JsonNode dto = new ObjectMapper().readTree(captor.getValue());
+      assertThat(dto.get("identifications")).hasToString("[{\"name\":\"ssh\",\"value\":\"hog:2222\"}]");
     }
 
     String mockJenkinsConfig() {

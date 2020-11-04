@@ -23,26 +23,17 @@
  */
 package sonia.scm.jenkins;
 
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Links;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Value;
+import sonia.scm.plugin.ExtensionPoint;
 
-import java.util.List;
+@ExtensionPoint
+public interface AdditionalServerIdentification {
 
-@Getter
-@Setter
-public class JenkinsEventDto extends HalRepresentation  {
-  private String server;
-  private List<AdditionalServerIdentification.Identification> identifications;
-  private final EventTarget eventTarget;
+  Identification get();
 
-  public JenkinsEventDto(EventTarget eventTarget) {
-    this.eventTarget = eventTarget;
-  }
-
-  JenkinsEventDto(Links links, EventTarget eventTarget) {
-    super(links);
-    this.eventTarget = eventTarget;
+  @Value
+  class Identification {
+    private String name;
+    private String value;
   }
 }

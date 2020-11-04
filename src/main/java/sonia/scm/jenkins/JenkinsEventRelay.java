@@ -33,6 +33,9 @@ import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 class JenkinsEventRelay {
 
@@ -43,14 +46,16 @@ class JenkinsEventRelay {
 
   private final JenkinsContext jenkinsContext;
   private final AdvancedHttpClient httpClient;
+  private final Set<AdditionalServerIdentification> serverIdentifications;
 
   private final ObjectMapper mapper = new ObjectMapper();
 
   @Inject
-  public JenkinsEventRelay(ScmConfiguration configuration, JenkinsContext jenkinsContext, AdvancedHttpClient httpClient) {
+  public JenkinsEventRelay(ScmConfiguration configuration, JenkinsContext jenkinsContext, AdvancedHttpClient httpClient, Set<AdditionalServerIdentification> serverIdentifications) {
     this.configuration = configuration;
     this.jenkinsContext = jenkinsContext;
     this.httpClient = httpClient;
+    this.serverIdentifications = serverIdentifications;
   }
 
   void send(JenkinsEventDto eventDto) {
@@ -77,6 +82,10 @@ class JenkinsEventRelay {
 
   private void send(String serverUrl, JenkinsEventDto eventDto) {
     eventDto.setServer(configuration.getBaseUrl());
+
+    List<AdditionalServerIdentification.Identification> identifications = serverIdentifications.stream().map(AdditionalServerIdentification::get).collect(Collectors.toList());
+    eventDto.setIdentifications(identifications);
+
     try {
       String json = mapper.writer().writeValueAsString(eventDto);
 
