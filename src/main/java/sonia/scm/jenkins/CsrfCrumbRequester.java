@@ -34,19 +34,19 @@ import sonia.scm.util.IOUtil;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static sonia.scm.jenkins.AuthenticationHeaderAppender.appendAuthenticationHeader;
+import static sonia.scm.jenkins.HeaderAppenders.appendAuthenticationHeader;
 import static sonia.scm.jenkins.Urls.escape;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CsrfCrumbRequester {
 
-  public static CsrfCrumb getJenkinsCsrfCrumb(JenkinsConfiguration configuration, AdvancedHttpClient client) {
-    String url = createCrumbUrl(configuration);
+  static CsrfCrumb getJenkinsCsrfCrumb(AdvancedHttpClient client, String baseUrl, String username, String apiToken) {
+    String url = createCrumbUrl(baseUrl);
     log.debug("fetch csrf crumb from {}", url);
 
     AdvancedHttpRequest request = client.get(url);
-    appendAuthenticationHeader(configuration, request);
+    appendAuthenticationHeader(request, username, apiToken);
 
     CsrfCrumb crumb = null;
     try {
@@ -64,20 +64,6 @@ public class CsrfCrumbRequester {
     return crumb;
   }
 
-  private static String createBaseUrl(JenkinsConfiguration configuration) {
-    String url = configuration.getUrl();
-
-    if (!url.endsWith("/")) {
-      url = url.concat("/");
-    }
-
-    return url;
-  }
-
-  private static String createCrumbUrl(JenkinsConfiguration configuration) {
-    return escape(createBaseUrl(configuration).concat("crumbIssuer/api/xml"));
-  }
-
   private static CsrfCrumb parseCsrfCrumbResponse(AdvancedHttpResponse response) throws IOException {
     CsrfCrumb csrfCrumb;
     InputStream content = null;
@@ -88,5 +74,16 @@ public class CsrfCrumbRequester {
       IOUtil.close(content);
     }
     return csrfCrumb;
+  }
+
+  private static String createCrumbUrl(String url) {
+    return escape(createBaseUrl(url).concat("crumbIssuer/api/xml"));
+  }
+
+  private static String createBaseUrl(String url) {
+    if (!url.endsWith("/")) {
+      return url.concat("/");
+    }
+    return url;
   }
 }

@@ -29,11 +29,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import sonia.scm.Validateable;
 import sonia.scm.util.Util;
+import sonia.scm.xml.XmlEncryptionAdapter;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "jenkins-config")
@@ -55,6 +57,11 @@ public class GlobalJenkinsConfiguration implements Validateable {
 
   @XmlElement(name = "disable-event-trigger")
   private boolean disableEventTrigger = false;
+
+  private String username;
+
+  @XmlJavaTypeAdapter(XmlEncryptionAdapter.class)
+  private String apiToken;
 
   private String url;
 

@@ -125,7 +125,7 @@ public class JenkinsConfigurationResource {
   )
   public Response update(GlobalJenkinsConfigurationDto updatedConfig) {
     ConfigurationPermissions.write(NAME).check();
-    context.storeConfiguration(globalJenkinsConfigurationMapper.map(updatedConfig));
+    context.storeConfiguration(globalJenkinsConfigurationMapper.map(updatedConfig, context.getConfiguration()));
 
     return Response.noContent().build();
   }

@@ -30,6 +30,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@SuppressWarnings("java:S2160") // wo do not need equals and hashcode for dto
 public class GlobalJenkinsConfigurationDto extends HalRepresentation {
 
   private boolean disableRepositoryConfiguration = false;
@@ -38,6 +39,8 @@ public class GlobalJenkinsConfigurationDto extends HalRepresentation {
   private boolean disableGitTrigger = false;
   private boolean disableEventTrigger = false;
   private String url;
+  private String username;
+  private String apiToken;
 
   @Override
   @SuppressWarnings("squid:S1185") // We want to have this method available in this package

@@ -32,6 +32,8 @@ type GlobalConfiguration = {
   disableGitTrigger: boolean;
   disableEventTrigger: boolean;
   disableSubversionTrigger: boolean;
+  username?: string;
+  apiToken?: string;
 };
 
 type Props = WithTranslation & {
@@ -118,6 +120,23 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
           helpText={t("scm-jenkins-plugin.global.form.disableEventTriggerHelp")}
           checked={this.state.disableEventTrigger}
           disabled={readOnly}
+          onChange={this.valueChangeHandler}
+        />
+        <InputField
+          name={"username"}
+          label={t("scm-jenkins-plugin.global.form.username")}
+          helpText={t("scm-jenkins-plugin.global.form.usernameHelp")}
+          disabled={readOnly}
+          value={this.state.username}
+          onChange={this.valueChangeHandler}
+        />
+        <InputField
+          name={"apiToken"}
+          type="password"
+          label={t("scm-jenkins-plugin.global.form.apiToken")}
+          helpText={t("scm-jenkins-plugin.global.form.apiTokenHelp")}
+          disabled={readOnly}
+          value={this.state.apiToken}
           onChange={this.valueChangeHandler}
         />
       </>

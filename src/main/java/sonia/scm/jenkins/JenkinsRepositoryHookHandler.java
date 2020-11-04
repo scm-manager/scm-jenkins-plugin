@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.net.ahc.AdvancedHttpRequestWithBody;
-import sonia.scm.net.ahc.BaseHttpRequest;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.util.HttpUtil;
@@ -44,8 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static sonia.scm.jenkins.AuthenticationHeaderAppender.appendAuthenticationHeader;
-import static sonia.scm.jenkins.CsrfCrumbRequester.getJenkinsCsrfCrumb;
+import static sonia.scm.jenkins.HeaderAppenders.appendAuthenticationHeader;
+import static sonia.scm.jenkins.HeaderAppenders.appendCsrfCrumbHeader;
 import static sonia.scm.jenkins.Urls.escape;
 
 /**
@@ -132,18 +131,6 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
     }
   }
 
-  private void appendCsrfCrumb(JenkinsConfiguration configuration, AdvancedHttpClient client, BaseHttpRequest request) {
-    if (configuration.isCsrf()) {
-      CsrfCrumb crumb = getJenkinsCsrfCrumb(configuration, client);
-      if (crumb != null) {
-        logger.debug("add csrf crumb to api request");
-        request.header(crumb.getCrumbRequestField(), crumb.getCrumb());
-      }
-    } else {
-      logger.debug("csrf protection is disabled, skipping crumb");
-    }
-  }
-
   /**
    * Send the request to the jenkins ci server to trigger a new build.
    *
@@ -172,8 +159,10 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
       logger.debug("no project token is available");
     }
 
-    appendAuthenticationHeader(configuration, request);
-    appendCsrfCrumb(configuration, httpClient, request);
+    appendAuthenticationHeader(request, configuration.getUsername(), configuration.getApiToken());
+    if (configuration.isCsrf()) {
+      appendCsrfCrumbHeader(httpClient, request, configuration.getUrl(), configuration.getUsername(), configuration.getApiToken());
+    }
 
     /**
      * execute the http post request with the http client and
