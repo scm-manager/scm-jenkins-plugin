@@ -4,6 +4,7 @@
       "nav-link": "Jenkins",
       "form": {
         "header": "Globale Jenkins Konfiguration",
+        "warning": "Warnung: Die hier konfigurierte URL erhält Events die Informationen über Namespaces und Namen von Repositories enthalten und somit Informationen über diese Repositories offenlegen können, obwohl der im Jenkins hinterlegte Nutzer für den SCM-Manager keine Zugriffsrechte auf diese Repositories hat.",
         "url": "URL",
         "urlHelp": "URL der Jenkins Installation (mit Kontextpfad).",
         "disableRepositoryConfiguration": "Repository-spezifische Konfiguration verbieten",
