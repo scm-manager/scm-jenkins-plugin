@@ -188,7 +188,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
     String url = createCrumbUrl(configuration);
     logger.debug("fetch csrf crumb from {}", url);
 
-    AdvancedHttpRequest request = client.get(url);
+    AdvancedHttpRequest request = client.get(url).spanKind("Jenkins");
 
     appendAuthenticationHeader(configuration, request);
 
@@ -254,7 +254,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
     url = appendBuildParameters(configuration, event, url);
 
     // retrive authentication token
-    AdvancedHttpRequestWithBody request = httpClient.post(url);
+    AdvancedHttpRequestWithBody request = httpClient.post(url).spanKind("Jenkins");
     String token = configuration.getToken();
     // check if the token is not empty.
     if (Util.isNotEmpty(token)) {

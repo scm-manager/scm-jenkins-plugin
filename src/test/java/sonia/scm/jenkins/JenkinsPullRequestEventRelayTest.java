@@ -78,7 +78,6 @@ class JenkinsPullRequestEventRelayTest {
   private static final String SERVER_URL = "http://scm-manager.org";
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-
   @Mock
   private JenkinsContext jenkinsContext;
   @Mock
@@ -89,7 +88,7 @@ class JenkinsPullRequestEventRelayTest {
   private RepositoryService repositoryService;
   @Mock
   private AdvancedHttpClient httpClient;
-  @Mock
+  @Mock(answer = Answers.RETURNS_SELF)
   private AdvancedHttpRequestWithBody request;
   @Mock
   private AdvancedHttpResponse response;
@@ -156,7 +155,7 @@ class JenkinsPullRequestEventRelayTest {
 
     @BeforeEach
     void mockRequest() throws IOException {
-      when(request.request()).thenReturn(response);
+      when(request.spanKind("Jenkins").request()).thenReturn(response);
       when(request.formContent()).thenReturn(formContentBuilder);
       when(formContentBuilder.field(anyString(), captor.capture())).thenReturn(formContentBuilder);
       when(formContentBuilder.build()).thenReturn(request);

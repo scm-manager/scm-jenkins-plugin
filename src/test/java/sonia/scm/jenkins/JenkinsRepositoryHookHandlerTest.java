@@ -63,7 +63,7 @@ class JenkinsRepositoryHookHandlerTest {
   private Provider<AdvancedHttpClient> httpClientProvider;
   @Mock
   private AdvancedHttpClient advancedHttpClient;
-  @Mock
+  @Mock(answer = Answers.RETURNS_SELF)
   private AdvancedHttpRequestWithBody request;
   @Mock
   private AdvancedHttpResponse response;
@@ -94,7 +94,7 @@ class JenkinsRepositoryHookHandlerTest {
   @Test
   void shouldSendWithoutBuildParameters() throws IOException {
     when(httpClientProvider.get()).thenReturn(advancedHttpClient);
-    when(request.request()).thenReturn(response);
+    when(request.spanKind("Jenkins").request()).thenReturn(response);
     when(response.getStatus()).thenReturn(200);
     when(advancedHttpClient.post(anyString())).thenReturn(request);
     when(hookContext.getChangesetProvider().getChangesets()).thenReturn(null);
@@ -108,7 +108,7 @@ class JenkinsRepositoryHookHandlerTest {
   @Test
   void shouldSendWithSingleBuildParameter() throws IOException {
     when(httpClientProvider.get()).thenReturn(advancedHttpClient);
-    when(request.request()).thenReturn(response);
+    when(request.spanKind("Jenkins").request()).thenReturn(response);
     when(response.getStatus()).thenReturn(200);
     when(advancedHttpClient.post(anyString())).thenReturn(request);
     when(hookContext.getChangesetProvider().getChangesets()).thenReturn(null);
@@ -125,7 +125,7 @@ class JenkinsRepositoryHookHandlerTest {
   @Test
   void shouldSendWithMultipleBuildParameters() throws IOException {
     when(httpClientProvider.get()).thenReturn(advancedHttpClient);
-    when(request.request()).thenReturn(response);
+    when(request.spanKind("Jenkins").request()).thenReturn(response);
     when(response.getStatus()).thenReturn(200);
     when(advancedHttpClient.post(anyString())).thenReturn(request);
     when(hookContext.getChangesetProvider().getChangesets()).thenReturn(null);
@@ -145,7 +145,7 @@ class JenkinsRepositoryHookHandlerTest {
   @Test
   void shouldSendWithVariables() throws IOException {
     when(httpClientProvider.get()).thenReturn(advancedHttpClient);
-    when(request.request()).thenReturn(response);
+    when(request.spanKind("Jenkins").request()).thenReturn(response);
     when(response.getStatus()).thenReturn(200);
     when(advancedHttpClient.post(anyString())).thenReturn(request);
     ArrayList<Changeset> changesets = new ArrayList<>();

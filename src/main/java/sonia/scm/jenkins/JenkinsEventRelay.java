@@ -79,6 +79,7 @@ public abstract class JenkinsEventRelay {
       String json = mapper.writer().writeValueAsString(eventDto);
 
       httpClient.post(createEventHookUrl(serverUrl))
+        .spanKind("Jenkins")
         .formContent().field("json", json).build()
         .request();
     } catch (IOException e) {

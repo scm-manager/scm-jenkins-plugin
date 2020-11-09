@@ -174,7 +174,7 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler
             logger.debug("try to access url {}", url);
           }
 
-          AdvancedHttpResponse response = client.get(url).request();
+          AdvancedHttpResponse response = client.get(url).spanKind("Jenkins").request();
           int statusCode = response.getStatus();
 
           if (logger.isInfoEnabled())
