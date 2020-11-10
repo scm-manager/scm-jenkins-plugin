@@ -62,7 +62,7 @@ class JenkinsGlobalHookHandlerTest {
   private GlobalJenkinsConfiguration config;
   @Mock
   private AdvancedHttpClient advancedHttpClient;
-  @Mock
+  @Mock(answer = Answers.RETURNS_SELF)
   private AdvancedHttpRequest request;
   @Mock
   private AdvancedHttpResponse response;

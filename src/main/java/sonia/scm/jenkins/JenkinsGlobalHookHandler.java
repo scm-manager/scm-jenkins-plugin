@@ -83,7 +83,7 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler {
   private void sendRequest(AdvancedHttpClient client, String url) {
     try {
       logger.debug("try to access url {}", url);
-      AdvancedHttpResponse response = client.get(url).request();
+      AdvancedHttpResponse response = client.get(url).spanKind("Jenkins").request();
       int statusCode = response.getStatus();
       logger.info("request returned {}", statusCode);
     } catch (IOException ex) {
