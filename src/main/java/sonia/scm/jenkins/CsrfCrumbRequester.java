@@ -45,7 +45,7 @@ public class CsrfCrumbRequester {
     String url = createCrumbUrl(baseUrl);
     log.debug("fetch csrf crumb from {}", url);
 
-    AdvancedHttpRequest request = client.get(url);
+    AdvancedHttpRequest request = client.get(url).spanKind("Jenkins");
     appendAuthenticationHeader(request, username, apiToken);
 
     CsrfCrumb crumb = null;
