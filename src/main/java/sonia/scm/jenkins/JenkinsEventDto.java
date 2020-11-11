@@ -32,6 +32,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@SuppressWarnings("java:S2160")
 public class JenkinsEventDto extends HalRepresentation  {
   private String server;
   private List<AdditionalServerIdentification.Identification> identifications;

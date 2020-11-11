@@ -24,6 +24,7 @@
 
 package sonia.scm.jenkins;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,8 +46,6 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class JenkinsRepositoryEventRelayTest {
 
-  private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
-
   @Mock
   private JenkinsEventRelay jenkinsEventRelay;
 
@@ -65,13 +64,16 @@ class JenkinsRepositoryEventRelayTest {
   @Test
   void shouldSendEventForRepositoryModificationWhenNameHasBeenModifiedEvent() {
     Repository oldVersion = RepositoryTestData.createHeartOfGold();
-    Repository newVerion = RepositoryTestData.createHeartOfGold();
-    newVerion.setName("hog2");
-    RepositoryModificationEvent event = new RepositoryModificationEvent(HandlerEventType.MODIFY, newVerion, oldVersion);
+    Repository newVersion = RepositoryTestData.createHeartOfGold();
+    newVersion.setName("hog2");
+    RepositoryModificationEvent event = new RepositoryModificationEvent(HandlerEventType.MODIFY, newVersion, oldVersion);
 
     relay.handleRepositoryModificationEvent(event);
 
-    verify(jenkinsEventRelay).send(argThat(Objects::nonNull));
+    verify(jenkinsEventRelay).send(argThat(argument -> {
+      Assertions.assertThat(argument.getEventTarget()).isEqualTo(EventTarget.NAVIGATOR);
+      return true;
+    }));
   }
 
   @Test

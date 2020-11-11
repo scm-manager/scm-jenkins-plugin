@@ -95,6 +95,7 @@ public class JenkinsPullRequestEventRelay {
 
   @Getter
   @Setter
+  @SuppressWarnings("java:S2160")
   public static final class JenkinsPullRequestEventDto extends JenkinsRepositoryEventDto {
 
     private List<PullRequestDto> deletedPullRequests;

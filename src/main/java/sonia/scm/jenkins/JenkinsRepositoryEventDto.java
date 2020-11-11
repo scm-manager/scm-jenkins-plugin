@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
+@SuppressWarnings("java:S2160")
 class JenkinsRepositoryEventDto extends JenkinsEventDto {
   private String namespace;
   private String name;

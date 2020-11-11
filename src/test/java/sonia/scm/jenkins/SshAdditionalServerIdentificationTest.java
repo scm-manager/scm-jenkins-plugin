@@ -21,21 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package sonia.scm.jenkins;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import sonia.scm.plugin.ExtensionPoint;
+import com.cloudogu.scm.ssh.ConfigStore;
+import org.junit.jupiter.api.Test;
 
-@ExtensionPoint
-public interface AdditionalServerIdentification {
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-  Identification get();
+class SshAdditionalServerIdentificationTest {
 
-  @AllArgsConstructor
-  @Getter
-  class Identification {
-    private final String name;
-    private final String value;
+  @Test
+  void shouldBuildCorrectSshUrl() {
+    ConfigStore sshConfigStore = mock(ConfigStore.class);
+    SshAdditionalServerIdentification identification = new SshAdditionalServerIdentification(sshConfigStore);
+
+    when(sshConfigStore.getBaseUrl()).thenReturn("hog.hitchhiker.org");
+    when(sshConfigStore.getPort()).thenReturn(42);
+
+    assertThat(identification.get().getName()).isEqualTo("ssh");
+    assertThat(identification.get().getValue()).isEqualTo("hog.hitchhiker.org:42");
   }
 }

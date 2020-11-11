@@ -81,6 +81,7 @@ public class JenkinsBranchAndTagEventRelay {
 
   @Getter
   @Setter
+  @SuppressWarnings("java:S2160")
   public static final class JenkinsBranchAndTagEventDto extends JenkinsRepositoryEventDto {
     private List<BranchDto> deletedBranches;
     private List<BranchDto> createdOrModifiedBranches;
