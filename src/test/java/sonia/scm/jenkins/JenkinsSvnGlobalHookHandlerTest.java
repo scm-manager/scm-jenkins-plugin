@@ -57,11 +57,13 @@ import sonia.scm.repository.api.ModificationsCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -120,10 +122,7 @@ class JenkinsSvnGlobalHookHandlerTest {
     mockHttpClient(repository, contentCaptor);
     mockChangesetProvider();
     mockModifications();
-
-    AdvancedHttpRequest crumbRequest = mock(AdvancedHttpRequest.class);
-    when(advancedHttpClient.get("http://jenkins.io/scm/crumbIssuer/api/xml")).thenReturn(crumbRequest);
-    when(crumbRequest.request()).thenReturn(mock(AdvancedHttpResponse.class));
+    mockCrumbRequester();
 
     handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
 
@@ -186,5 +185,14 @@ class JenkinsSvnGlobalHookHandlerTest {
     when(request.stringContent(contentCaptor.capture())).thenReturn(request);
     when(request.request()).thenReturn(response);
     when(response.getStatus()).thenReturn(200);
+  }
+
+  private void mockCrumbRequester() throws IOException {
+    AdvancedHttpRequest getRequest = mock(AdvancedHttpRequest.class, RETURNS_SELF);
+    AdvancedHttpResponse crumbResponse = mock(AdvancedHttpResponse.class);
+    when(advancedHttpClient.get(anyString())).thenReturn(getRequest);
+    when(getRequest.request()).thenReturn(crumbResponse);
+    when(crumbResponse.getStatus()).thenReturn(200);
+    when(crumbResponse.contentAsStream()).thenReturn(new ByteArrayInputStream("crumb".getBytes()));
   }
 }
