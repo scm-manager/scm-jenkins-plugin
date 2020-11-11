@@ -35,29 +35,28 @@ import lombok.Getter;
 import lombok.Setter;
 import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
-import sonia.scm.config.ScmConfiguration;
-import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.plugin.Extension;
 import sonia.scm.plugin.Requires;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.api.RepositoryService;
-import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.repository.api.ScmProtocol;
 
 import javax.inject.Inject;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
 @Extension
 @EagerSingleton
 @Requires("scm-review-plugin")
-public class JenkinsPullRequestEventRelay extends JenkinsEventRelay {
+public class JenkinsPullRequestEventRelay {
+
+  private final JenkinsEventRelay jenkinsEventRelay;
+  private final ProtocolResolver protocolResolver;
 
   @Inject
-  public JenkinsPullRequestEventRelay(JenkinsContext jenkinsContext, RepositoryServiceFactory repositoryServiceFactory, AdvancedHttpClient httpClient, ScmConfiguration configuration) {
-    super(configuration, jenkinsContext, repositoryServiceFactory, httpClient);
+  public JenkinsPullRequestEventRelay(JenkinsEventRelay jenkinsEventRelay, ProtocolResolver protocolResolver) {
+    this.jenkinsEventRelay = jenkinsEventRelay;
+    this.protocolResolver = protocolResolver;
   }
 
   @Subscribe
@@ -85,26 +84,25 @@ public class JenkinsPullRequestEventRelay extends JenkinsEventRelay {
   private void handle(BasicPullRequestEvent event, BiConsumer<JenkinsPullRequestEventDto, List<PullRequestDto>> sender) {
     final Repository repository = event.getRepository();
 
-    try (final RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
-      final List<ScmProtocol> supportedProtocols = repositoryService.getSupportedProtocols().collect(Collectors.toList());
+    final List<ScmProtocol> supportedProtocols = protocolResolver.getProtocols(repository);
 
-      final JenkinsPullRequestEventDto eventDto = new JenkinsPullRequestEventDto(supportedProtocols);
-      List<PullRequestDto> pullRequestDtos = Collections.singletonList(new PullRequestDto(event.getPullRequest()));
-      sender.accept(eventDto, pullRequestDtos);
+    final JenkinsPullRequestEventDto eventDto = new JenkinsPullRequestEventDto(supportedProtocols);
+    List<PullRequestDto> pullRequestDtos = Collections.singletonList(new PullRequestDto(event.getPullRequest()));
+    sender.accept(eventDto, pullRequestDtos);
 
-      this.send(repository, eventDto);
-    }
+    jenkinsEventRelay.send(repository, eventDto);
   }
 
   @Getter
   @Setter
-  public static final class JenkinsPullRequestEventDto extends JenkinsEventRelay.JenkinsEventDto {
+  @SuppressWarnings("java:S2160")
+  public static final class JenkinsPullRequestEventDto extends JenkinsRepositoryEventDto {
 
     private List<PullRequestDto> deletedPullRequests;
     private List<PullRequestDto> createOrModifiedPullRequests;
 
     public JenkinsPullRequestEventDto(List<ScmProtocol> protocols) {
-      super(protocols);
+      super(EventTarget.SOURCE, protocols);
     }
   }
 

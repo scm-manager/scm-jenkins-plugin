@@ -4,6 +4,7 @@
       "nav-link": "Jenkins",
       "form": {
         "header": "Global Jenkins Configuration",
+        "warning": "Warning: The URL configured here will receive events that contain information about repository names and namespaces and therefore may reveal information about your repositories, even though the configured user in the Jenkins server may not be permitted to see those repositories.",
         "url": "URL",
         "urlHelp": "URL of Jenkins installation (with contextpath).",
         "disableRepositoryConfiguration": "Do not allow repository configuration.",

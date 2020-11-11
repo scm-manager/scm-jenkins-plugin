@@ -85,6 +85,21 @@ class JenkinsContextTest {
     assertThat(serverUrl).isEmpty();
   }
 
+  @Test
+  void shouldReturnGlobalServerUrl() {
+    setGlobalUrl("https://hitchhiker.com/global", true);
+
+    Optional<String> serverUrl = context.getServerUrl();
+
+    assertThat(serverUrl).get().isEqualTo("https://hitchhiker.com/global");
+  }
+
+  @Test
+  void shouldReturnEmptyServerUrlWhenNotConfigured() {
+    Optional<String> serverUrl = context.getServerUrl();
+    assertThat(serverUrl).isEmpty();
+  }
+
   private void setGlobalUrl(String url) {
     setGlobalUrl(url, false);
   }
