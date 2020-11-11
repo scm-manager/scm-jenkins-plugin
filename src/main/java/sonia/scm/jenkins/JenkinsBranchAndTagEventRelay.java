@@ -29,16 +29,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import sonia.scm.EagerSingleton;
-import sonia.scm.config.ScmConfiguration;
-import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.Tag;
 import sonia.scm.repository.api.HookContext;
 import sonia.scm.repository.api.HookFeature;
-import sonia.scm.repository.api.RepositoryService;
-import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.repository.api.ScmProtocol;
 
 import javax.inject.Inject;
@@ -48,22 +44,25 @@ import static java.util.stream.Collectors.toList;
 
 @Extension
 @EagerSingleton
-public class JenkinsBranchAndTagEventRelay extends JenkinsEventRelay {
+public class JenkinsBranchAndTagEventRelay {
+
+  private final JenkinsEventRelay jenkinsEventRelay;
+  private final ProtocolResolver protocolResolver;
 
   @Inject
-  public JenkinsBranchAndTagEventRelay(JenkinsContext jenkinsContext, RepositoryServiceFactory repositoryServiceFactory, AdvancedHttpClient httpClient, ScmConfiguration configuration) {
-    super(configuration, jenkinsContext, repositoryServiceFactory, httpClient);
+  public JenkinsBranchAndTagEventRelay(JenkinsEventRelay jenkinsEventRelay, ProtocolResolver protocolResolver) {
+    this.jenkinsEventRelay = jenkinsEventRelay;
+    this.protocolResolver = protocolResolver;
   }
 
   @Subscribe
   public void handle(PostReceiveRepositoryHookEvent event) {
     final Repository repository = event.getRepository();
 
-    try (final RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
       final HookContext context = event.getContext();
 
       if (context.isFeatureSupported(HookFeature.BRANCH_PROVIDER) || context.isFeatureSupported(HookFeature.TAG_PROVIDER)) {
-        final List<ScmProtocol> supportedProtocols = repositoryService.getSupportedProtocols().collect(toList());
+        final List<ScmProtocol> supportedProtocols = protocolResolver.getProtocols(repository);
         final JenkinsBranchAndTagEventDto eventDto = new JenkinsBranchAndTagEventDto(supportedProtocols);
 
         if (context.isFeatureSupported(HookFeature.BRANCH_PROVIDER)) {
@@ -76,14 +75,14 @@ public class JenkinsBranchAndTagEventRelay extends JenkinsEventRelay {
           eventDto.setDeletedTags(context.getTagProvider().getDeletedTags().stream().map(TagDto::new).collect(toList()));
         }
 
-        this.send(repository, eventDto);
+        jenkinsEventRelay.send(repository, eventDto);
       }
-    }
   }
 
   @Getter
   @Setter
-  public static final class JenkinsBranchAndTagEventDto extends JenkinsEventRelay.JenkinsEventDto {
+  @SuppressWarnings("java:S2160")
+  public static final class JenkinsBranchAndTagEventDto extends JenkinsRepositoryEventDto {
     private List<BranchDto> deletedBranches;
     private List<BranchDto> createdOrModifiedBranches;
     private List<TagDto> deletedTags;
@@ -95,7 +94,7 @@ public class JenkinsBranchAndTagEventRelay extends JenkinsEventRelay {
     private String server;
 
     public JenkinsBranchAndTagEventDto(List<ScmProtocol> protocols) {
-      super(protocols);
+      super(EventTarget.SOURCE, protocols);
     }
   }
 

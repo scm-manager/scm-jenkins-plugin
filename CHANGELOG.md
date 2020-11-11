@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Added
+- Send trigger events to the global jenkins instance to trigger updates for namespace navigator items ([#13](https://github.com/scm-manager/scm-jenkins-plugin/pull/13))
+
 ### Changed
 - Set span kind for http requests (for Trace Monitor)
 

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React from "react";
-import { Checkbox, InputField, Configuration } from "@scm-manager/ui-components";
+import { Checkbox, InputField, Configuration, Notification } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 
 type GlobalConfiguration = {
@@ -71,6 +71,7 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
     return (
       <>
         {this.renderConfigChangedNotification()}
+        <Notification type={"warning"}>{t("scm-jenkins-plugin.global.form.warning")}</Notification>
         <InputField
           name={"url"}
           label={t("scm-jenkins-plugin.global.form.url")}

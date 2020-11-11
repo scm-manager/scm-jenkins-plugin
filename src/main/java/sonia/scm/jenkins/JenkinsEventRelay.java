@@ -25,55 +25,66 @@
 package sonia.scm.jenkins;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Link;
-import de.otto.edison.hal.Links;
-import lombok.Getter;
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.config.ScmConfiguration;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.api.RepositoryServiceFactory;
-import sonia.scm.repository.api.ScmProtocol;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-public abstract class JenkinsEventRelay {
+class JenkinsEventRelay {
 
-  private static final Logger logger = LoggerFactory.getLogger(JenkinsEventRelay.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JenkinsEventRelay.class);
   public static final String EVENT_ENDPOINT = "scm-manager-hook/notify";
-  private final ObjectMapper mapper = new ObjectMapper();
 
   private final ScmConfiguration configuration;
 
-  protected final JenkinsContext jenkinsContext;
-  protected final RepositoryServiceFactory repositoryServiceFactory;
-  protected final AdvancedHttpClient httpClient;
+  private final JenkinsContext jenkinsContext;
+  private final AdvancedHttpClient httpClient;
+  private final Set<AdditionalServerIdentification> serverIdentifications;
 
-  public JenkinsEventRelay(ScmConfiguration configuration, JenkinsContext jenkinsContext, RepositoryServiceFactory repositoryServiceFactory, AdvancedHttpClient httpClient) {
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  @Inject
+  public JenkinsEventRelay(ScmConfiguration configuration, JenkinsContext jenkinsContext, AdvancedHttpClient httpClient, Set<AdditionalServerIdentification> serverIdentifications) {
     this.configuration = configuration;
     this.jenkinsContext = jenkinsContext;
-    this.repositoryServiceFactory = repositoryServiceFactory;
     this.httpClient = httpClient;
+    this.serverIdentifications = serverIdentifications;
   }
 
-  protected final void send(Repository repository, JenkinsEventDto eventDto) {
+  void send(JenkinsEventDto eventDto) {
+    doIfEnabled(() -> jenkinsContext.getServerUrl().ifPresent(s -> send(s, eventDto)));
+  }
+
+  void send(Repository repository, JenkinsRepositoryEventDto eventDto) {
+    doIfEnabled(() -> jenkinsContext.getServerUrl(repository).ifPresent(s -> send(s, eventDto, repository)));
+  }
+
+  private void doIfEnabled(Runnable callback) {
     if (!jenkinsContext.getConfiguration().isDisableEventTrigger()) {
-      Optional<String> serverUrl = jenkinsContext.getServerUrl(repository);
-      serverUrl.ifPresent(s -> send(s, eventDto, repository));
+      callback.run();
     }
   }
 
-  private void send(String serverUrl, JenkinsEventDto eventDto, Repository repository) {
-    eventDto.setServer(configuration.getBaseUrl());
+  private void send(String serverUrl, JenkinsRepositoryEventDto eventDto, Repository repository) {
     eventDto.setNamespace(repository.getNamespace());
     eventDto.setName(repository.getName());
     eventDto.setType(repository.getType());
+
+    send(serverUrl, eventDto);
+  }
+
+  private void send(String serverUrl, JenkinsEventDto eventDto) {
+    eventDto.setServer(configuration.getBaseUrl());
+
+    List<AdditionalServerIdentification.Identification> identifications = serverIdentifications.stream().map(AdditionalServerIdentification::get).collect(Collectors.toList());
+    eventDto.setIdentifications(identifications);
 
     try {
       String json = mapper.writer().writeValueAsString(eventDto);
@@ -83,8 +94,8 @@ public abstract class JenkinsEventRelay {
         .formContent().field("json", json).build()
         .request();
     } catch (IOException e) {
-      if (logger.isWarnEnabled()) {
-        logger.warn("Failed to relay event to Jenkins server");
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("Failed to relay event to Jenkins server");
       }
     }
   }
@@ -94,18 +105,5 @@ public abstract class JenkinsEventRelay {
       url += "/";
     }
     return url + EVENT_ENDPOINT;
-  }
-
-  @Getter
-  @Setter
-  protected static class JenkinsEventDto extends HalRepresentation {
-    private String namespace;
-    private String name;
-    private String type;
-    private String server;
-
-    JenkinsEventDto(List<ScmProtocol> protocols) {
-      super(new Links.Builder().array(protocols.stream().map(protocol -> Link.link(protocol.getType(), protocol.getUrl())).collect(Collectors.toList())).build());
-    }
   }
 }

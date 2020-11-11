@@ -24,23 +24,13 @@
 
 package sonia.scm.jenkins;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import sonia.scm.config.ScmConfiguration;
-import sonia.scm.net.ahc.AdvancedHttpClient;
-import sonia.scm.net.ahc.AdvancedHttpRequestWithBody;
-import sonia.scm.net.ahc.AdvancedHttpResponse;
-import sonia.scm.net.ahc.FormContentBuilder;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHookEvent;
@@ -49,95 +39,54 @@ import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.Tag;
 import sonia.scm.repository.api.HookContext;
 import sonia.scm.repository.api.HookFeature;
-import sonia.scm.repository.api.RepositoryService;
-import sonia.scm.repository.api.RepositoryServiceFactory;
-import sonia.scm.repository.api.ScmProtocol;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.lenient;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static sonia.scm.jenkins.JenkinsEventRelay.EVENT_ENDPOINT;
 
 @ExtendWith(MockitoExtension.class)
 class JenkinsBranchAndTagEventRelayTest {
 
   private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
-  private static final String SERVER_URL = "http://scm-manager.org";
-  private final ObjectMapper objectMapper = new ObjectMapper();
 
-  @Mock
-  private JenkinsContext jenkinsContext;
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private HookContext hookContext;
   @Mock
-  private ScmConfiguration scmConfiguration;
+  private JenkinsEventRelay jenkinsEventRelay;
   @Mock
-  private RepositoryServiceFactory repositoryServiceFactory;
-  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-  private RepositoryService repositoryService;
-  @Mock
-  private AdvancedHttpClient httpClient;
-  @Mock(answer = Answers.RETURNS_SELF)
-  private AdvancedHttpRequestWithBody request;
-  @Mock
-  private AdvancedHttpResponse response;
-  @Mock
-  private FormContentBuilder formContentBuilder;
-
-  @Captor
-  private ArgumentCaptor<String> captor;
+  private ProtocolResolver protocolResolver;
 
   @InjectMocks
   private JenkinsBranchAndTagEventRelay eventRelay;
 
-  @BeforeEach
-  void initScmConfig() {
-    lenient().when(scmConfiguration.getBaseUrl()).thenReturn(SERVER_URL);
-  }
-
   @Test
   void shouldNotSend() {
-    mockRepo();
-
     eventRelay.handle(new PostReceiveRepositoryHookEvent(new RepositoryHookEvent(hookContext, REPOSITORY, RepositoryHookType.POST_RECEIVE)));
 
-    verify(httpClient, never()).post(anyString());
+    verify(jenkinsEventRelay, never()).send(any(), any());
   }
 
   @Test
-  void shouldSendIfBranchesAvailable() throws IOException {
-    mockRepo();
-    mockRequest();
-
+  void shouldSendIfBranchesAvailable() {
     when(hookContext.isFeatureSupported(HookFeature.BRANCH_PROVIDER)).thenReturn(true);
     when(hookContext.getBranchProvider().getCreatedOrModified()).thenReturn(ImmutableList.of("master"));
     when(hookContext.getBranchProvider().getDeletedOrClosed()).thenReturn(ImmutableList.of("develop"));
 
-    String jenkinsUrl = mockJenkinsConfig();
-
     eventRelay.handle(new PostReceiveRepositoryHookEvent(new RepositoryHookEvent(hookContext, REPOSITORY, RepositoryHookType.POST_RECEIVE)));
 
-    verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
-
-    JsonNode dto = objectMapper.readTree(captor.getValue());
-    assertThat(dto.get("createdOrModifiedBranches").get(0).get("name")).hasToString("\"master\"");
-    assertThat(dto.get("deletedBranches").get(0).get("name")).hasToString("\"develop\"");
+    verify(jenkinsEventRelay).send(eq(REPOSITORY), argThat(dto -> {
+      assertThat(dto).extracting("createdOrModifiedBranches").asList().extracting("name").containsExactly("master");
+      assertThat(dto).extracting("deletedBranches").asList().extracting("name").containsExactly("develop");
+      return true;
+    }));
   }
 
   @Test
-  void shouldSendIfTagsAvailable() throws IOException {
-    mockRepo();
-    mockRequest();
-    String jenkinsUrl = mockJenkinsConfig();
-
+  void shouldSendIfTagsAvailable() {
     when(hookContext.isFeatureSupported(HookFeature.TAG_PROVIDER)).thenReturn(true);
     when(hookContext.isFeatureSupported(HookFeature.BRANCH_PROVIDER)).thenReturn(false);
     when(hookContext.getTagProvider().getCreatedTags()).thenReturn(ImmutableList.of(new Tag("snapshot", "1")));
@@ -145,19 +94,15 @@ class JenkinsBranchAndTagEventRelayTest {
 
     eventRelay.handle(new PostReceiveRepositoryHookEvent(new RepositoryHookEvent(hookContext, REPOSITORY, RepositoryHookType.POST_RECEIVE)));
 
-    verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
-
-    JsonNode dto = objectMapper.readTree(captor.getValue());
-    assertThat(dto.get("createOrModifiedTags").get(0).get("name")).hasToString("\"snapshot\"");
-    assertThat(dto.get("deletedTags").get(0).get("name")).hasToString("\"release\"");
+    verify(jenkinsEventRelay).send(eq(REPOSITORY), argThat(dto -> {
+      assertThat(dto).extracting("createOrModifiedTags").asList().extracting("name").containsExactly("snapshot");
+      assertThat(dto).extracting("deletedTags").asList().extracting("name").containsExactly("release");
+      return true;
+    }));
   }
 
   @Test
-  void shouldSendIfBranchesAndTagsAreAvailable() throws IOException {
-    mockRepo();
-    mockRequest();
-    String jenkinsUrl = mockJenkinsConfig();
-
+  void shouldSendIfBranchesAndTagsAreAvailable() {
     when(hookContext.isFeatureSupported(HookFeature.TAG_PROVIDER)).thenReturn(true);
     when(hookContext.isFeatureSupported(HookFeature.BRANCH_PROVIDER)).thenReturn(true);
     when(hookContext.getTagProvider().getCreatedTags()).thenReturn(ImmutableList.of(new Tag("snapshot", "1")));
@@ -167,44 +112,12 @@ class JenkinsBranchAndTagEventRelayTest {
 
     eventRelay.handle(new PostReceiveRepositoryHookEvent(new RepositoryHookEvent(hookContext, REPOSITORY, RepositoryHookType.POST_RECEIVE)));
 
-    verify(httpClient).post(jenkinsUrl + EVENT_ENDPOINT);
-
-    JsonNode dto = objectMapper.readTree(captor.getValue());
-    assertThat(dto.get("createOrModifiedTags").get(0).get("name")).hasToString("\"snapshot\"");
-    assertThat(dto.get("deletedTags").get(0).get("name")).hasToString("\"release\"");
-    assertThat(dto.get("createdOrModifiedBranches").get(0).get("name")).hasToString("\"master\"");
-    assertThat(dto.get("deletedBranches").get(0).get("name")).hasToString("\"develop\"");
-    assertThat(dto.get("server")).hasToString("\"" + SERVER_URL + "\"");
-    assertThat(dto.get("namespace")).hasToString("\"" + REPOSITORY.getNamespace() + "\"");
-    assertThat(dto.get("name")).hasToString("\"" + REPOSITORY.getName() + "\"");
-    assertThat(dto.get("type")).hasToString("\"" + REPOSITORY.getType() + "\"");
-  }
-
-  private String mockJenkinsConfig() {
-    String jenkinsUrl = "http://hitchhiker.org/";
-    when(jenkinsContext.getServerUrl(REPOSITORY)).thenReturn(Optional.of(jenkinsUrl));
-    mockGlobalConfiguration();
-    return jenkinsUrl;
-  }
-
-  private void mockGlobalConfiguration() {
-    GlobalJenkinsConfiguration globalJenkinsConfiguration = new GlobalJenkinsConfiguration();
-    when(jenkinsContext.getConfiguration()).thenReturn(globalJenkinsConfiguration);
-  }
-
-  private void mockRepo() {
-    when(repositoryServiceFactory.create(REPOSITORY)).thenReturn(repositoryService);
-    List<ScmProtocol> protocols = new ArrayList<>();
-    protocols.add(new JenkinsPullRequestEventRelayTest.DummyScmProtocol());
-    when(repositoryServiceFactory.create(REPOSITORY)).thenReturn(repositoryService);
-    when(repositoryService.getSupportedProtocols()).thenReturn(protocols.stream());
-  }
-
-  private void mockRequest() throws IOException {
-    when(request.spanKind("Jenkins").request()).thenReturn(response);
-    when(request.formContent()).thenReturn(formContentBuilder);
-    when(formContentBuilder.field(anyString(), captor.capture())).thenReturn(formContentBuilder);
-    when(formContentBuilder.build()).thenReturn(request);
-    when(httpClient.post(anyString())).thenReturn(request);
+    verify(jenkinsEventRelay).send(eq(REPOSITORY), argThat(dto -> {
+      assertThat(dto).extracting("createOrModifiedTags").asList().extracting("name").containsExactly("snapshot");
+      assertThat(dto).extracting("deletedTags").asList().extracting("name").containsExactly("release");
+      assertThat(dto).extracting("createdOrModifiedBranches").asList().extracting("name").containsExactly("master");
+      assertThat(dto).extracting("deletedBranches").asList().extracting("name").containsExactly("develop");
+      return true;
+    }));
   }
 }
