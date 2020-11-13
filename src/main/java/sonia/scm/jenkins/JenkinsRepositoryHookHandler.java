@@ -209,7 +209,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
           .append(HttpUtil.encode(HttpUtil.decode(elParser.parse(parameter.getValue()).evaluate(env))))
           .append("&")
       );
-      url = builder.substring(0, builder.toString().length() - 1);
+      url = builder.substring(0, builder.length() - 1);
     }
 
     return url;

@@ -37,6 +37,7 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.util.HttpUtil;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Optional;
 
 import static sonia.scm.jenkins.HeaderAppenders.appendCsrfCrumbHeader;
@@ -46,7 +47,7 @@ public class JenkinsSvnGlobalHookHandler implements JenkinsHookHandler {
 
   // This is the endpoint we trigger in Jenkins Subversion-Plugin:
   // https://github.com/jenkinsci/subversion-plugin/blob/master/src/main/java/hudson/scm/SubversionRepositoryStatus.java#L92
-  public static final String URL_SUBVERSION = "/subversion/{UUID}/notifyCommit/?rev={REVISION}";
+  public static final String URL_SUBVERSION = "/subversion/{0}/notifyCommit/?rev={1}";
   public static final String TYPE_SUBVERSION = "svn";
 
   private final Provider<AdvancedHttpClient> httpClientProvider;
@@ -127,9 +128,8 @@ public class JenkinsSvnGlobalHookHandler implements JenkinsHookHandler {
   }
 
   private String createUrl(RepositoryHookEvent event, String uuid) {
-    String urlSuffix = URL_SUBVERSION.replace("{UUID}", uuid);
     String revision = event.getContext().getChangesetProvider().getChangesetList().get(0).getId();
-    urlSuffix = urlSuffix.replace("{REVISION}", revision);
+    String urlSuffix = MessageFormat.format(URL_SUBVERSION, uuid, revision);
     return HttpUtil.getUriWithoutEndSeperator(configuration.getUrl()).concat(urlSuffix);
   }
 
