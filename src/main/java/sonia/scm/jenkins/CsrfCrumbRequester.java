@@ -77,7 +77,7 @@ public class CsrfCrumbRequester {
   }
 
   private static String createCrumbUrl(String url) {
-    return escape(createBaseUrl(url).concat("crumbIssuer/api/xml"));
+    return createBaseUrl(url).concat("crumbIssuer/api/xml");
   }
 
   private static String createBaseUrl(String url) {

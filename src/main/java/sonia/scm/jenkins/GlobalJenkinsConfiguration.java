@@ -65,16 +65,12 @@ public class GlobalJenkinsConfiguration implements Validateable {
 
   private String url;
 
-  public GlobalJenkinsConfiguration(String url, boolean disableGitTrigger, boolean disableMercurialTrigger, boolean disableRepositoryConfiguration) {
+  public GlobalJenkinsConfiguration(String url, boolean disableGitTrigger, boolean disableMercurialTrigger, boolean disableSubversionTrigger, boolean disableRepositoryConfiguration) {
     this.url = url;
     this.disableGitTrigger = disableGitTrigger;
     this.disableMercurialTrigger = disableMercurialTrigger;
-    this.disableRepositoryConfiguration = disableRepositoryConfiguration;
-  }
-
-  public GlobalJenkinsConfiguration(String url, boolean disableGitTrigger, boolean disableMercurialTrigger, boolean disableSubversionTrigger, boolean disableRepositoryConfiguration) {
-    this(url, disableGitTrigger, disableMercurialTrigger, disableRepositoryConfiguration);
     this.disableSubversionTrigger = disableSubversionTrigger;
+    this.disableRepositoryConfiguration = disableRepositoryConfiguration;
   }
 
   @Override

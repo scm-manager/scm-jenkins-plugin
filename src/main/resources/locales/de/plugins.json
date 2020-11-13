@@ -17,9 +17,9 @@
         "disableMercurialTriggerHelp": "Deaktiviert Trigger für Mercurial-Repositories. \nHinweis: Der Mercurial-Trigger erfordert Version 1.38 oder höher des Jenkins-Mercurial-Plugins.",
         "disableEventTrigger": "Event-Trigger deaktivieren",
         "disableEventTriggerHelp": "Deaktiviert Trigger für SCM-Manager Events. \nHinweis: Diese Events werden nur verarbeitet, wenn im Jenkins das Jenkins-SCM-Manager-Plugin installiert ist. \nDamit wird der Jenkins über Änderungen an Branches, Tags oder Pull Requests informiert.",
-        "username": "Benutzername",
+        "username": "Benutzername (nur für Subversion-Trigger)",
         "usernameHelp": "Benutzername, der für die Authentifikation auf dem Jenkins-CI-Server genutzt wird. Die Anmeldedaten werden nur für SVN Commit Trigger Anfragen benötigt, wenn der CSRF Schutz auf dem Jenkins Server aktiviert ist.",
-        "apiToken": "API Token",
+        "apiToken": "API Token (nur für Subversion-Trigger)",
         "apiTokenHelp": "API Token für den Benutzer. Dieser Token wird für die Authentifikation genutzt. Der API Token kann auf dem Jenkins-Server unter der folgenden URL erstellt werden: http://yourjenkinsserver/jenkins/user/username/configure."
       }
     },

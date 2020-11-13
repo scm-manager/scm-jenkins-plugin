@@ -56,6 +56,7 @@ public class JenkinsV2GlobalConfigMigrationUpdateStep implements UpdateStep {
             v1JenkinsGlobalConfiguration.getUrl(),
             v1JenkinsGlobalConfiguration.isDisableGitTrigger(),
             v1JenkinsGlobalConfiguration.isDisableMercurialTrigger(),
+            false,
             v1JenkinsGlobalConfiguration.isDisableRepositoryConfiguration()
           );
           storeFactory.withType(GlobalJenkinsConfiguration.class).withName(STORE_NAME).build().set(v2JenkinsConfig);

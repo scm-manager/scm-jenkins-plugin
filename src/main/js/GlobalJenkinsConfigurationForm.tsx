@@ -127,7 +127,7 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
           name={"username"}
           label={t("scm-jenkins-plugin.global.form.username")}
           helpText={t("scm-jenkins-plugin.global.form.usernameHelp")}
-          disabled={readOnly}
+          disabled={readOnly || this.state.disableSubversionTrigger}
           value={this.state.username}
           onChange={this.valueChangeHandler}
         />
@@ -136,7 +136,7 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
           type="password"
           label={t("scm-jenkins-plugin.global.form.apiToken")}
           helpText={t("scm-jenkins-plugin.global.form.apiTokenHelp")}
-          disabled={readOnly}
+          disabled={readOnly || this.state.disableSubversionTrigger}
           value={this.state.apiToken}
           onChange={this.valueChangeHandler}
         />

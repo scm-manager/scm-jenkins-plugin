@@ -94,10 +94,11 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler {
   private void logGlobalJenkinsHook(String type) {
     //J-
     logger.debug(
-      "check for global jenkins hook: type={}, hg disabled={}, git disabled={}",
+      "check for global jenkins hook: type={}, hg disabled={}, git disabled={}, svn disabled={}",
       type,
       configuration.isDisableMercurialTrigger(),
-      configuration.isDisableGitTrigger()
+      configuration.isDisableGitTrigger(),
+      configuration.isDisableSubversionTrigger()
     );
     //J+
   }

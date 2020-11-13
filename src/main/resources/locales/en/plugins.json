@@ -17,9 +17,9 @@
         "disableMercurialTriggerHelp": "Disable trigger for mercurial repositories. \nNote: The mercurial trigger requires version 1.38 or above of the jenkins mercurial plugin.",
         "disableEventTrigger": "Disable event trigger",
         "disableEventTriggerHelp": "Disable trigger for SCM-Manager events. \nNote: This events are only processed if the Jenkins-SCM-Manager-Plugin is installed. \nThe events informs Jenkins about changes regarding branches, tags or pull requests.",
-        "username": "Username",
+        "username": "Username (for Subversion triggers, only)",
         "usernameHelp": "Username which is used for the authentication on the Jenkins ci server. This is only required for SVN commit trigger requests if CSRF protection is enabled on the Jenkins ci server.",
-        "apiToken": "API Token",
+        "apiToken": "API Token (for Subversion triggers, only)",
         "apiTokenHelp": "The API Token of the user. This token is used for authentication. You could get your API Token from your Jenkins Server at http://yourjenkinsserver/jenkins/user/username/configure."
       }
     },

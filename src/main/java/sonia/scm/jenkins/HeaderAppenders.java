@@ -40,13 +40,11 @@ public class HeaderAppenders {
     // check for authentication parameters
 
     if (Util.isNotEmpty(username) && Util.isNotEmpty(apiToken)) {
-      if (log.isDebugEnabled()) {
-        log.debug("added authentication for user {}", username);
-      }
+      log.debug("added authentication for user {}", username);
 
       // add basic authentication header
       request.basicAuth(username, apiToken);
-    } else if (log.isDebugEnabled()) {
+    } else {
       log.debug("skip authentication. username or api token is empty");
     }
   }
