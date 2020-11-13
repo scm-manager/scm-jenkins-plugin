@@ -49,11 +49,9 @@ import javax.inject.Provider;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 
 @ExtendWith(MockitoExtension.class)
 class JenkinsRepositoryHookHandlerTest {
@@ -80,15 +78,6 @@ class JenkinsRepositoryHookHandlerTest {
     config.setUrl("http://hitchhiker.org/jenkins");
     config.setProject("HeartOfGold");
     handler = new JenkinsRepositoryHookHandler(httpClientProvider, config, elParser);
-  }
-
-  @Test
-  void testEscape() {
-    assertThat(handler.escape("https://ci.scm-manager.org")).isEqualTo("https://ci.scm-manager.org");
-    assertThat(handler.escape("https://ci.scm-manager.org/path")).isEqualTo("https://ci.scm-manager.org/path");
-    assertThat(handler.escape("https://ci.scm-manager.org/some/deep/path")).isEqualTo("https://ci.scm-manager.org/some/deep/path");
-    assertThat(handler.escape("https://ci.scm-manager.org/path?with=query&param=true")).isEqualTo("https://ci.scm-manager.org/path?with=query&param=true");
-    assertThat(handler.escape("https://ci.scm-manager.org/with spaces")).isEqualTo("https://ci.scm-manager.org/with%20spaces");
   }
 
   @Test

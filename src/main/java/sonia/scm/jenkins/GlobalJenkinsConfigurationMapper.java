@@ -23,8 +23,10 @@
  */
 package sonia.scm.jenkins;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import sonia.scm.api.v2.resources.LinkBuilder;
@@ -43,9 +45,25 @@ public abstract class GlobalJenkinsConfigurationMapper {
   @Inject
   private ScmPathInfoStore scmPathInfoStore;
 
+  @VisibleForTesting
+  @SuppressWarnings("squid:S2068")
+  static final String DUMMY_SECRET = "__DUMMY__";
+
   public abstract GlobalJenkinsConfigurationDto map(GlobalJenkinsConfiguration config);
 
-  public abstract GlobalJenkinsConfiguration map(GlobalJenkinsConfigurationDto dto);
+  public abstract GlobalJenkinsConfiguration map(GlobalJenkinsConfigurationDto dto, @Context GlobalJenkinsConfiguration oldConfiguration);
+
+  @AfterMapping
+  public void replaceSecretsWithDummy(@MappingTarget GlobalJenkinsConfigurationDto target) {
+    target.setApiToken(DUMMY_SECRET);
+  }
+
+  @AfterMapping
+  public void restoreSecretsOnDummy(@MappingTarget GlobalJenkinsConfiguration target, @Context GlobalJenkinsConfiguration oldConfiguration) {
+    if (DUMMY_SECRET.equals(target.getApiToken())) {
+      target.setApiToken(oldConfiguration.getApiToken());
+    }
+  }
 
   @AfterMapping
   void appendLinks(@MappingTarget GlobalJenkinsConfigurationDto target) {

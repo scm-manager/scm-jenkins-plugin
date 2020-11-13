@@ -29,11 +29,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import sonia.scm.Validateable;
 import sonia.scm.util.Util;
+import sonia.scm.xml.XmlEncryptionAdapter;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "jenkins-config")
@@ -50,15 +52,24 @@ public class GlobalJenkinsConfiguration implements Validateable {
   @XmlElement(name = "disable-git-trigger")
   private boolean disableGitTrigger = false;
 
+  @XmlElement(name = "disable-subversion-trigger")
+  private boolean disableSubversionTrigger = false;
+
   @XmlElement(name = "disable-event-trigger")
   private boolean disableEventTrigger = false;
 
+  private String username;
+
+  @XmlJavaTypeAdapter(XmlEncryptionAdapter.class)
+  private String apiToken;
+
   private String url;
 
-  public GlobalJenkinsConfiguration(String url, boolean disableGitTrigger, boolean disableMercurialTrigger, boolean disableRepositoryConfiguration) {
+  public GlobalJenkinsConfiguration(String url, boolean disableGitTrigger, boolean disableMercurialTrigger, boolean disableSubversionTrigger, boolean disableRepositoryConfiguration) {
     this.url = url;
     this.disableGitTrigger = disableGitTrigger;
     this.disableMercurialTrigger = disableMercurialTrigger;
+    this.disableSubversionTrigger = disableSubversionTrigger;
     this.disableRepositoryConfiguration = disableRepositoryConfiguration;
   }
 

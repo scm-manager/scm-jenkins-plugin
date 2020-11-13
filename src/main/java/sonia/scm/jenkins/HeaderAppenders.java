@@ -23,28 +23,37 @@
  */
 package sonia.scm.jenkins;
 
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Links;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import sonia.scm.net.ahc.AdvancedHttpClient;
+import sonia.scm.net.ahc.BaseHttpRequest;
+import sonia.scm.util.Util;
 
-@Getter
-@Setter
-@SuppressWarnings("java:S2160") // wo do not need equals and hashcode for dto
-public class GlobalJenkinsConfigurationDto extends HalRepresentation {
+import static sonia.scm.jenkins.CsrfCrumbRequester.getJenkinsCsrfCrumb;
 
-  private boolean disableRepositoryConfiguration = false;
-  private boolean disableSubversionTrigger = false;
-  private boolean disableMercurialTrigger = false;
-  private boolean disableGitTrigger = false;
-  private boolean disableEventTrigger = false;
-  private String url;
-  private String username;
-  private String apiToken;
+@Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class HeaderAppenders {
 
-  @Override
-  @SuppressWarnings("squid:S1185") // We want to have this method available in this package
-  protected HalRepresentation add(Links links) {
-    return super.add(links);
+  static void appendAuthenticationHeader(BaseHttpRequest request, String username, String apiToken) {
+    // check for authentication parameters
+
+    if (Util.isNotEmpty(username) && Util.isNotEmpty(apiToken)) {
+      log.debug("added authentication for user {}", username);
+
+      // add basic authentication header
+      request.basicAuth(username, apiToken);
+    } else {
+      log.debug("skip authentication. username or api token is empty");
+    }
+  }
+
+  static void appendCsrfCrumbHeader(AdvancedHttpClient client, BaseHttpRequest request, String url, String username, String apiToken) {
+    CsrfCrumb crumb = getJenkinsCsrfCrumb(client, url, username, apiToken);
+    if (crumb != null) {
+      log.debug("add csrf crumb to api request");
+      request.header(crumb.getCrumbRequestField(), crumb.getCrumb());
+    }
   }
 }
