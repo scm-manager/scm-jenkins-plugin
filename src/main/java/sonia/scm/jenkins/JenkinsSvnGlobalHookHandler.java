@@ -46,7 +46,7 @@ public class JenkinsSvnGlobalHookHandler implements JenkinsHookHandler {
 
   // This is the endpoint we trigger in Jenkins Subversion-Plugin:
   // https://github.com/jenkinsci/subversion-plugin/blob/master/src/main/java/hudson/scm/SubversionRepositoryStatus.java#L92
-  public static final String URL_SUBVERSION = "/subversion/{UUID}/notifyCommit?REV={REVISION}";
+  public static final String URL_SUBVERSION = "/subversion/{UUID}/notifyCommit/?rev={REVISION}";
   public static final String TYPE_SUBVERSION = "svn";
 
   private final Provider<AdvancedHttpClient> httpClientProvider;
@@ -81,6 +81,7 @@ public class JenkinsSvnGlobalHookHandler implements JenkinsHookHandler {
       AdvancedHttpRequestWithBody request = httpClientProvider.get()
         .post(url)
         .spanKind("Jenkins")
+        .basicAuth(configuration.getUsername(), configuration.getApiToken())
         .header("Content-Type", "text/plain;charset=UTF-8")
         .stringContent(content);
 

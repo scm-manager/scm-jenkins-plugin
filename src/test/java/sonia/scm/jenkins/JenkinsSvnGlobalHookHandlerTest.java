@@ -126,7 +126,7 @@ class JenkinsSvnGlobalHookHandlerTest {
 
     handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
 
-    verify(advancedHttpClient).post("http://jenkins.io/scm/subversion/uuid-42/notifyCommit?REV=1");
+    verify(advancedHttpClient).post("http://jenkins.io/scm/subversion/uuid-42/notifyCommit/?rev=1");
     String value = contentCaptor.getValue();
     assertThat(value)
       .contains("A   .gitignore")
@@ -149,7 +149,7 @@ class JenkinsSvnGlobalHookHandlerTest {
 
     handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
 
-    verify(advancedHttpClient).post("http://jenkins.io/scm/subversion/uuid-42/notifyCommit?REV=1");
+    verify(advancedHttpClient).post("http://jenkins.io/scm/subversion/uuid-42/notifyCommit/?rev=1");
     String value = contentCaptor.getValue();
     assertThat(value)
       .contains("A   .gitignore")
