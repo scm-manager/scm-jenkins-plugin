@@ -7,7 +7,7 @@
         "warning": "Warning: The URL configured here will receive events that contain information about repository names and namespaces and therefore may reveal information about your repositories, even though the configured user in the Jenkins server may not be permitted to see those repositories.",
         "url": "URL",
         "urlHelp": "URL of Jenkins installation (with contextpath).",
-        "disableRepositoryConfiguration": "Do not allow repository configuration.",
+        "disableRepositoryConfiguration": "Do not allow repository configuration",
         "disableRepositoryConfigurationHelp": "Do not allow repository owners to configure jenkins hooks.",
         "disableGitTrigger": "Disable Git trigger",
         "disableGitTriggerHelp": "Disable trigger for git repositories. \nNote: The git trigger requires version 1.1.14 or above of the jenkins git plugin.",
@@ -42,7 +42,7 @@
         "branchesHeader": "Branches",
         "branchesHelp": "List of branches.",
         "branches": "New Branch",
-        "branchesAdd": "Add branch",
+        "branchesAdd": "Add Branch",
         "branchesDelete": "Delete",
         "parameterLabel": "Build Job Parameter",
         "parameterHelpText": "The build job parameters will be send on each request.\nJenkins can only process parameters which are defined in the build job.\nParameter names are case sensitive!",
@@ -50,7 +50,7 @@
         "parameterNameHelp": "The name of the parameter.\nIt must match the defined build job parameter name in jenkins exactly.",
         "parameterValue": "Value",
         "parameterValueHelp": "The value of the parameter:\n - Use \"true\" or \"false\" as boolean parameters\n - To use a Run Parameter, the value should be in the format \"jobname#buildNumber\"\n - You may use variable parameters from context formatted like ${repository.name}",
-        "addParameter": "Add parameter",
+        "addParameter": "Add Parameter",
         "deleteParameter": "Delete"
       }
     },
