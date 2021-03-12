@@ -78,11 +78,11 @@ public abstract class GlobalJenkinsConfigurationMapper {
 
   private String self() {
     LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get(), JenkinsConfigurationResource.class);
-    return linkBuilder.method("get").parameters().href();
+    return linkBuilder.method("getGlobalJenkinsConfig").parameters().href();
   }
 
   private String update() {
     LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get(), JenkinsConfigurationResource.class);
-    return linkBuilder.method("update").parameters().href();
+    return linkBuilder.method("updateGlobalJenkinsConfig").parameters().href();
   }
 }
