@@ -54,7 +54,7 @@ public class IndexLinkEnricher extends JsonEnricherBase {
   public void enrich(JsonEnricherContext context) {
     if (resultHasMediaType(INDEX, context) && ConfigurationPermissions.read(NAME).isPermitted()) {
       String globalJenkinsConfigUrl = new LinkBuilder(scmPathInfoStore.get().get(), JenkinsConfigurationResource.class)
-        .method("get")
+        .method("getGlobalJenkinsConfig")
         .parameters()
         .href();
 

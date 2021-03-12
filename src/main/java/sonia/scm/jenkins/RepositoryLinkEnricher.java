@@ -60,7 +60,7 @@ public class RepositoryLinkEnricher extends AbstractRepositoryJsonEnricher {
     if (!jenkinsContext.getConfiguration().isDisableRepositoryConfiguration()
       && RepositoryPermissions.custom(NAME, repository).isPermitted()) {
       String linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), JenkinsConfigurationResource.class)
-        .method("getForRepository")
+        .method("getJenkinsConfigForRepository")
         .parameters(namespace, name)
         .href();
       this.addLink(repositoryNode, "jenkinsConfig", linkBuilder);

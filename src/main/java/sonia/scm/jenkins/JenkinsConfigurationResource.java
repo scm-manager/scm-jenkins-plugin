@@ -101,7 +101,7 @@ public class JenkinsConfigurationResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public Response get() {
+  public Response getGlobalJenkinsConfig() {
     ConfigurationPermissions.read(NAME).check();
 
     return Response.ok(globalJenkinsConfigurationMapper.map(context.getConfiguration())).build();
@@ -123,7 +123,7 @@ public class JenkinsConfigurationResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public Response update(GlobalJenkinsConfigurationDto updatedConfig) {
+  public Response updateGlobalJenkinsConfig(GlobalJenkinsConfigurationDto updatedConfig) {
     ConfigurationPermissions.write(NAME).check();
     context.storeConfiguration(globalJenkinsConfigurationMapper.map(updatedConfig, context.getConfiguration()));
 
@@ -159,7 +159,7 @@ public class JenkinsConfigurationResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public Response getForRepository(@PathParam("namespace") String namespace, @PathParam("name") String name) {
+  public Response getJenkinsConfigForRepository(@PathParam("namespace") String namespace, @PathParam("name") String name) {
     Repository repository = loadRepository(namespace, name);
     RepositoryPermissions.custom(NAME, repository).check();
 
@@ -189,7 +189,7 @@ public class JenkinsConfigurationResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public Response updateForRepository(@PathParam("namespace") String namespace, @PathParam("name") String name, JenkinsConfigurationDto updatedConfig) {
+  public Response updateJenkinsConfigForRepository(@PathParam("namespace") String namespace, @PathParam("name") String name, JenkinsConfigurationDto updatedConfig) {
     Repository repository = loadRepository(namespace, name);
     context.storeConfiguration(jenkinsConfigurationMapper.map(updatedConfig, context.getConfiguration(repository)), repository);
 

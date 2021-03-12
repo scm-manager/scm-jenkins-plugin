@@ -83,11 +83,11 @@ public abstract class JenkinsConfigurationMapper {
 
   private String self(Repository repository) {
     LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get(), JenkinsConfigurationResource.class);
-    return linkBuilder.method("getForRepository").parameters(repository.getNamespace(), repository.getName()).href();
+    return linkBuilder.method("getJenkinsConfigForRepository").parameters(repository.getNamespace(), repository.getName()).href();
   }
 
   private String update(Repository repository) {
     LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get(), JenkinsConfigurationResource.class);
-    return linkBuilder.method("updateForRepository").parameters(repository.getNamespace(), repository.getName()).href();
+    return linkBuilder.method("updateJenkinsConfigForRepository").parameters(repository.getNamespace(), repository.getName()).href();
   }
 }
