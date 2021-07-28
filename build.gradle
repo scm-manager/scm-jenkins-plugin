@@ -40,6 +40,7 @@ scmPlugin {
   description = "Pings your Jenkins CI server when a new commit is pushed to SCM-Manager"
   author = "Cloudogu GmbH"
   category = "Continuous Integration"
+  avatarUrl = '/images/jenkins-logo.png'
 
   openapi {
     packages = [
