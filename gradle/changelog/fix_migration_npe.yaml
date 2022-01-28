@@ -1,2 +1,0 @@
-- type: fixed
-  description: Exception in migration from v1 with missing branches ([#37](https://github.com/scm-manager/scm-jenkins-plugin/pull/37))

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.2.2 - 2022-01-28
+### Fixed
+- Exception in migration from v1 with missing branches ([#37](https://github.com/scm-manager/scm-jenkins-plugin/pull/37))
+
 ## 2.2.1 - 2021-03-26
 ### Fixed
 - Method names for open api spec ([#19](https://github.com/scm-manager/scm-jenkins-plugin/pull/19))
@@ -32,8 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changeover to MIT license ([#2](https://github.com/scm-manager/scm-jenkins-plugin/pull/2))
 
 ### Fixed
-Encrypt api token on jenkins configuration ([#3](https://github.com/scm-manager/scm-jenkins-plugin/pull/3))
+- Encrypt api token on jenkins configuration ([#3](https://github.com/scm-manager/scm-jenkins-plugin/pull/3))
 
 ## 2.0.0-rc2 - 2020-03-13
 ### Added
 - Add swagger rest annotations to generate openAPI specs for the scm-openapi-plugin. ([#1](https://github.com/scm-manager/scm-jenkins-plugin/pull/1))
+
