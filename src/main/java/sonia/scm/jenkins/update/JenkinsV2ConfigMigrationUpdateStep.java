@@ -23,6 +23,7 @@
  */
 package sonia.scm.jenkins.update;
 
+import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.jenkins.JenkinsConfiguration;
@@ -76,13 +77,12 @@ public class JenkinsV2ConfigMigrationUpdateStep implements UpdateStep {
     private JenkinsConfiguration buildConfig(String repositoryId, V1Properties properties) {
       LOG.debug("migrating repository specific jenkins configuration for repository id {}", repositoryId);
       Set<String> branches= new HashSet<>();
-      if(!properties.get(JENKINS_BRANCHES).isEmpty()) {
+      if (!Strings.isNullOrEmpty(properties.get(JENKINS_BRANCHES))) {
         branches.addAll(Arrays.asList(properties.get(JENKINS_BRANCHES).split(",")));
       }
 
       JenkinsConfiguration configuration = new JenkinsConfiguration();
       configuration.setApiToken(properties.get(JENKINS_API_TOKEN));
-      configuration.setBranches(Collections.singleton(properties.get(JENKINS_BRANCHES)));
       configuration.setProject(properties.get(JENKINS_PROJECT));
       configuration.setToken(properties.get(JENKINS_TOKEN));
       configuration.setUrl(properties.get(JENKINS_URL));
