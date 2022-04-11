@@ -25,6 +25,7 @@ package sonia.scm.jenkins;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.otto.edison.hal.Links;
+import org.apache.commons.lang.StringUtils;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
@@ -46,7 +47,7 @@ public abstract class GlobalJenkinsConfigurationMapper {
   private ScmPathInfoStore scmPathInfoStore;
 
   @VisibleForTesting
-  @SuppressWarnings("squid:S2068")
+  @SuppressWarnings("squid:S2068") // we have no password here
   static final String DUMMY_SECRET = "__DUMMY__";
 
   public abstract GlobalJenkinsConfigurationDto map(GlobalJenkinsConfiguration config);
@@ -55,7 +56,9 @@ public abstract class GlobalJenkinsConfigurationMapper {
 
   @AfterMapping
   public void replaceSecretsWithDummy(@MappingTarget GlobalJenkinsConfigurationDto target) {
-    target.setApiToken(DUMMY_SECRET);
+    if (StringUtils.isNotEmpty(target.getApiToken())) {
+      target.setApiToken(DUMMY_SECRET);
+    }
   }
 
   @AfterMapping

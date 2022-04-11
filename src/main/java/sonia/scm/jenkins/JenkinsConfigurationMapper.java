@@ -25,6 +25,7 @@ package sonia.scm.jenkins;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.otto.edison.hal.Links;
+import org.apache.commons.lang.StringUtils;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
@@ -56,8 +57,12 @@ public abstract class JenkinsConfigurationMapper {
 
   @AfterMapping
   public void replaceSecretsWithDummy(@MappingTarget JenkinsConfigurationDto target) {
-    target.setApiToken(DUMMY_SECRET);
-    target.setToken(DUMMY_SECRET);
+    if (StringUtils.isNotEmpty(target.getApiToken())) {
+      target.setApiToken(DUMMY_SECRET);
+    }
+    if (StringUtils.isNotEmpty(target.getToken())) {
+      target.setToken(DUMMY_SECRET);
+    }
   }
 
   @AfterMapping
