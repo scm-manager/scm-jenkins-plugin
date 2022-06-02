@@ -35,6 +35,7 @@ import sonia.scm.repository.api.LookupCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.util.HttpUtil;
+import sonia.scm.util.Util;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -62,7 +63,7 @@ public class JenkinsSvnGlobalHookHandler implements JenkinsHookHandler {
 
   @Override
   public void sendRequest(RepositoryHookEvent event) {
-    if (!configuration.isDisableSubversionTrigger()) {
+    if (Util.isNotEmpty(configuration.getUrl()) && !configuration.isDisableSubversionTrigger()) {
       try (RepositoryService repositoryService = repositoryServiceFactory.create(event.getRepository())) {
         Optional<String> uuid = lookupUUID(repositoryService);
         if (uuid.isPresent()) {
