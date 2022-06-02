@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.mock;
@@ -105,6 +106,17 @@ class JenkinsSvnGlobalHookHandlerTest {
   void shouldNotSendRequestIfTriggerIsDisabled() {
     Repository repository = RepositoryTestData.createHeartOfGold();
     when(config.isDisableSubversionTrigger()).thenReturn(true);
+    when(config.getUrl()).thenReturn("http://jenkins.io/scm/");
+
+    handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
+
+    verify(advancedHttpClient, never()).post(anyString());
+  }
+
+  @Test
+  void shouldNotSendRequestIfUrlIsNotSet() {
+    Repository repository = RepositoryTestData.createHeartOfGold();
+    when(config.getUrl()).thenReturn("");
 
     handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
 
