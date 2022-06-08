@@ -1,2 +1,0 @@
-- type: fixed
-  description: Disable svn hook without jenkins url ([#48](https://github.com/scm-manager/scm-jenkins-plugin/pull/48))
