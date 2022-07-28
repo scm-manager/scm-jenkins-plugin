@@ -1,4 +1,5 @@
 - section: Erste Schritte
   entries:
     - /configuration/
+    - /ci-status/
     - /permissions/
