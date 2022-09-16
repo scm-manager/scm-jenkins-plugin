@@ -28,6 +28,7 @@ import com.google.inject.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.net.ahc.AdvancedHttpClient;
+import sonia.scm.net.ahc.AdvancedHttpRequest;
 import sonia.scm.net.ahc.AdvancedHttpResponse;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHookEvent;
@@ -82,8 +83,10 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler {
 
   private void sendRequest(AdvancedHttpClient client, String url) {
     try {
-      logger.debug("try to access url {}", url);
-      AdvancedHttpResponse response = client.get(url).spanKind("Jenkins").request();
+      logger.info("try to access url {}", url);
+      AdvancedHttpRequest request = client.get(url).spanKind("Jenkins");
+      HeaderAppenders.appendCsrfCrumbHeader(client, request, configuration.getUrl(), configuration.getUsername(), configuration.getApiToken());
+      AdvancedHttpResponse response = request.request();
       int statusCode = response.getStatus();
       logger.info("request returned {}", statusCode);
     } catch (IOException ex) {
@@ -106,8 +109,9 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler {
   private String createUrl(Repository repository, String urlSuffix) {
     String url = HttpUtil.getUriWithoutEndSeperator(configuration.getUrl()).concat(urlSuffix);
     String repositoryUrl = createRepositoryUrl(repository);
+    url = url + "?token=5f5db6fa16cb251bfa6162f388d2d2a2"; // TODO Use token from jenkins git configuration
     if (Util.isNotEmpty(repositoryUrl)) {
-      url = url.concat("?url=").concat(fix(repositoryUrl));
+      url = url.concat("&url=").concat(fix(repositoryUrl));
     }
     return url;
   }
