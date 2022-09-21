@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
 import com.cloudogu.scm.review.pullrequest.service.BasicPullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -108,9 +108,9 @@ public class JenkinsPullRequestEventRelay {
 
   @Getter
   public static class PullRequestDto {
-    private String id;
-    private String source;
-    private String target;
+    private final String id;
+    private final String source;
+    private final String target;
 
     public PullRequestDto(PullRequest pullRequest) {
       this.id = pullRequest.getId();

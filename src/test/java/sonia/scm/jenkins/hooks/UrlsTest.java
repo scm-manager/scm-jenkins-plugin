@@ -22,14 +22,14 @@
  * SOFTWARE.
  */
 
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
 
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static sonia.scm.jenkins.Urls.escape;
-import static sonia.scm.jenkins.Urls.fix;
+import static sonia.scm.jenkins.hooks.Urls.escape;
+import static sonia.scm.jenkins.hooks.Urls.fix;
 
 class UrlsTest {
 

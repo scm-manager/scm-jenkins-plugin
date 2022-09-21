@@ -21,28 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
+import com.google.common.base.Strings;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import sonia.scm.jenkins.CsrfCrumb;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.net.ahc.BaseHttpRequest;
-import sonia.scm.util.Util;
 
-import static sonia.scm.jenkins.CsrfCrumbRequester.getJenkinsCsrfCrumb;
+import static sonia.scm.jenkins.hooks.CsrfCrumbRequester.getJenkinsCsrfCrumb;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HeaderAppenders {
 
   static void appendAuthenticationHeader(BaseHttpRequest request, String username, String apiToken) {
-    // check for authentication parameters
-
-    if (Util.isNotEmpty(username) && Util.isNotEmpty(apiToken)) {
+    if (!Strings.isNullOrEmpty(username) && !Strings.isNullOrEmpty(apiToken)) {
       log.debug("added authentication for user {}", username);
-
-      // add basic authentication header
       request.basicAuth(username, apiToken);
     } else {
       log.debug("skip authentication. username or api token is empty");
@@ -50,7 +47,11 @@ public class HeaderAppenders {
   }
 
   static void appendCsrfCrumbHeader(AdvancedHttpClient client, BaseHttpRequest request, String url, String username, String apiToken) {
-    CsrfCrumb crumb = getJenkinsCsrfCrumb(client, url, username, apiToken);
+    if (Strings.isNullOrEmpty(username) || Strings.isNullOrEmpty(apiToken)) {
+     log.debug("skip csrf crumb authentication. username or api token is empty");
+      return;
+    }
+      CsrfCrumb crumb = getJenkinsCsrfCrumb(client, url, username, apiToken);
     if (crumb != null) {
       log.debug("add csrf crumb to api request");
       request.header(crumb.getCrumbRequestField(), crumb.getCrumb());

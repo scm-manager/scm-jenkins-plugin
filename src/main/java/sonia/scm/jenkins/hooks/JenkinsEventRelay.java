@@ -22,12 +22,16 @@
  * SOFTWARE.
  */
 
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.config.ScmConfiguration;
+import sonia.scm.jenkins.AdditionalServerIdentification;
+import sonia.scm.jenkins.GlobalJenkinsConfiguration;
+import sonia.scm.jenkins.JenkinsConfiguration;
+import sonia.scm.jenkins.JenkinsContext;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.net.ahc.AdvancedHttpRequestWithBody;
 import sonia.scm.repository.Repository;
@@ -60,7 +64,8 @@ class JenkinsEventRelay {
   }
 
   void send(JenkinsEventDto eventDto) {
-    doIfEnabled(() -> jenkinsContext.getServerUrl().ifPresent(s -> send(s, eventDto, jenkinsContext.getConfiguration().getUrl(), jenkinsContext.getConfiguration().getUsername(), jenkinsContext.getConfiguration().getApiToken())));
+    GlobalJenkinsConfiguration config = jenkinsContext.getConfiguration();
+    doIfEnabled(() -> jenkinsContext.getServerUrl().ifPresent(s -> send(s, eventDto, config.getUrl(), config.getUsername(), config.getApiToken())));
   }
 
   void send(Repository repository, JenkinsRepositoryEventDto eventDto) {
@@ -96,6 +101,7 @@ class JenkinsEventRelay {
         .formContent().field("json", json).build();
 
       HeaderAppenders.appendCsrfCrumbHeader(httpClient, request, url, username, apiToken);
+      HeaderAppenders.appendAuthenticationHeader(request, username, apiToken);
 
       request
         .request();

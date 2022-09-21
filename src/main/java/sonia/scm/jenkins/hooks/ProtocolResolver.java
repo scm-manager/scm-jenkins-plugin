@@ -21,31 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package sonia.scm.jenkins;
 
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Links;
-import lombok.Getter;
-import lombok.Setter;
+package sonia.scm.jenkins.hooks;
 
-@Getter
-@Setter
-@SuppressWarnings("java:S2160") // wo do not need equals and hashcode for dto
-public class GlobalJenkinsConfigurationDto extends HalRepresentation {
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.RepositoryService;
+import sonia.scm.repository.api.RepositoryServiceFactory;
+import sonia.scm.repository.api.ScmProtocol;
 
-  private boolean disableRepositoryConfiguration = false;
-  private boolean disableSubversionTrigger = false;
-  private boolean disableMercurialTrigger = false;
-  private boolean disableGitTrigger = false;
-  private boolean disableEventTrigger = false;
-  private String url;
-  private String username;
-  private String apiToken;
-  private String gitAuthenticationToken;
+import javax.inject.Inject;
+import java.util.List;
+import java.util.stream.Collectors;
 
-  @Override
-  @SuppressWarnings("squid:S1185") // We want to have this method available in this package
-  protected HalRepresentation add(Links links) {
-    return super.add(links);
+class ProtocolResolver {
+
+  private final RepositoryServiceFactory repositoryServiceFactory;
+
+  @Inject
+  ProtocolResolver(RepositoryServiceFactory repositoryServiceFactory) {
+    this.repositoryServiceFactory = repositoryServiceFactory;
+  }
+
+  List<ScmProtocol> getProtocols(Repository repository) {
+    try (final RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
+      return repositoryService.getSupportedProtocols().collect(Collectors.toList());
+    }
   }
 }

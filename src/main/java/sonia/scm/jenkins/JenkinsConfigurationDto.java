@@ -38,12 +38,11 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = true)
 public class JenkinsConfigurationDto extends HalRepresentation {
   private String apiToken;
+  private String token;
   private Set<String> branches;
   private String project;
-  private String token;
   private String url;
   private String username;
-  private boolean csrf;
   private Set<BuildParameterDto> buildParameters;
 
   @Override

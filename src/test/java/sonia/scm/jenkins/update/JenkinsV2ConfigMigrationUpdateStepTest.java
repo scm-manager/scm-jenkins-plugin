@@ -49,7 +49,7 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class JenkinsV2ConfigMigrationUpdateStepTest {
 
-  private V1PropertyDaoTestUtil testUtil = new V1PropertyDaoTestUtil();
+  private final V1PropertyDaoTestUtil testUtil = new V1PropertyDaoTestUtil();
 
   @Mock
   JenkinsConfigurationStoreFactory configurationStoreFactory;
@@ -79,7 +79,6 @@ class JenkinsV2ConfigMigrationUpdateStepTest {
         .put("jenkins.token", "abc")
         .put("jenkins.url", "http://jenkins.io")
         .put("jenkins.username", "admin")
-        .put("jenkins.csrf", "true")
         .put("jenkins.branches", "master,develop")
         .build();
 
@@ -97,7 +96,6 @@ class JenkinsV2ConfigMigrationUpdateStepTest {
       .hasFieldOrPropertyWithValue("token", "abc")
       .hasFieldOrPropertyWithValue("url", "http://jenkins.io")
       .hasFieldOrPropertyWithValue("username", "admin")
-      .hasFieldOrPropertyWithValue("csrf", true)
       .hasFieldOrPropertyWithValue("branches", branches);
   }
 
@@ -110,7 +108,6 @@ class JenkinsV2ConfigMigrationUpdateStepTest {
         .put("jenkins.token", "abc")
         .put("jenkins.url", "http://jenkins.io")
         .put("jenkins.username", "admin")
-        .put("jenkins.csrf", "true")
         .put("jenkins.branches", "")
         .build();
 
@@ -128,7 +125,6 @@ class JenkinsV2ConfigMigrationUpdateStepTest {
       .hasFieldOrPropertyWithValue("token", "abc")
       .hasFieldOrPropertyWithValue("url", "http://jenkins.io")
       .hasFieldOrPropertyWithValue("username", "admin")
-      .hasFieldOrPropertyWithValue("csrf", true)
       .hasFieldOrPropertyWithValue("branches", branches);
   }
 
@@ -141,7 +137,6 @@ class JenkinsV2ConfigMigrationUpdateStepTest {
         .put("jenkins.token", "abc")
         .put("jenkins.url", "http://jenkins.io")
         .put("jenkins.username", "admin")
-        .put("jenkins.csrf", "true")
         .build();
 
     testUtil.mockRepositoryProperties(new V1PropertyDaoTestUtil.PropertiesForRepository("repo", (Map) mockedValues));
@@ -158,7 +153,6 @@ class JenkinsV2ConfigMigrationUpdateStepTest {
       .hasFieldOrPropertyWithValue("token", "abc")
       .hasFieldOrPropertyWithValue("url", "http://jenkins.io")
       .hasFieldOrPropertyWithValue("username", "admin")
-      .hasFieldOrPropertyWithValue("csrf", true)
       .hasFieldOrPropertyWithValue("branches", branches);
   }
 

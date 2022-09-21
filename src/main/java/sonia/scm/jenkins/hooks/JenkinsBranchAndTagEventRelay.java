@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
 import com.github.legman.Subscribe;
 import lombok.AllArgsConstructor;
@@ -106,7 +106,7 @@ public class JenkinsBranchAndTagEventRelay {
 
   @Getter
   public static class TagDto {
-    private String name;
+    private final String name;
 
     TagDto(Tag tag) {
       this.name = tag.getName();

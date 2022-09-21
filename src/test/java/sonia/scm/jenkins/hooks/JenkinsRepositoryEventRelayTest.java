@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

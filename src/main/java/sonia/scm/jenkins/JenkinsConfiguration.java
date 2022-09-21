@@ -49,13 +49,12 @@ public class JenkinsConfiguration implements Validateable {
 
   @XmlJavaTypeAdapter(XmlEncryptionAdapter.class)
   private String apiToken;
-  private Set<String> branches = new HashSet<>();
-  private String project;
   @XmlJavaTypeAdapter(XmlEncryptionAdapter.class)
   private String token;
+  private Set<String> branches = new HashSet<>();
+  private String project;
   private String url;
   private String username;
-  private boolean csrf;
   private Set<BuildParameter> buildParameters;
 
   /**
@@ -68,6 +67,8 @@ public class JenkinsConfiguration implements Validateable {
   public String getApiToken() {
     return apiToken;
   }
+
+  public String getToken() { return token; }
 
   /**
    * Returns comma separated list of branches. The hook will only be executed,
@@ -91,15 +92,6 @@ public class JenkinsConfiguration implements Validateable {
   }
 
   /**
-   * Returns the jenkins authentication token.
-   *
-   * @return jenkins authentication token
-   */
-  public String getToken() {
-    return token;
-  }
-
-  /**
    * Return the url of the jenkins ci server.
    *
    * @return url of the jenkins ci server
@@ -119,15 +111,6 @@ public class JenkinsConfiguration implements Validateable {
     return username;
   }
 
-  /**
-   * Returns {@code true} if the jenkins instance is csrf protected.
-   *
-   * @return {@code true} if jenkins is csrf protected
-   * @since 1.12
-   */
-  public boolean isCsrf() {
-    return csrf;
-  }
 
   public Set<BuildParameter> getBuildParameters() {
     if (buildParameters == null) {
@@ -140,16 +123,14 @@ public class JenkinsConfiguration implements Validateable {
     this.apiToken = apiToken;
   }
 
+  public void setToken(String token) { this.token = token; }
+
   public void setBranches(Set<String> branches) {
     this.branches = branches;
   }
 
   public void setProject(String project) {
     this.project = project;
-  }
-
-  public void setToken(String token) {
-    this.token = token;
   }
 
   public void setUrl(String url) {
@@ -160,19 +141,10 @@ public class JenkinsConfiguration implements Validateable {
     this.username = username;
   }
 
-  public void setCsrf(boolean csrf) {
-    this.csrf = csrf;
-  }
-
   public void setBuildParameters(Set<BuildParameter> buildParameters) {
     this.buildParameters = buildParameters;
   }
 
-  /**
-   * Return true, if the configuration is valid.
-   *
-   * @return true, if the configuration is valid
-   */
   @Override
   public boolean isValid() {
     return Util.isNotEmpty(url) && Util.isNotEmpty(project);

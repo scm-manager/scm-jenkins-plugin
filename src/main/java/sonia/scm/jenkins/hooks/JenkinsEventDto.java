@@ -21,37 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package sonia.scm.jenkins.hooks;
 
-package sonia.scm.jenkins;
+import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
+import lombok.Getter;
+import lombok.Setter;
+import sonia.scm.jenkins.AdditionalServerIdentification;
 
-import com.github.legman.Subscribe;
-import sonia.scm.EagerSingleton;
-import sonia.scm.plugin.Extension;
-import sonia.scm.repository.RepositoryModificationEvent;
-import sonia.scm.security.AuthorizationChangedEvent;
+import java.util.List;
 
-import javax.inject.Inject;
+@Getter
+@Setter
+@SuppressWarnings("java:S2160")
+public class JenkinsEventDto extends HalRepresentation  {
+  private String server;
+  private List<AdditionalServerIdentification.Identification> identifications;
+  private final EventTarget eventTarget;
 
-@Extension
-@EagerSingleton
-public class JenkinsRepositoryEventRelay {
-
-  private final JenkinsEventRelay jenkinsEventRelay;
-
-  @Inject
-  public JenkinsRepositoryEventRelay(JenkinsEventRelay jenkinsEventRelay) {
-    this.jenkinsEventRelay = jenkinsEventRelay;
+  public JenkinsEventDto(EventTarget eventTarget) {
+    this.eventTarget = eventTarget;
   }
 
-  @Subscribe
-  public void handleAuthorizationEvent(AuthorizationChangedEvent event) {
-    jenkinsEventRelay.send(new JenkinsEventDto(EventTarget.NAVIGATOR));
-  }
-
-  @Subscribe
-  public void handleRepositoryModificationEvent(RepositoryModificationEvent event) {
-    if (!event.getItem().getName().equals(event.getItemBeforeModification().getName())) {
-      jenkinsEventRelay.send(new JenkinsEventDto(EventTarget.NAVIGATOR));
-    }
+  JenkinsEventDto(Links links, EventTarget eventTarget) {
+    super(links);
+    this.eventTarget = eventTarget;
   }
 }

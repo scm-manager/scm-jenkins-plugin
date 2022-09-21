@@ -80,7 +80,6 @@ class JenkinsConfigurationMapperTest {
     assertThat(dto.getBranches().iterator().next()).isEqualTo("master");
     assertThat(dto.getProject()).isEqualTo(configuration.getProject());
     assertThat(dto.getToken()).isEqualTo(DUMMY_SECRET);
-    assertThat(dto.isCsrf()).isEqualTo(configuration.isCsrf());
     assertThat(dto.getUrl()).isEqualTo(configuration.getUrl());
     assertThat(dto.getUsername()).isEqualTo(configuration.getUsername());
     assertThat(dto.getBuildParameters().iterator().next().getName())
@@ -112,7 +111,6 @@ class JenkinsConfigurationMapperTest {
     JenkinsConfigurationDto dto = createDto();
     JenkinsConfiguration configuration = mapper.map(dto, oldConfiguration);
     assertThat(configuration.getApiToken()).isEqualTo(oldConfiguration.getApiToken());
-    assertThat(configuration.getToken()).isEqualTo(oldConfiguration.getToken());
     assertThat(configuration.getBranches()).isEqualTo(dto.getBranches());
     assertThat(configuration.getUrl()).isEqualTo(dto.getUrl());
     assertThat(configuration.getUsername()).isEqualTo(dto.getUsername());
@@ -139,7 +137,6 @@ class JenkinsConfigurationMapperTest {
 
     JenkinsConfiguration configuration = mapper.map(dto, oldConfig);
     assertThat(configuration.getApiToken()).isEqualTo(oldConfig.getApiToken());
-    assertThat(configuration.getToken()).isEqualTo(oldConfig.getToken());
   }
 
   private JenkinsConfiguration createConfiguration() {
@@ -150,7 +147,6 @@ class JenkinsConfigurationMapperTest {
     configuration.setToken("SOME_TOKEN");
     configuration.setUrl("http://jenkins.io/scm");
     configuration.setUsername("trillian");
-    configuration.setCsrf(false);
     configuration.setBuildParameters(ImmutableSet.of(new BuildParameter("author", "trillian")));
     return configuration;
   }
@@ -163,7 +159,6 @@ class JenkinsConfigurationMapperTest {
     configuration.setToken("__DUMMY__");
     configuration.setUrl("http://jenkins.io/scm2");
     configuration.setUsername("dent");
-    configuration.setCsrf(true);
     configuration.setBuildParameters(ImmutableSet.of(new BuildParameterDto("env", "testing")));
     return configuration;
   }

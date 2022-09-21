@@ -22,29 +22,35 @@
  * SOFTWARE.
  */
 
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
-import sonia.scm.repository.Repository;
-import sonia.scm.repository.api.RepositoryService;
-import sonia.scm.repository.api.RepositoryServiceFactory;
-import sonia.scm.repository.api.ScmProtocol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import sonia.scm.jenkins.GlobalJenkinsConfiguration;
+import sonia.scm.net.ahc.AdvancedHttpClient;
+import sonia.scm.net.ahc.AdvancedHttpRequest;
+import sonia.scm.net.ahc.AdvancedHttpResponse;
 
-import javax.inject.Inject;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.io.IOException;
 
-class ProtocolResolver {
+public class GlobalHookUtils {
 
-  private final RepositoryServiceFactory repositoryServiceFactory;
+  private GlobalHookUtils() {}
 
-  @Inject
-  ProtocolResolver(RepositoryServiceFactory repositoryServiceFactory) {
-    this.repositoryServiceFactory = repositoryServiceFactory;
-  }
+  private static final Logger LOG = LoggerFactory.getLogger(GlobalHookUtils.class);
 
-  List<ScmProtocol> getProtocols(Repository repository) {
-    try (final RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
-      return repositoryService.getSupportedProtocols().collect(Collectors.toList());
+  static void sendRequest(GlobalJenkinsConfiguration config, AdvancedHttpClient client, String url) {
+    try {
+      LOG.info("try to access url {}", url);
+      AdvancedHttpRequest request = client.get(url)
+        .spanKind("Jenkins");
+      HeaderAppenders.appendAuthenticationHeader(request, config.getUsername(), config.getApiToken());
+      HeaderAppenders.appendCsrfCrumbHeader(client, request, config.getUrl(), config.getUsername(), config.getApiToken());
+      AdvancedHttpResponse response = request.request();
+      int statusCode = response.getStatus();
+      LOG.info("request returned {}", statusCode);
+    } catch (IOException ex) {
+      LOG.error("could not execute http request", ex);
     }
   }
 }

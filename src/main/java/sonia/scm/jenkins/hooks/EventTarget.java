@@ -22,27 +22,8 @@
  * SOFTWARE.
  */
 
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
-import de.otto.edison.hal.Link;
-import de.otto.edison.hal.Links;
-import lombok.Getter;
-import lombok.Setter;
-import sonia.scm.repository.api.ScmProtocol;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-@Getter
-@Setter
-@SuppressWarnings("java:S2160")
-class JenkinsRepositoryEventDto extends JenkinsEventDto {
-  private String namespace;
-  private String name;
-  private String type;
-  private String server;
-
-  JenkinsRepositoryEventDto(EventTarget eventTarget, List<ScmProtocol> protocols) {
-    super(new Links.Builder().array(protocols.stream().map(protocol -> Link.link(protocol.getType(), protocol.getUrl())).collect(Collectors.toList())).build(), eventTarget);
-  }
+enum EventTarget {
+  SOURCE, NAVIGATOR
 }

@@ -22,15 +22,18 @@
  * SOFTWARE.
  */
 
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
 import com.cloudogu.scm.el.ElParser;
 import com.cloudogu.scm.el.env.ImmutableEncodedChangeset;
 import com.cloudogu.scm.el.env.ImmutableEncodedRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sonia.scm.jenkins.BuildParameter;
+import sonia.scm.jenkins.JenkinsConfiguration;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.net.ahc.AdvancedHttpRequestWithBody;
+import sonia.scm.net.ahc.AdvancedHttpResponse;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.util.HttpUtil;
@@ -43,45 +46,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static sonia.scm.jenkins.HeaderAppenders.appendAuthenticationHeader;
-import static sonia.scm.jenkins.HeaderAppenders.appendCsrfCrumbHeader;
-import static sonia.scm.jenkins.Urls.escape;
+import static sonia.scm.jenkins.hooks.HeaderAppenders.appendAuthenticationHeader;
+import static sonia.scm.jenkins.hooks.HeaderAppenders.appendCsrfCrumbHeader;
+import static sonia.scm.jenkins.hooks.Urls.escape;
 
-/**
- * @author Sebastian Sdorra
- */
-public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
+public class RepositoryHookUtils {
 
-  public static final String PARAMETER_TOKEN = "token";
-  private static final Logger logger = LoggerFactory.getLogger(JenkinsRepositoryHookHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RepositoryHookUtils.class);
 
-  private final JenkinsConfiguration configuration;
-  private final Provider<AdvancedHttpClient> httpClientProvider;
-  private final ElParser elParser;
 
-  public JenkinsRepositoryHookHandler(Provider<AdvancedHttpClient> httpClientProvider,
-                                      JenkinsConfiguration configuration,
-                                      ElParser elParser) {
-    this.httpClientProvider = httpClientProvider;
-    this.configuration = configuration;
-    this.elParser = elParser;
+  private RepositoryHookUtils() {
   }
 
-  @Override
-  public void sendRequest(RepositoryHookEvent event) {
-    if (configuration.getBranches().isEmpty()) {
-      logger.debug("branch list is empty, send request");
-      handleRepositoryEvent(configuration, event);
-    } else {
-      if (isInBranchSet(configuration.getBranches(), event.getContext().getChangesetProvider().getChangesets())) {
-        handleRepositoryEvent(configuration, event);
-      } else {
-        logger.debug("changesets does not contain configured branches");
-      }
-    }
-  }
-
-  private String createBaseUrl(JenkinsConfiguration configuration) {
+  static String createBaseUrl(JenkinsConfiguration configuration) {
     String url = configuration.getUrl();
 
     if (!url.endsWith("/")) {
@@ -98,7 +75,7 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
    * @param configuration jenkins configuration
    * @return the url to the remote trigger servlet of jenkins
    */
-  String createUrl(JenkinsConfiguration configuration) {
+  static String createUrl(JenkinsConfiguration configuration) {
     String url = createBaseUrl(configuration);
 
     //J-
@@ -117,17 +94,16 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
    *
    * @param configuration jenkins configuration
    */
-  private void handleRepositoryEvent(JenkinsConfiguration configuration, RepositoryHookEvent event) {
-    String url = createUrl(configuration);
+  static void handleRepositoryEvent(Provider<AdvancedHttpClient> httpClientProvider, ElParser elParser, JenkinsConfiguration configuration, String url, RepositoryHookEvent event) {
 
-    if (logger.isInfoEnabled()) {
-      logger.info("call jenkins at {}", url);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("call jenkins at {}", url);
     }
 
     try {
-      sendRequest(configuration, event, url);
+      sendRequest(httpClientProvider, elParser, configuration, event, url);
     } catch (IOException ex) {
-      logger.error("could not send request to jenkins", ex);
+      LOG.error("could not send request to jenkins", ex);
     }
   }
 
@@ -138,52 +114,35 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
    * @param url           url of the jenkins server
    * @throws IOException
    */
-  private void sendRequest(JenkinsConfiguration configuration, RepositoryHookEvent event, String url)
+  static void sendRequest(Provider<AdvancedHttpClient> httpClientProvider, ElParser elParser, JenkinsConfiguration configuration, RepositoryHookEvent event, String url)
     throws IOException {
 
-    /**
-     * Create a new http client from the Guice Provider.
-     */
     AdvancedHttpClient httpClient = httpClientProvider.get();
-    url = appendBuildParameters(configuration, event, url);
-
-    // retrive authentication token
+    url = appendBuildParameters(elParser, configuration, event, url);
     AdvancedHttpRequestWithBody request = httpClient.post(url).spanKind("Jenkins");
-    String token = configuration.getToken();
-    // check if the token is not empty.
-    if (Util.isNotEmpty(token)) {
-
-      // add the token as parameter for the request
-      request.queryString(PARAMETER_TOKEN, token);
-    } else if (logger.isDebugEnabled()) {
-      logger.debug("no project token is available");
-    }
-
     appendAuthenticationHeader(request, configuration.getUsername(), configuration.getApiToken());
-    if (configuration.isCsrf()) {
-      appendCsrfCrumbHeader(httpClient, request, configuration.getUrl(), configuration.getUsername(), configuration.getApiToken());
-    }
+    appendCsrfCrumbHeader(httpClient, request, configuration.getUrl(), configuration.getUsername(), configuration.getApiToken());
 
-    /**
-     * execute the http post request with the http client and
-     * fetch the status code of the response.
-     */
-    int sc = request.request().getStatus();
+    AdvancedHttpResponse response = request.request();
+    logResult(response);
+  }
 
+  private static void logResult(AdvancedHttpResponse response) {
+    int sc = response.getStatus();
     if (sc >= 400) {
-      logger.error("jenkins returned status code {}", sc);
-    } else if (logger.isInfoEnabled()) {
-      logger.info("jenkins hook successfully submitted");
+      LOG.error("jenkins returned status code {}", sc);
+    } else if (LOG.isInfoEnabled()) {
+      LOG.info("jenkins hook successfully submitted");
     }
   }
 
-  private boolean hasChangeset(RepositoryHookEvent event) {
+  static boolean hasChangeset(RepositoryHookEvent event) {
     return event.getContext() != null
       && event.getContext().getChangesetProvider().getChangesets() != null
       && event.getContext().getChangesetProvider().getChangesets().iterator().hasNext();
   }
 
-  private String appendBuildParameters(JenkinsConfiguration configuration, RepositoryHookEvent event, String url) {
+  static String appendBuildParameters(ElParser elParser, JenkinsConfiguration configuration, RepositoryHookEvent event, String url) {
     Set<BuildParameter> buildParameters = configuration.getBuildParameters();
 
     Map<String, Object> env = new HashMap<>();
@@ -215,8 +174,8 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
     return url;
   }
 
-  private boolean isInBranchSet(Set<String> branchSet,
-                                Iterable<Changeset> changesets) {
+  static boolean isInBranchSet(Set<String> branchSet,
+                               Iterable<Changeset> changesets) {
     for (Changeset changeset : changesets) {
       if (isInBranchSet(branchSet, changeset)) {
         return true;
@@ -225,13 +184,13 @@ public class JenkinsRepositoryHookHandler implements JenkinsHookHandler {
     return false;
   }
 
-  private boolean isInBranchSet(Set<String> branchSet, Changeset changeset) {
+  static boolean isInBranchSet(Set<String> branchSet, Changeset changeset) {
     List<String> branches = changeset.getBranches();
 
     if (Util.isNotEmpty(branches)) {
       for (String branch : branches) {
         if (branchSet.contains(branch)) {
-          logger.debug("found branch {} at {}, send request", branch, changeset.getId());
+          LOG.debug("found branch {} at {}, send request", branch, changeset.getId());
           return true;
         }
       }

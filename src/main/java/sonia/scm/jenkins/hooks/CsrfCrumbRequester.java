@@ -21,11 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import sonia.scm.jenkins.CsrfCrumb;
+import sonia.scm.jenkins.CsrfCrumbParser;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.net.ahc.AdvancedHttpRequest;
 import sonia.scm.net.ahc.AdvancedHttpResponse;
@@ -34,8 +36,7 @@ import sonia.scm.util.IOUtil;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static sonia.scm.jenkins.HeaderAppenders.appendAuthenticationHeader;
-import static sonia.scm.jenkins.Urls.escape;
+import static sonia.scm.jenkins.hooks.HeaderAppenders.appendAuthenticationHeader;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

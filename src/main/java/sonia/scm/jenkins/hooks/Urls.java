@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

@@ -37,7 +37,6 @@ import sonia.scm.version.Version;
 import javax.inject.Inject;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -88,7 +87,6 @@ public class JenkinsV2ConfigMigrationUpdateStep implements UpdateStep {
       configuration.setUrl(properties.get(JENKINS_URL));
       configuration.setUsername(properties.get(JENKINS_USERNAME));
       configuration.setBranches(branches);
-      configuration.setCsrf(properties.getBoolean(JENKINS_CSRF).orElse(false));
       return configuration;
     }
 

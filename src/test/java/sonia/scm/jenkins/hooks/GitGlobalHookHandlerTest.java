@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
 import com.google.inject.Provider;
 import com.google.inject.util.Providers;
@@ -32,6 +32,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.jenkins.GlobalJenkinsConfiguration;
+import sonia.scm.jenkins.JenkinsContext;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.net.ahc.AdvancedHttpRequest;
 import sonia.scm.net.ahc.AdvancedHttpResponse;
@@ -52,7 +54,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class JenkinsGlobalHookHandlerTest {
+class GitGlobalHookHandlerTest {
 
   @Mock
   private RepositoryServiceFactory serviceFactory;
@@ -69,12 +71,12 @@ class JenkinsGlobalHookHandlerTest {
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private HookContext hookContext;
 
-  private JenkinsGlobalHookHandler handler;
+  private GitGlobalHookHandler handler;
 
   @BeforeEach
   void initClient() {
     Provider<AdvancedHttpClient> httpClientProvider = Providers.of(advancedHttpClient);
-    handler = new JenkinsGlobalHookHandler(httpClientProvider, config, serviceFactory);
+    handler = new GitGlobalHookHandler(httpClientProvider, serviceFactory, config);
   }
 
   @Test
@@ -93,31 +95,6 @@ class JenkinsGlobalHookHandlerTest {
     void initValidConfig() {
       when(config.isValid()).thenReturn(true);
       lenient().when(config.getUrl()).thenReturn("jenkins.io/scm/");
-    }
-
-    @Test
-    void shouldNotSendRequestForMercurialRepoIfTriggerIsDisabled() {
-      when(config.isDisableMercurialTrigger()).thenReturn(true);
-      Repository repository = RepositoryTestData.createHeartOfGold();
-      repository.setType("hg");
-
-      handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
-
-      verify(advancedHttpClient, never()).get(anyString());
-    }
-
-    @Test
-    void shouldSendRequestForMercurialRepoIfTriggerEnabled() throws IOException {
-      Repository repository = RepositoryTestData.createHeartOfGold();
-      repository.setType("hg");
-
-      when(config.isDisableMercurialTrigger()).thenReturn(false);
-      when(serviceFactory.create(repository)).thenReturn(repositoryService);
-      mockHttpClient(repository);
-
-      handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
-
-      verify(advancedHttpClient).get("jenkins.io/scm/mercurial/notifyCommit");
     }
 
     @Test

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
