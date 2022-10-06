@@ -44,9 +44,13 @@ import javax.inject.Inject;
 import static sonia.scm.jenkins.hooks.Urls.fix;
 
 public class GitGlobalHookHandler implements JenkinsHookHandler {
-  public static final String URL_GIT = "/git/notifyCommit";
+
   public static final String TYPE = "git";
+
   private static final Logger LOG = LoggerFactory.getLogger(GitGlobalHookHandler.class);
+
+  private static final String URL_GIT = "/git/notifyCommit";
+
   private final Provider<AdvancedHttpClient> httpClientProvider;
   private final RepositoryServiceFactory serviceFactory;
   private final GlobalJenkinsConfiguration configuration;
@@ -76,7 +80,7 @@ public class GitGlobalHookHandler implements JenkinsHookHandler {
     }
   }
 
-  String createUrl(Repository repository) {
+  private String createUrl(Repository repository) {
     String url = HttpUtil.getUriWithoutEndSeperator(configuration.getUrl()).concat(URL_GIT);
     String repositoryUrl = createRepositoryUrl(repository);
     if (!Strings.isNullOrEmpty(configuration.getGitAuthenticationToken())) {
@@ -88,7 +92,7 @@ public class GitGlobalHookHandler implements JenkinsHookHandler {
     return url;
   }
 
-  String createRepositoryUrl(Repository repository) {
+  private String createRepositoryUrl(Repository repository) {
     try (RepositoryService repositoryService = serviceFactory.create(repository)) {
       return repositoryService
         .getSupportedProtocols()

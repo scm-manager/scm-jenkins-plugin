@@ -46,7 +46,9 @@ public class HgGlobalHookHandler implements JenkinsHookHandler {
   private static final Logger LOG = LoggerFactory.getLogger(HgGlobalHookHandler.class);
 
   public static final String TYPE = "hg";
-  public static final String URL_MERCURIAL = "/mercurial/notifyCommit";
+
+  private static final String URL_MERCURIAL = "/mercurial/notifyCommit";
+
   private final Provider<AdvancedHttpClient> httpClientProvider;
   private final RepositoryServiceFactory serviceFactory;
   private final GlobalJenkinsConfiguration configuration;
@@ -77,7 +79,7 @@ public class HgGlobalHookHandler implements JenkinsHookHandler {
     }
   }
 
-  String createUrl(Repository repository) {
+  private String createUrl(Repository repository) {
     String url = HttpUtil.getUriWithoutEndSeperator(configuration.getUrl()).concat(URL_MERCURIAL);
     String repositoryUrl = createRepositoryUrl(repository);
     if (!Strings.isNullOrEmpty(configuration.getApiToken())) {
@@ -89,7 +91,7 @@ public class HgGlobalHookHandler implements JenkinsHookHandler {
     return url;
   }
 
-  String createRepositoryUrl(Repository repository) {
+  private String createRepositoryUrl(Repository repository) {
     try (RepositoryService repositoryService = serviceFactory.create(repository)) {
       return repositoryService
         .getSupportedProtocols()
