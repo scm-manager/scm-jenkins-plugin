@@ -23,18 +23,18 @@
  */
 
 plugins {
-  id 'org.scm-manager.smp' version '0.11.1'
+  id 'org.scm-manager.smp' version '0.12.0'
 }
 
 dependencies {
   plugin "sonia.scm.plugins:scm-el-plugin:1.0.0"
-  optionalPlugin "sonia.scm.plugins:scm-review-plugin:2.0.0"
+  optionalPlugin "sonia.scm.plugins:scm-review-plugin:2.21.1"
   optionalPlugin "sonia.scm.plugins:scm-ssh-plugin:2.0.0"
   optionalPlugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
 }
 
 scmPlugin {
-  scmVersion = "2.10.0"
+  scmVersion = "2.39.0"
   displayName = "Jenkins"
   description = "Pings your Jenkins CI server when a new commit is pushed to SCM-Manager"
   author = "Cloudogu GmbH"

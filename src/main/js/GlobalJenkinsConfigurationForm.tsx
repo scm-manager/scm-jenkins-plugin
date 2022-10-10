@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React from "react";
-import { Checkbox, InputField, Configuration, Notification } from "@scm-manager/ui-components";
+import { Checkbox, InputField, Configuration, Notification, Subtitle } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 
 type GlobalConfiguration = {
@@ -34,6 +34,7 @@ type GlobalConfiguration = {
   disableSubversionTrigger: boolean;
   username?: string;
   apiToken?: string;
+  gitAuthenticationToken?: string;
 };
 
 type Props = WithTranslation & {
@@ -73,6 +74,7 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
     const { t, readOnly } = this.props;
     return (
       <>
+        <Subtitle subtitle={t("scm-jenkins-plugin.global.form.generalSubtitle")} />
         {this.renderConfigChangedNotification()}
         <Notification type={"warning"}>{t("scm-jenkins-plugin.global.form.warning")}</Notification>
         <InputField
@@ -127,7 +129,7 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
           name={"username"}
           label={t("scm-jenkins-plugin.global.form.username")}
           helpText={t("scm-jenkins-plugin.global.form.usernameHelp")}
-          disabled={readOnly || this.state.disableSubversionTrigger}
+          disabled={readOnly}
           value={this.state.username}
           onChange={this.valueChangeHandler}
         />
@@ -136,8 +138,19 @@ class GlobalJenkinsConfigurationForm extends React.Component<Props, State> {
           type="password"
           label={t("scm-jenkins-plugin.global.form.apiToken")}
           helpText={t("scm-jenkins-plugin.global.form.apiTokenHelp")}
-          disabled={readOnly || this.state.disableSubversionTrigger}
+          disabled={readOnly}
           value={this.state.apiToken}
+          onChange={this.valueChangeHandler}
+        />
+        <hr />
+        <Subtitle subtitle={t("scm-jenkins-plugin.global.form.gitOnlySubtitle")} />
+        <InputField
+          name={"gitAuthenticationToken"}
+          type="password"
+          label={t("scm-jenkins-plugin.global.form.gitAuthenticationToken")}
+          helpText={t("scm-jenkins-plugin.global.form.gitAuthenticationTokenHelp")}
+          disabled={readOnly}
+          value={this.state.gitAuthenticationToken}
           onChange={this.valueChangeHandler}
         />
       </>

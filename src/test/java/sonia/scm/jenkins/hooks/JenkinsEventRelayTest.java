@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,6 +37,10 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.config.ScmConfiguration;
+import sonia.scm.jenkins.AdditionalServerIdentification;
+import sonia.scm.jenkins.GlobalJenkinsConfiguration;
+import sonia.scm.jenkins.JenkinsConfiguration;
+import sonia.scm.jenkins.JenkinsContext;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.net.ahc.AdvancedHttpRequestWithBody;
 import sonia.scm.net.ahc.AdvancedHttpResponse;
@@ -56,7 +60,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static sonia.scm.jenkins.JenkinsEventRelay.EVENT_ENDPOINT;
+import static sonia.scm.jenkins.hooks.JenkinsEventRelay.EVENT_ENDPOINT;
 
 @ExtendWith(MockitoExtension.class)
 class JenkinsEventRelayTest {
@@ -73,12 +77,12 @@ class JenkinsEventRelayTest {
   private AdvancedHttpClient httpClient;
   @Mock(answer = Answers.RETURNS_SELF)
   private AdvancedHttpRequestWithBody request;
-  @Mock
+  @Mock(answer = Answers.RETURNS_SELF)
   private AdvancedHttpResponse response;
   @Mock
   private FormContentBuilder formContentBuilder;
 
-  private Set<AdditionalServerIdentification> serverIdentifications = new HashSet<>();
+  private final Set<AdditionalServerIdentification> serverIdentifications = new HashSet<>();
 
   @Captor
   private ArgumentCaptor<String> captor;
@@ -147,12 +151,7 @@ class JenkinsEventRelayTest {
     @Test
     void shouldPostRequestWithAdditionalServerInformation() throws JsonProcessingException {
       String jenkinsUrl = mockJenkinsConfig();
-      serverIdentifications.add(new AdditionalServerIdentification() {
-        @Override
-        public Identification get() {
-          return new Identification("ssh", "hog:2222");
-        }
-      });
+      serverIdentifications.add(() -> new AdditionalServerIdentification.Identification("ssh", "hog:2222"));
 
       sender.send(REPOSITORY, new JenkinsRepositoryEventDto(EventTarget.SOURCE, Collections.singletonList(new ProtocolResolverTest.DummyScmProtocol())));
 
@@ -165,8 +164,10 @@ class JenkinsEventRelayTest {
     String mockJenkinsConfig() {
       String jenkinsUrl = "http://hitchhiker.org/";
       when(jenkinsContext.getServerUrl(REPOSITORY)).thenReturn(Optional.of(jenkinsUrl));
-      GlobalJenkinsConfiguration globalJenkinsConfiguration = new GlobalJenkinsConfiguration();
-      when(jenkinsContext.getConfiguration()).thenReturn(globalJenkinsConfiguration);
+      JenkinsConfiguration jenkinsConfiguration = new JenkinsConfiguration();
+      jenkinsConfiguration.setUrl("jenkins.org");
+      when(jenkinsContext.getConfiguration(REPOSITORY)).thenReturn(jenkinsConfiguration);
+      when(jenkinsContext.getConfiguration()).thenReturn(new GlobalJenkinsConfiguration());
       return jenkinsUrl;
     }
   }

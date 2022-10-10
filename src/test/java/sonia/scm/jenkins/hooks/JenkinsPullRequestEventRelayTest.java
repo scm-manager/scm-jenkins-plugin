@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
@@ -58,9 +58,6 @@ class JenkinsPullRequestEventRelayTest {
 
   private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
   private static final PullRequest PULL_REQUEST = new PullRequest("42", "feature", "master");
-
-  private static final String SERVER_URL = "http://scm-manager.org";
-  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Mock(answer = Answers.RETURNS_SELF)
   private JenkinsEventRelay jenkinsEventRelay;

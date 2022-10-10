@@ -22,8 +22,36 @@
  * SOFTWARE.
  */
 
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
-enum EventTarget {
-  SOURCE, NAVIGATOR
+import com.github.legman.Subscribe;
+import sonia.scm.EagerSingleton;
+import sonia.scm.plugin.Extension;
+import sonia.scm.repository.RepositoryModificationEvent;
+import sonia.scm.security.AuthorizationChangedEvent;
+
+import javax.inject.Inject;
+
+@Extension
+@EagerSingleton
+public class JenkinsRepositoryEventRelay {
+
+  private final JenkinsEventRelay jenkinsEventRelay;
+
+  @Inject
+  public JenkinsRepositoryEventRelay(JenkinsEventRelay jenkinsEventRelay) {
+    this.jenkinsEventRelay = jenkinsEventRelay;
+  }
+
+  @Subscribe
+  public void handleAuthorizationEvent(AuthorizationChangedEvent event) {
+    jenkinsEventRelay.send(new JenkinsEventDto(EventTarget.NAVIGATOR));
+  }
+
+  @Subscribe
+  public void handleRepositoryModificationEvent(RepositoryModificationEvent event) {
+    if (!event.getItem().getName().equals(event.getItemBeforeModification().getName())) {
+      jenkinsEventRelay.send(new JenkinsEventDto(EventTarget.NAVIGATOR));
+    }
+  }
 }

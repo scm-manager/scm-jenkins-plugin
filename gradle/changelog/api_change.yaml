@@ -1,0 +1,2 @@
+- type: added
+  description: Adjust configuration to match new Jenkins requirements ([#51](https://github.com/scm-manager/scm-jenkins-plugin/pull/51))

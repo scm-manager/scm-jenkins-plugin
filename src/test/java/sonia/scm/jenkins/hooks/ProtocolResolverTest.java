@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

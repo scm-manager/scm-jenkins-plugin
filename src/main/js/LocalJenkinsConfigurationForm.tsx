@@ -25,7 +25,6 @@ import React from "react";
 import {
   AddEntryToTableField,
   AddKeyValueEntryToTableField,
-  Checkbox,
   Column,
   Configuration,
   InputField,
@@ -43,11 +42,9 @@ type BuildParameter = {
 type LocalConfiguration = {
   apiToken: string;
   branches: string[];
-  project: string;
   token: string;
   url: string;
   username: string;
-  csrf: boolean;
   buildParameters: BuildParameter[];
 };
 
@@ -187,14 +184,6 @@ class LocalJenkinsConfigurationForm extends React.Component<Props, State> {
           disabled={readOnly}
           value={this.state.token}
           type="password"
-          onChange={this.valueChangeHandler}
-        />
-        <Checkbox
-          name={"csrf"}
-          label={t("scm-jenkins-plugin.local.form.csrf")}
-          helpText={t("scm-jenkins-plugin.local.form.csrfHelp")}
-          checked={this.state.csrf}
-          disabled={readOnly}
           onChange={this.valueChangeHandler}
         />
         <InputField

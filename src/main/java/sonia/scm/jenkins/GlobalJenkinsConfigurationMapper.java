@@ -59,12 +59,18 @@ public abstract class GlobalJenkinsConfigurationMapper {
     if (StringUtils.isNotEmpty(target.getApiToken())) {
       target.setApiToken(DUMMY_SECRET);
     }
+    if (StringUtils.isNotEmpty(target.getGitAuthenticationToken())) {
+      target.setGitAuthenticationToken(DUMMY_SECRET);
+    }
   }
 
   @AfterMapping
   public void restoreSecretsOnDummy(@MappingTarget GlobalJenkinsConfiguration target, @Context GlobalJenkinsConfiguration oldConfiguration) {
     if (DUMMY_SECRET.equals(target.getApiToken())) {
       target.setApiToken(oldConfiguration.getApiToken());
+    }
+    if (DUMMY_SECRET.equals(target.getGitAuthenticationToken())) {
+      target.setGitAuthenticationToken(oldConfiguration.getGitAuthenticationToken());
     }
   }
 

@@ -21,29 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package sonia.scm.jenkins;
 
-import de.otto.edison.hal.HalRepresentation;
+package sonia.scm.jenkins.hooks;
+
+import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import lombok.Getter;
 import lombok.Setter;
+import sonia.scm.repository.api.ScmProtocol;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @SuppressWarnings("java:S2160")
-public class JenkinsEventDto extends HalRepresentation  {
+class JenkinsRepositoryEventDto extends JenkinsEventDto {
+  private String namespace;
+  private String name;
+  private String type;
   private String server;
-  private List<AdditionalServerIdentification.Identification> identifications;
-  private final EventTarget eventTarget;
 
-  public JenkinsEventDto(EventTarget eventTarget) {
-    this.eventTarget = eventTarget;
-  }
-
-  JenkinsEventDto(Links links, EventTarget eventTarget) {
-    super(links);
-    this.eventTarget = eventTarget;
+  JenkinsRepositoryEventDto(EventTarget eventTarget, List<ScmProtocol> protocols) {
+    super(new Links.Builder().array(protocols.stream().map(protocol -> Link.link(protocol.getType(), protocol.getUrl())).collect(Collectors.toList())).build(), eventTarget);
   }
 }

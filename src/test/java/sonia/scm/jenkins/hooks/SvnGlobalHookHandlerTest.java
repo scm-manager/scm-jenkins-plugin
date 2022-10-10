@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package sonia.scm.jenkins;
+package sonia.scm.jenkins.hooks;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Provider;
@@ -33,6 +33,8 @@ import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.jenkins.GlobalJenkinsConfiguration;
+import sonia.scm.jenkins.JenkinsContext;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.net.ahc.AdvancedHttpRequest;
 import sonia.scm.net.ahc.AdvancedHttpRequestWithBody;
@@ -62,7 +64,6 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.mock;
@@ -71,7 +72,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class JenkinsSvnGlobalHookHandlerTest {
+class SvnGlobalHookHandlerTest {
 
   @Mock
   private RepositoryServiceFactory serviceFactory;
@@ -89,17 +90,17 @@ class JenkinsSvnGlobalHookHandlerTest {
   private AdvancedHttpRequestWithBody request;
   @Mock
   private AdvancedHttpResponse response;
-  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  @Mock(answer = Answers.RETURNS_SELF)
   private HookContext hookContext;
   @Mock
   private HookChangesetBuilder changesetProvider;
 
-  private JenkinsSvnGlobalHookHandler handler;
+  private SvnGlobalHookHandler handler;
 
   @BeforeEach
   void initClient() {
     Provider<AdvancedHttpClient> httpClientProvider = Providers.of(advancedHttpClient);
-    handler = new JenkinsSvnGlobalHookHandler(httpClientProvider, config, serviceFactory);
+    handler = new SvnGlobalHookHandler(httpClientProvider, serviceFactory, config);
   }
 
   @Test
