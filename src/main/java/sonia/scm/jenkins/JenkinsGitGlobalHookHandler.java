@@ -21,31 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package sonia.scm.jenkins;
 
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Links;
-import lombok.Getter;
-import lombok.Setter;
+import com.google.inject.Provider;
+import sonia.scm.net.ahc.AdvancedHttpClient;
+import sonia.scm.net.ahc.AdvancedHttpRequest;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.RepositoryServiceFactory;
+import sonia.scm.util.Util;
 
-@Getter
-@Setter
-@SuppressWarnings("java:S2160") // wo do not need equals and hashcode for dto
-public class GlobalJenkinsConfigurationDto extends HalRepresentation {
+class JenkinsGitGlobalHookHandler extends JenkinsGlobalHookHandler {
 
-  private boolean disableRepositoryConfiguration = false;
-  private boolean disableSubversionTrigger = false;
-  private boolean disableMercurialTrigger = false;
-  private boolean disableGitTrigger = false;
-  private boolean disableEventTrigger = false;
-  private String url;
-  private String username;
-  private String apiToken;
-  private String gitAuthenticationToken;
+  public static final String TYPE_GIT = "git";
+  private static final String URL_GIT = "/git/notifyCommit";
+
+  private final GlobalJenkinsConfiguration configuration;
+
+  JenkinsGitGlobalHookHandler(Provider<AdvancedHttpClient> httpClientProvider, GlobalJenkinsConfiguration configuration, RepositoryServiceFactory repositoryServiceFactory) {
+    super(httpClientProvider, configuration, repositoryServiceFactory);
+    this.configuration = configuration;
+  }
 
   @Override
-  @SuppressWarnings("squid:S1185") // We want to have this method available in this package
-  protected HalRepresentation add(Links links) {
-    return super.add(links);
+  void addQueryParameters(Repository repository, AdvancedHttpRequest request) {
+    super.addQueryParameters(repository, request);
+    if (Util.isNotEmpty(configuration.getGitAuthenticationToken())) {
+      request.queryString("token", configuration.getGitAuthenticationToken());
+    }
+  }
+
+  String createUrlSuffix() {
+    if (!configuration.isDisableGitTrigger()) {
+      return URL_GIT;
+    }
+    return null;
   }
 }

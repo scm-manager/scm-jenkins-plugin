@@ -37,6 +37,8 @@ import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
+import static sonia.scm.jenkins.JenkinsGitGlobalHookHandler.TYPE_GIT;
+import static sonia.scm.jenkins.JenkinsHgGlobalHookHandler.TYPE_MERCURIAL;
 import static sonia.scm.jenkins.JenkinsSvnGlobalHookHandler.TYPE_SUBVERSION;
 
 /**
@@ -100,7 +102,7 @@ public class JenkinsHook {
     // get the changed repository
     Repository repository = event.getRepository();
 
-    /**
+    /*
      * check if the repository is not null. If the repository is null
      * log an error.
      */
@@ -133,10 +135,15 @@ public class JenkinsHook {
   }
 
   private JenkinsHookHandler getGlobalHookHandler(Repository repository, GlobalJenkinsConfiguration globalConfig) {
-    if (TYPE_SUBVERSION.equalsIgnoreCase(repository.getType())) {
-      return new JenkinsSvnGlobalHookHandler(httpClientProvider, globalConfig, repositoryServiceFactory);
-    } else {
-      return new JenkinsGlobalHookHandler(httpClientProvider, globalConfig, repositoryServiceFactory);
+    switch (repository.getType()) {
+      case TYPE_SUBVERSION:
+        return new JenkinsSvnGlobalHookHandler(httpClientProvider, globalConfig, repositoryServiceFactory);
+      case TYPE_GIT:
+        return new JenkinsGitGlobalHookHandler(httpClientProvider, globalConfig, repositoryServiceFactory);
+      case TYPE_MERCURIAL:
+        return new JenkinsHgGlobalHookHandler(httpClientProvider, globalConfig, repositoryServiceFactory);
+      default:
+        throw new IllegalStateException("unknown repository type: " + repository.getType());
     }
   }
 }

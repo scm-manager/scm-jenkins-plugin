@@ -21,31 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package sonia.scm.jenkins;
 
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Links;
-import lombok.Getter;
-import lombok.Setter;
+import com.google.inject.Provider;
+import sonia.scm.net.ahc.AdvancedHttpClient;
+import sonia.scm.repository.api.RepositoryServiceFactory;
 
-@Getter
-@Setter
-@SuppressWarnings("java:S2160") // wo do not need equals and hashcode for dto
-public class GlobalJenkinsConfigurationDto extends HalRepresentation {
+class JenkinsHgGlobalHookHandler extends JenkinsGlobalHookHandler {
 
-  private boolean disableRepositoryConfiguration = false;
-  private boolean disableSubversionTrigger = false;
-  private boolean disableMercurialTrigger = false;
-  private boolean disableGitTrigger = false;
-  private boolean disableEventTrigger = false;
-  private String url;
-  private String username;
-  private String apiToken;
-  private String gitAuthenticationToken;
+  public static final String TYPE_MERCURIAL = "hg";
+  private static final String URL_MERCURIAL = "/mercurial/notifyCommit";
 
-  @Override
-  @SuppressWarnings("squid:S1185") // We want to have this method available in this package
-  protected HalRepresentation add(Links links) {
-    return super.add(links);
+  private final GlobalJenkinsConfiguration configuration;
+
+  JenkinsHgGlobalHookHandler(Provider<AdvancedHttpClient> httpClientProvider, GlobalJenkinsConfiguration configuration, RepositoryServiceFactory repositoryServiceFactory) {
+    super(httpClientProvider, configuration, repositoryServiceFactory);
+    this.configuration = configuration;
+  }
+
+  String createUrlSuffix() {
+    if (!configuration.isDisableMercurialTrigger()) {
+      return URL_MERCURIAL;
+    }
+    return null;
   }
 }
