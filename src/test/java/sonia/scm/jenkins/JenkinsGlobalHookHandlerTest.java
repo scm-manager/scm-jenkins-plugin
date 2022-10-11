@@ -69,55 +69,75 @@ class JenkinsGlobalHookHandlerTest {
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private HookContext hookContext;
 
-  private JenkinsGlobalHookHandler handler;
-
-  @BeforeEach
-  void initClient() {
-    Provider<AdvancedHttpClient> httpClientProvider = Providers.of(advancedHttpClient);
-    handler = new JenkinsGlobalHookHandler(httpClientProvider, config, serviceFactory);
-  }
-
-  @Test
-  void shouldNotSendRequestIfConfigInvalid() {
-    Repository repository = RepositoryTestData.createHeartOfGold();
-    when(config.isValid()).thenReturn(false);
-
-    handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
-
-    verify(advancedHttpClient, never()).get(anyString());
-  }
-
   @Nested
-  class WithValidConfig {
+  class ForHg {
+    private JenkinsGlobalHookHandler handler;
+
     @BeforeEach
-    void initValidConfig() {
-      when(config.isValid()).thenReturn(true);
-      lenient().when(config.getUrl()).thenReturn("jenkins.io/scm/");
+    void initClient() {
+      Provider<AdvancedHttpClient> httpClientProvider = Providers.of(advancedHttpClient);
+      handler = new JenkinsHgGlobalHookHandler(httpClientProvider, config, serviceFactory);
     }
 
     @Test
-    void shouldNotSendRequestForMercurialRepoIfTriggerIsDisabled() {
-      when(config.isDisableMercurialTrigger()).thenReturn(true);
+    void shouldNotSendRequestIfConfigInvalid() {
       Repository repository = RepositoryTestData.createHeartOfGold();
-      repository.setType("hg");
+      when(config.isValid()).thenReturn(false);
 
       handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
 
       verify(advancedHttpClient, never()).get(anyString());
     }
 
-    @Test
-    void shouldSendRequestForMercurialRepoIfTriggerEnabled() throws IOException {
-      Repository repository = RepositoryTestData.createHeartOfGold();
-      repository.setType("hg");
+    @Nested
+    class WithValidConfig {
+      @BeforeEach
+      void initValidConfig() {
+        when(config.isValid()).thenReturn(true);
+        lenient().when(config.getUrl()).thenReturn("jenkins.io/scm/");
+      }
 
-      when(config.isDisableMercurialTrigger()).thenReturn(false);
-      when(serviceFactory.create(repository)).thenReturn(repositoryService);
-      mockHttpClient(repository);
+      @Test
+      void shouldNotSendRequestForMercurialRepoIfTriggerIsDisabled() {
+        when(config.isDisableMercurialTrigger()).thenReturn(true);
+        Repository repository = RepositoryTestData.createHeartOfGold();
+        repository.setType("hg");
 
-      handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
+        handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
 
-      verify(advancedHttpClient).get("jenkins.io/scm/mercurial/notifyCommit");
+        verify(advancedHttpClient, never()).get(anyString());
+      }
+
+      @Test
+      void shouldSendRequestForMercurialRepoIfTriggerEnabled() throws IOException {
+        Repository repository = RepositoryTestData.createHeartOfGold();
+        repository.setType("hg");
+
+        when(config.isDisableMercurialTrigger()).thenReturn(false);
+        when(serviceFactory.create(repository)).thenReturn(repositoryService);
+        mockHttpClient(repository);
+
+        handler.sendRequest(new RepositoryHookEvent(hookContext, repository, RepositoryHookType.POST_RECEIVE));
+
+        verify(advancedHttpClient).get("jenkins.io/scm/mercurial/notifyCommit");
+      }
+    }
+  }
+
+  @Nested
+  class ForGit {
+    private JenkinsGlobalHookHandler handler;
+
+    @BeforeEach
+    void initClient() {
+      Provider<AdvancedHttpClient> httpClientProvider = Providers.of(advancedHttpClient);
+      handler = new JenkinsGitGlobalHookHandler(httpClientProvider, config, serviceFactory);
+    }
+
+    @BeforeEach
+    void initValidConfig() {
+      when(config.isValid()).thenReturn(true);
+      lenient().when(config.getUrl()).thenReturn("jenkins.io/scm/");
     }
 
     @Test
@@ -142,12 +162,12 @@ class JenkinsGlobalHookHandlerTest {
 
       verify(advancedHttpClient).get("jenkins.io/scm/git/notifyCommit");
     }
+  }
 
-    private void mockHttpClient(Repository repository) throws IOException {
-      when(serviceFactory.create(repository)).thenReturn(repositoryService);
-      when(advancedHttpClient.get(anyString())).thenReturn(request);
-      when(request.request()).thenReturn(response);
-      when(response.getStatus()).thenReturn(200);
-    }
+  private void mockHttpClient(Repository repository) throws IOException {
+    when(serviceFactory.create(repository)).thenReturn(repositoryService);
+    when(advancedHttpClient.get(anyString())).thenReturn(request);
+    when(request.request()).thenReturn(response);
+    when(response.getStatus()).thenReturn(200);
   }
 }

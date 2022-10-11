@@ -42,19 +42,15 @@ import java.io.IOException;
 
 import static sonia.scm.jenkins.Urls.fix;
 
-public class JenkinsGlobalHookHandler implements JenkinsHookHandler {
+abstract class JenkinsGlobalHookHandler implements JenkinsHookHandler {
 
-  public static final String TYPE_GIT = "git";
-  public static final String TYPE_MERCURIAL = "hg";
-  public static final String URL_GIT = "/git/notifyCommit";
-  public static final String URL_MERCURIAL = "/mercurial/notifyCommit";
   private static final Logger logger = LoggerFactory.getLogger(JenkinsGlobalHookHandler.class);
 
   private final GlobalJenkinsConfiguration configuration;
   private final Provider<AdvancedHttpClient> httpClientProvider;
   private final RepositoryServiceFactory repositoryServiceFactory;
 
-  public JenkinsGlobalHookHandler(Provider<AdvancedHttpClient> httpClientProvider,
+  JenkinsGlobalHookHandler(Provider<AdvancedHttpClient> httpClientProvider,
                                   GlobalJenkinsConfiguration configuration, RepositoryServiceFactory repositoryServiceFactory) {
     this.httpClientProvider = httpClientProvider;
     this.configuration = configuration;
@@ -67,12 +63,12 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler {
       String type = event.getRepository().getType();
       logGlobalJenkinsHook(type);
 
-      String urlSuffix = createUrlSuffix(type);
+      String urlSuffix = createUrlSuffix();
       if (Util.isNotEmpty(urlSuffix)) {
         AdvancedHttpClient client = httpClientProvider.get();
 
-        String url = createUrl(event.getRepository(), urlSuffix);
-        sendRequest(client, url);
+        String url = createUrl(urlSuffix);
+        sendRequest(client, url, event.getRepository());
       } else {
         logger.warn("repository type {} is not supported or is disabled", type);
       }
@@ -81,16 +77,26 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler {
     }
   }
 
-  private void sendRequest(AdvancedHttpClient client, String url) {
+  private void sendRequest(AdvancedHttpClient client, String url, Repository repository) {
     try {
       logger.info("try to access url {}", url);
       AdvancedHttpRequest request = client.get(url).spanKind("Jenkins");
-      HeaderAppenders.appendCsrfCrumbHeader(client, request, configuration.getUrl(), configuration.getUsername(), configuration.getApiToken());
+      addQueryParameters(repository, request);
+      if (Util.isNotEmpty(configuration.getUsername())) {
+        HeaderAppenders.appendCsrfCrumbHeader(client, request, configuration.getUrl(), configuration.getUsername(), configuration.getApiToken());
+      }
       AdvancedHttpResponse response = request.request();
       int statusCode = response.getStatus();
       logger.info("request returned {}", statusCode);
     } catch (IOException ex) {
       logger.error("could not execute http request", ex);
+    }
+  }
+
+  void addQueryParameters(Repository repository, AdvancedHttpRequest request) {
+    String repositoryUrl = createRepositoryUrl(repository);
+    if (Util.isNotEmpty(repositoryUrl)) {
+      request.queryString("url", fix(repositoryUrl));
     }
   }
 
@@ -106,27 +112,11 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler {
     //J+
   }
 
-  private String createUrl(Repository repository, String urlSuffix) {
-    String url = HttpUtil.getUriWithoutEndSeperator(configuration.getUrl()).concat(urlSuffix);
-    String repositoryUrl = createRepositoryUrl(repository);
-    url = url + "?token=" + configuration.getGitAuthenticationToken();
-    if (Util.isNotEmpty(repositoryUrl)) {
-      url = url.concat("&url=").concat(fix(repositoryUrl));
-    }
-    return url;
+  private String createUrl(String urlSuffix) {
+    return HttpUtil.getUriWithoutEndSeperator(configuration.getUrl()).concat(urlSuffix);
   }
 
-  private String createUrlSuffix(String type) {
-    String urlSuffix = null;
-    if (TYPE_MERCURIAL.equalsIgnoreCase(type)
-      && !configuration.isDisableMercurialTrigger()) {
-      urlSuffix = URL_MERCURIAL;
-    } else if (TYPE_GIT.equalsIgnoreCase(type)
-      && !configuration.isDisableGitTrigger()) {
-      urlSuffix = URL_GIT;
-    }
-    return urlSuffix;
-  }
+  abstract String createUrlSuffix();
 
   private String createRepositoryUrl(Repository repository) {
     try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
