@@ -29,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.config.ScmConfiguration;
 import sonia.scm.net.ahc.AdvancedHttpClient;
-import sonia.scm.net.ahc.AdvancedHttpRequestWithBody;
 import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
@@ -60,7 +59,7 @@ class JenkinsEventRelay {
   }
 
   void send(JenkinsEventDto eventDto) {
-    doIfEnabled(() -> jenkinsContext.getServerUrl().ifPresent(s -> send(s, eventDto, jenkinsContext.getConfiguration().getUrl(), jenkinsContext.getConfiguration().getUsername(), jenkinsContext.getConfiguration().getApiToken())));
+    doIfEnabled(() -> jenkinsContext.getServerUrl().ifPresent(s -> send(s, eventDto)));
   }
 
   void send(Repository repository, JenkinsRepositoryEventDto eventDto) {
@@ -78,11 +77,10 @@ class JenkinsEventRelay {
     eventDto.setName(repository.getName());
     eventDto.setType(repository.getType());
 
-    JenkinsConfiguration jenkinsConfiguration = jenkinsContext.getConfiguration(repository);
-    send(serverUrl, eventDto, jenkinsConfiguration.getUrl(), jenkinsConfiguration.getUsername(), jenkinsConfiguration.getApiToken());
+    send(serverUrl, eventDto);
   }
 
-  private void send(String serverUrl, JenkinsEventDto eventDto, String url, String username, String apiToken) {
+  private void send(String serverUrl, JenkinsEventDto eventDto) {
     eventDto.setServer(configuration.getBaseUrl());
 
     List<AdditionalServerIdentification.Identification> identifications = serverIdentifications.stream().map(AdditionalServerIdentification::get).collect(Collectors.toList());
@@ -91,13 +89,9 @@ class JenkinsEventRelay {
     try {
       String json = mapper.writer().writeValueAsString(eventDto);
 
-      AdvancedHttpRequestWithBody request = httpClient.post(createEventHookUrl(serverUrl))
+      httpClient.post(createEventHookUrl(serverUrl))
         .spanKind("Jenkins")
-        .formContent().field("json", json).build();
-
-      HeaderAppenders.appendCsrfCrumbHeader(httpClient, request, url, username, apiToken);
-
-      request
+        .formContent().field("json", json).build()
         .request();
     } catch (IOException e) {
       if (LOG.isWarnEnabled()) {
