@@ -63,6 +63,9 @@ public class GlobalJenkinsConfiguration implements Validateable {
   @XmlJavaTypeAdapter(XmlEncryptionAdapter.class)
   private String apiToken;
 
+  @XmlJavaTypeAdapter(XmlEncryptionAdapter.class)
+  private String gitAuthenticationToken;
+
   private String url;
 
   public GlobalJenkinsConfiguration(String url, boolean disableGitTrigger, boolean disableMercurialTrigger, boolean disableSubversionTrigger, boolean disableRepositoryConfiguration) {

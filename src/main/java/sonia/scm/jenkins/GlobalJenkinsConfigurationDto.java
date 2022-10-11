@@ -41,6 +41,7 @@ public class GlobalJenkinsConfigurationDto extends HalRepresentation {
   private String url;
   private String username;
   private String apiToken;
+  private String gitAuthenticationToken;
 
   @Override
   @SuppressWarnings("squid:S1185") // We want to have this method available in this package

@@ -109,7 +109,7 @@ public class JenkinsGlobalHookHandler implements JenkinsHookHandler {
   private String createUrl(Repository repository, String urlSuffix) {
     String url = HttpUtil.getUriWithoutEndSeperator(configuration.getUrl()).concat(urlSuffix);
     String repositoryUrl = createRepositoryUrl(repository);
-    url = url + "?token=5f5db6fa16cb251bfa6162f388d2d2a2"; // TODO Use token from jenkins git configuration
+    url = url + "?token=" + configuration.getGitAuthenticationToken();
     if (Util.isNotEmpty(repositoryUrl)) {
       url = url.concat("&url=").concat(fix(repositoryUrl));
     }
