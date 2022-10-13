@@ -10,7 +10,7 @@ this user, too. This is used for the CSRF protection in Jenkins. Additionally, f
 "notifyCommit access tokens" is needed. This can be created in the global security configuration
 in Jenkins.
 
-Finally it is possible to disable the repository specific configuration or to disable event triggers for specific
+Finally, it is possible to disable the repository specific configuration or to disable event triggers for specific
 repository types.
 
 ![Jenkins Global Configuration](assets/global-config.png)

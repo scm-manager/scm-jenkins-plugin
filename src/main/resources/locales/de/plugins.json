@@ -35,7 +35,7 @@
         "urlHelp": "URL der Jenkins Installation (mit Kontextpfad).",
         "project": "Projekt",
         "projectHelp": "Der Name des Projekts in Jenkins.",
-        "token": "Token",
+        "token": "Authentifikations-Token",
         "tokenHelp": "Jenkins Authentifikations-Token",
         "csrf": "CSRF Absicherung",
         "csrfHelp": "Auswählen, wenn für die Jenkins-Instanz eine CSRF-Absicherung konfiguriert ist.",
