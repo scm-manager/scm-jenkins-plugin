@@ -4,16 +4,23 @@ title: Konfiguration
 Wie im SCM-Manager 2 üblich, gibt es eine globale und eine repository-spezifische Konfiguration für das Jenkins-Plugin.
 
 ### Globale Konfiguration
-Über die globale Jenkins Konfiguration lassen sich die Jenkins Instanz-URL und die VCS Trigger konfigurieren. 
-Außerdem können dort die repository-spezifische Konfiguration sowie das Senden der Event-Trigger deaktiviert werden.
+Über die globale Jenkins Konfiguration lassen sich die Jenkins Instanz-URL und die VCS Trigger konfigurieren.
+Abhängig von der Jenkins Konfiguration müssen zusätzlich ein Benutzername mit einem gültigen API Token gesetzt werden.
+Diese werden für die CSRF Schutz in Jenkins genutzt. Zusätzlich wird für Git Repositories ein sogenannter "notifyCommit
+access token" benötigt. Ein solcher kann in der globalen Sicherheitskonfiguration in Jenkins erstellt werden.
+
+Schließlich kann die repository-spezifische Konfiguration sowie das Senden der Event-Trigger für bestimmte Repository
+Typen deaktiviert werden.
 
 ![Jenkins Globale Konfiguration](assets/global-config.png)
 
 #### Repository Konfiguration
-Über die Repository Konfiguration des SCM-Jenkins-Plugin können die Builds des Repositories gesteuert werden. 
+Über die Repository Konfiguration des SCM-Jenkins-Plugin können die Builds einzelner Repositories konfiguriert werden.
 Dazu wird die Jenkins Instanz-URL und der Name des Projekts benötigt. 
 Weiterhin kann man über unterschiedliche Zugangsdaten eine Verbindung mit einer gesicherten Jenkins Instanz herstellen. 
-Es gibt die Möglichkeit einen Authentifizierungstoken oder einen API Token passend zum Benutzer für die Verbindung zu verwenden. 
+Es gibt die Möglichkeit einen Authentifizierungstoken (z. B. aus der globalen Sicherheitskonfiguration) und/oder einen
+API Token passend zum Benutzer für die Verbindung zu verwenden. 
+
 Über die Branches lässt sich zusätzlich steuern, welche Repository Branches nach einem Push zum Bauen auf dem Jenkins getriggert werden sollen.
 
 Wenn es sich um einen parametrisierten Build Job im Jenkins handelt, können auch Build Parameter mit jedem Request geschickt werden. 

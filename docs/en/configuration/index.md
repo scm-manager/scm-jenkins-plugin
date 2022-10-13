@@ -4,15 +4,23 @@ title: Configuration
 There are two quite different configurations for the SCM-Jenkins-plugin.
 
 ### Global configuration
-In the global configuration you can set the Jenkins instance url and configure the VCS triggers. 
-Also it is possible to disable the repository specific configuration.
+In the global configuration you can set the Jenkins instance url and configure the VCS triggers.
+Depending on your Jenkins configuration, you may have to set a username and a valid API token for
+this user, too. This is used for the CSRF protection in Jenkins. Additionally, for git a
+"notifyCommit access tokens" is needed. This can be created in the global security configuration
+in Jenkins.
+
+Finally it is possible to disable the repository specific configuration or to disable event triggers for specific
+repository types.
 
 ![Jenkins Global Configuration](assets/global-config.png)
 
 #### Repository Configuration
-With the repository configuration the build jobs of the repository can be controlled. 
+With the repository configuration, build jobs for single repositories can be controlled.
 Just the Jenkins instance url and some kind of credentials are required. 
-For authentication you can use an authentication token or an api token. 
+For authentication, you may have to use an authentication token (for example for git the "notifyCommit access token")
+and/or a username with an api token. 
+
 You can filter the build job triggers by branches, so only build jobs of selected branches will be triggered on a repository push.
 
 If the Jenkins build job is parametrized you may also send parameters with each request.
