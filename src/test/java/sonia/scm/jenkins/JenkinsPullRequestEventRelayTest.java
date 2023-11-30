@@ -28,6 +28,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestReopenedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
@@ -140,6 +141,18 @@ class JenkinsPullRequestEventRelayTest {
         assertThat(dto).extracting("deletedPullRequests").asList().extracting("id").containsExactly("42");
         assertThat(dto).extracting("deletedPullRequests").asList().extracting("source").containsExactly("feature");
         assertThat(dto).extracting("deletedPullRequests").asList().extracting("target").containsExactly("master");
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldSendForReopenedEvent() {
+      eventRelay.handleReopenedEvent(new PullRequestReopenedEvent(REPOSITORY, PULL_REQUEST));
+
+      verify(jenkinsEventRelay).send(eq(REPOSITORY), argThat(dto -> {
+        assertThat(dto).extracting("createOrModifiedPullRequests").asList().extracting("id").containsExactly("42");
+        assertThat(dto).extracting("createOrModifiedPullRequests").asList().extracting("source").containsExactly("feature");
+        assertThat(dto).extracting("createOrModifiedPullRequests").asList().extracting("target").containsExactly("master");
         return true;
       }));
     }

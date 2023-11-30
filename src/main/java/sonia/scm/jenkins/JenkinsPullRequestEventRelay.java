@@ -29,6 +29,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestReopenedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import com.github.legman.Subscribe;
 import lombok.Getter;
@@ -64,6 +65,11 @@ public class JenkinsPullRequestEventRelay {
     if (event.getEventType() == HandlerEventType.CREATE) {
       handle(event, JenkinsPullRequestEventDto::setCreateOrModifiedPullRequests);
     }
+  }
+
+  @Subscribe
+  public void handleReopenedEvent(PullRequestReopenedEvent event) {
+    handle(event, JenkinsPullRequestEventDto::setCreateOrModifiedPullRequests);
   }
 
   @Subscribe
