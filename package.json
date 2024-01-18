@@ -55,5 +55,8 @@
         "@types/styled-components": "^5.1.0",
         "jest": "^24.9.0",
         "@scm-manager/plugin-scripts": "1.0.1"
+    },
+    "resolutions": {
+        "react-hook-form": "7.5.1"
     }
 }
