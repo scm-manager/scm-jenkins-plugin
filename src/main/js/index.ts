@@ -15,13 +15,18 @@
  */
 
 import { ConfigurationBinder as cfgBinder } from "@scm-manager/ui-components";
-import GlobalJenkinsConfiguration from "./GlobalJenkinsConfiguration";
-import LocalJenkinsConfiguration from "./LocalJenkinsConfiguration";
+import { GlobalJenkinsConfiguration } from "./GlobalJenkinsConfiguration";
+import { JenkinsRepositoryConfiguration } from "./JenkinsRepositoryConfiguration";
 
-cfgBinder.bindGlobal("/jenkins", "scm-jenkins-plugin.global.nav-link", "jenkinsConfig", GlobalJenkinsConfiguration);
+cfgBinder.bindGlobal(
+  "/jenkins",
+  "scm-jenkins-plugin.globalConfig.navLink",
+  "jenkinsConfig",
+  GlobalJenkinsConfiguration
+);
 cfgBinder.bindRepositorySetting(
   "/jenkins",
-  "scm-jenkins-plugin.local.nav-link",
+  "scm-jenkins-plugin.repoConfig.navLink",
   "jenkinsConfig",
-  LocalJenkinsConfiguration
+  JenkinsRepositoryConfiguration
 );

@@ -14,25 +14,69 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React from "react";
-import { Title, Configuration } from "@scm-manager/ui-components";
-import GlobalJenkinsConfigurationForm from "./GlobalJenkinsConfigurationForm";
-import { WithTranslation, withTranslation } from "react-i18next";
+import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
+import { Notification, Subtitle, Title } from "@scm-manager/ui-core";
+import { ConfigurationForm, Form } from "@scm-manager/ui-forms";
+import { HalRepresentation } from "@scm-manager/ui-types";
 
-type Props = WithTranslation & {
+type GlobalConfiguration = HalRepresentation & {
+  url: string;
+  disableRepositoryConfiguration: boolean;
+  disableMercurialTrigger: boolean;
+  disableGitTrigger: boolean;
+  disableEventTrigger: boolean;
+  disableSubversionTrigger: boolean;
+  username?: string;
+  apiToken?: string;
+  gitAuthenticationToken?: string;
+};
+
+type Props = {
   link: string;
 };
 
-class GlobalJenkinsConfiguration extends React.Component<Props> {
-  render(): React.ReactNode {
-    const { t, link } = this.props;
-    return (
-      <>
-        <Title title={t("scm-jenkins-plugin.global.form.header")} />
-        <Configuration link={link} t={t} render={props => <GlobalJenkinsConfigurationForm {...props} />} />
-      </>
-    );
-  }
-}
-
-export default withTranslation("plugins")(GlobalJenkinsConfiguration);
+export const GlobalJenkinsConfiguration: FC<Props> = ({ link }) => {
+  const [t] = useTranslation("plugins");
+  return (
+    <>
+      <Title>{t("scm-jenkins-plugin.globalConfig.title")}</Title>
+      <ConfigurationForm<GlobalConfiguration>
+        link={link}
+        translationPath={["plugins", "scm-jenkins-plugin.globalConfig"]}
+      >
+        <Subtitle>{t("scm-jenkins-plugin.globalConfig.generalSubtitle")}</Subtitle>
+        <Notification type="warning">{t("scm-jenkins-plugin.globalConfig.warning")}</Notification>
+        <Form.Row>
+          <Form.Input name="url" autoFocus />
+        </Form.Row>
+        <Form.Row>
+          <Form.Checkbox name="disableRepositoryConfiguration" />
+        </Form.Row>
+        <Form.Row>
+          <Form.Checkbox name="disableGitTrigger" />
+        </Form.Row>
+        <Form.Row>
+          <Form.Checkbox name="disableMercurialTrigger" />
+        </Form.Row>
+        <Form.Row>
+          <Form.Checkbox name="disableSubversionTrigger" />
+        </Form.Row>
+        <Form.Row>
+          <Form.Checkbox name="disableEventTrigger" />
+        </Form.Row>
+        <Form.Row>
+          <Form.Input name="username" />
+        </Form.Row>
+        <Form.Row>
+          <Form.Input name="apiToken" type="password" />
+        </Form.Row>
+        <hr />
+        <Subtitle>{t("scm-jenkins-plugin.globalConfig.gitOnlySubtitle")}</Subtitle>
+        <Form.Row>
+          <Form.Input name="gitAuthenticationToken" type="password" />
+        </Form.Row>
+      </ConfigurationForm>
+    </>
+  );
+};

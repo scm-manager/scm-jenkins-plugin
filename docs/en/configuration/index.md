@@ -5,10 +5,18 @@ There are two quite different configurations for the SCM-Jenkins-plugin.
 
 ### Global configuration
 In the global configuration you can set the Jenkins instance url and configure the VCS triggers.
-Depending on your Jenkins configuration, you may have to set a username and a valid API token for
-this user, too. This is used for the CSRF protection in Jenkins. Additionally, for git a
-"notifyCommit access tokens" is needed. This can be created in the global security configuration
-in Jenkins.
+
+The git trigger requires version 1.1.14 or above of the jenkins git plugin.
+The mercurial trigger requires version 1.38 or above of the jenkins mercurial plugin.
+
+The event trigger requires the installation of the [jenkins SCM-Manager plugin](https://plugins.jenkins.io/scm-manager/) in jenkins.
+This informs Jenkins about changes to branches, tags or pull requests.
+
+Depending on your Jenkins configuration, you may have to set a username and a valid API token for this user, too. 
+This is only required for SVN commit trigger requests if CSRF protection is activated on the Jenkins CI server.
+
+Additionally, for git a "notifyCommit access tokens" is needed. 
+This can be created in the global security configuration in Jenkins.
 
 Finally, it is possible to disable the repository specific configuration or to disable event triggers for specific
 repository types.

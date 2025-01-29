@@ -1,64 +1,80 @@
 {
   "scm-jenkins-plugin": {
-    "global": {
-      "nav-link": "Jenkins",
-      "form": {
-        "header": "Globale Jenkins Konfiguration",
-        "generalSubtitle": "Allgemein",
-        "gitOnlySubtitle": "Nur für Git",
-        "warning": "Warnung: Die hier konfigurierte URL erhält Events die Informationen über Namespaces und Namen von Repositories enthalten und somit Informationen über diese Repositories offenlegen können, obwohl der im Jenkins hinterlegte Nutzer für den SCM-Manager keine Zugriffsrechte auf diese Repositories hat.",
-        "url": "URL",
-        "urlHelp": "URL der Jenkins Installation (mit Kontextpfad).",
-        "disableRepositoryConfiguration": "Repository-spezifische Konfiguration verbieten",
-        "disableRepositoryConfigurationHelp": "Repository-spezifische Konfiguration durch Owner von Repositories verbieten.",
-        "disableGitTrigger": "Git-Trigger deaktivieren",
-        "disableGitTriggerHelp": "Deaktiviert Trigger für Git-Repositories. \nHinweis: Der Git-Trigger erfordert Version 1.1.14 oder höher des Jenkins-Git-Plugins.",
-        "disableSubversionTrigger": "Subversion-Trigger deaktivieren",
-        "disableSubversionTriggerHelp": "Deaktiviert Trigger für Subversion-Repositories.",
-        "disableMercurialTrigger": "Mercurial-Trigger deaktivieren",
-        "disableMercurialTriggerHelp": "Deaktiviert Trigger für Mercurial-Repositories. \nHinweis: Der Mercurial-Trigger erfordert Version 1.38 oder höher des Jenkins-Mercurial-Plugins.",
-        "disableEventTrigger": "Event-Trigger deaktivieren",
-        "disableEventTriggerHelp": "Deaktiviert Trigger für SCM-Manager Events. \nHinweis: Diese Events werden nur verarbeitet, wenn im Jenkins das Jenkins-SCM-Manager-Plugin installiert ist. \nDamit wird der Jenkins über Änderungen an Branches, Tags oder Pull Requests informiert.",
-        "username": "Benutzername",
-        "usernameHelp": "Benutzername, der für die Authentifikation auf dem Jenkins-CI-Server genutzt wird. Die Anmeldedaten werden nur für SVN Commit Trigger Anfragen benötigt, wenn der CSRF Schutz auf dem Jenkins Server aktiviert ist.",
-        "apiToken": "API Token des Benutzers",
-        "apiTokenHelp": "API Token für den Benutzer. Dieser Token wird für die Authentifikation genutzt. Der API Token kann auf dem Jenkins-Server unter der folgenden URL erstellt werden: http://yourjenkinsserver/jenkins/user/username/configure.",
-        "gitAuthenticationToken": "Git Authentifizierungstoken",
-        "gitAuthenticationTokenHelp": "Dieser Token wird benötigt um Git basierte Jobs zu triggern. Sie können diesen Token in den Sicherheitseinstellungen Ihres Jenkins erstellen: http://yourjenkinsserver/configureSecurity/."
+    "globalConfig": {
+      "navLink": "Jenkins",
+      "title": "Globale Jenkins Konfiguration",
+      "generalSubtitle": "Allgemein",
+      "gitOnlySubtitle": "Nur für Git",
+      "warning": "Warnung: Die hier konfigurierte URL erhält Events die Informationen über Namespaces und Namen von Repositories enthalten und somit Informationen über diese Repositories offenlegen können, obwohl der im Jenkins hinterlegte Nutzer für den SCM-Manager keine Zugriffsrechte auf diese Repositories hat.",
+      "url": {
+        "label": "URL der Jenkins Installation (mit Kontextpfad)."
+      },
+      "disableRepositoryConfiguration": {
+        "label": "Nur globale Konfiguration verwenden. Repository-spezifische Konfiguration verbieten"
+      },
+      "disableGitTrigger": {
+        "label": "Trigger für Git-Repositories deaktivieren"
+      },
+      "disableSubversionTrigger": {
+        "label": "Trigger für Subversion-Repositories deaktivieren"
+      },
+      "disableMercurialTrigger": {
+        "label": "Trigger für Mercurial-Repositories deaktivieren"
+      },
+      "disableEventTrigger": {
+        "label": "Trigger für SCM-Manager Events deaktivieren"
+      },
+      "username": {
+        "label": "Benutzername für Jenkins (nur für SVN-Commit-Trigger mit CSRF-Schutz erforderlich)"
+      },
+      "apiToken": {
+        "label": "API-Token des Benutzers",
+        "helpText": "Dieser Token wird für die Authentifikation genutzt. Der API-Token kann von Ihrem Jenkins-Server unter der folgenden URL erstellt werden: http://yourjenkinsserver/jenkins/user/username/security."
+      },
+      "gitAuthenticationToken": {
+        "label": "Git Authentifizierungstoken",
+        "helpText": "Dieser Token wird benötigt um Git basierte Jobs zu triggern. Sie können diesen Token in den Sicherheitseinstellungen Ihres Jenkins erstellen: http://yourjenkinsserver/configureSecurity/."
       }
     },
-    "local": {
-      "nav-link": "Jenkins",
-      "form": {
-        "header": "Jenkins Konfiguration",
-        "url": "URL",
-        "urlHelp": "URL der Jenkins Installation (mit Kontextpfad).",
-        "project": "Projekt",
-        "projectHelp": "Der Name des Projekts in Jenkins.",
-        "token": "Authentifikations-Token",
-        "tokenHelp": "Jenkins Authentifikations-Token",
-        "csrf": "CSRF Absicherung",
-        "csrfHelp": "Auswählen, wenn für die Jenkins-Instanz eine CSRF-Absicherung konfiguriert ist.",
-        "username": "Benutzername",
-        "usernameHelp": "Benutzername, der für die Authentifikation auf dem Jenkins-CI-Server genutzt wird.",
-        "apiToken": "API Token des Benutzers",
-        "apiTokenHelp": "API Token für den Benutzer. Dieser Token wird für die Authentifikation genutzt. Der API Token kann auf dem Jenkins-Server unter der folgenden URL erstellt werden: http://yourjenkinsserver/jenkins/user/username/configure.",
-        "branchesHeader": "Branches",
-        "branchesHelp": "Liste von Branches.",
-        "branches": "Neuer Branch",
-        "branchesAdd": "Branch hinzufügen",
-        "branchesDelete": "Löschen",
-        "parameterLabel": "Build Job Parameter",
-        "parameterHelpText": "Diese Build Job Parameter werden mit jeder Anfrage zum Triggern der Build Jobs mitgeschickt.\nDer Jenkins kann nur mit Parametern umgehen, die im Build Job definiert sind.\nParameter Namen müssen exakt übereinstimmen!",
-        "parameterName": "Name",
-        "parameterNameHelp": "Der Name des Parameters.\nDer Name muss exakt mit dem Namen im Jenkins Build Job übereinstimmen!",
-        "parameterValue": "Wert",
-        "parameterValueHelp": "Der Wert des Parameters:\n - Als boolsche Parameter werden \"true\" oder \"false\" erwartet\n - Für Run Parameter wird das Format \"jobname#buildnummer\" erwartet\n - Variable Parameter aus dem Kontext nutzen das Format ${wert}, z. B. ${repository.name}",
-        "addParameter": "Parameter hinzufügen",
-        "deleteParameter": "Entfernen"
+    "repoConfig": {
+      "navLink": "Jenkins",
+      "subtitle": "Jenkins Konfiguration",
+      "url": {
+        "label": "URL der Jenkins Installation (mit Kontextpfad)"
+      },
+      "project": {
+        "label": "Name des Jenkins Projekts"
+      },
+      "token": {
+        "label": "Jenkins-Authentifizierungs-Token"
+      },
+      "csrf": {
+        "label": "CSRF-Absicherung (prüfen Sie, ob Ihre Jenkins-Instanz CSRF-geschützt ist)"
+      },
+      "username": {
+        "label": "Benutzername für Jenkins (nur für SVN-Commit-Trigger mit CSRF-Schutz erforderlich)"
+      },
+      "apiToken": {
+        "label": "API-Token des Benutzers",
+        "helpText": "Dieser Token wird für die Authentifikation genutzt. Der API-Token kann von Ihrem Jenkins-Server unter der folgenden URL erstellt werden: http://yourjenkinsserver/jenkins/user/username/security."
+      },
+      "branches": {
+        "label": "Liste von Branches",
+        "add": "Branch hinzufügen"
+      },
+      "buildParameters": {
+        "name": {
+          "label": "Name des Parameters",
+          "helpText": "Der Name muss exakt mit dem Namen im Jenkins Build Job übereinstimmen."
+        },
+        "value": {
+          "label": "Wert des Parameters",
+          "helpText": "- Als boolsche Parameter werden \"true\" oder \"false\" erwartet\n - Für Run Parameter wird das Format \"jobname#buildnummer\" erwartet\n - Variable Parameter aus dem Kontext nutzen das Format ${wert}, z. B. ${repository.name}"
+        },
+        "entity": "Build Job Parameter",
+        "helpText": "Der Jenkins kann nur mit Parametern umgehen, die im Build Job definiert sind.\nParameter Namen müssen exakt übereinstimmen."
       }
-    },
-    "configurationChangedSuccess": "Konfiguration gespeichert"
+    }
   },
   "permissions": {
     "configuration": {

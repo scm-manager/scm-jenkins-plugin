@@ -4,9 +4,19 @@ title: Konfiguration
 Wie im SCM-Manager 2 üblich, gibt es eine globale und eine repository-spezifische Konfiguration für das Jenkins-Plugin.
 
 ### Globale Konfiguration
-Über die globale Jenkins Konfiguration lassen sich die Jenkins Instanz-URL und die VCS Trigger konfigurieren.
-Abhängig von der Jenkins Konfiguration muss zusätzlich ein Benutzername mit einem gültigen API-Token gesetzt werden.
-Dieser wird für den CSRF Schutz in Jenkins genutzt. Zusätzlich wird für Git Repositories ein sogenannter "notifyCommit
+Über die globale Jenkins Konfiguration lassen sich die Jenkins Instanz-URL und die VCS Trigger konfigurieren. 
+Außerdem kann die repository-spezifische Konfiguration durch Owner von Repositories verbietet werden.
+
+Der Git-Trigger erfordert Version 1.1.14 oder höher des Jenkins-Git-Plugins.
+Der Mercurial-Trigger erfordert Version 1.38 oder höher des Jenkins-Mercurial-Plugins.
+
+Der EventTrigger erfordert die Installation des [Jenkins SCM-Manager Plugins](https://plugins.jenkins.io/scm-manager/) in Jenkins.
+Damit wird der Jenkins über Änderungen an Branches, Tags oder Pull Requests informiert.
+
+Abhängig von der Jenkins-Konfiguration muss zusätzlich ein Benutzername mit einem gültigen API-Token gesetzt werden.
+Dieser ist nur für SVN-Commit-Trigger-Anfragen erforderlich, wenn der CSRF-Schutz auf dem Jenkins CI-Server aktiviert ist.
+
+Zusätzlich wird für Git Repositories ein sogenannter "notifyCommit 
 access token" benötigt. Ein solcher kann in der globalen Sicherheitskonfiguration in Jenkins erstellt werden.
 
 Schließlich kann die repository-spezifische Konfiguration sowie das Senden der Event-Trigger für bestimmte Repository
