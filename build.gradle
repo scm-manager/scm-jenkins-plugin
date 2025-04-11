@@ -26,7 +26,7 @@ dependencies {
 }
 
 scmPlugin {
-  scmVersion = "3.0.0"
+  scmVersion = "3.7.0"
   displayName = "Jenkins"
   description = "Pings your Jenkins CI server when a new commit is pushed to SCM-Manager"
   author = "Cloudogu GmbH"
