@@ -16,7 +16,7 @@
 
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { Notification, Subtitle, Title, useDocumentTitle } from "@scm-manager/ui-core";
+import { Notification, Subtitle, Title } from "@scm-manager/ui-core";
 import { ConfigurationForm, Form } from "@scm-manager/ui-forms";
 import { HalRepresentation } from "@scm-manager/ui-types";
 
@@ -38,7 +38,6 @@ type Props = {
 
 export const GlobalJenkinsConfiguration: FC<Props> = ({ link }) => {
   const [t] = useTranslation("plugins");
-  useDocumentTitle(t("scm-jenkins-plugin.repoConfig.navLink"));
 
   return (
     <>
