@@ -18,6 +18,7 @@ package sonia.scm.jenkins;
 
 import com.google.common.base.Strings;
 import com.google.inject.Provider;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 import sonia.scm.net.ahc.AdvancedHttpClient;
 import sonia.scm.net.ahc.AdvancedHttpRequestWithBody;
@@ -88,9 +89,10 @@ public class JenkinsSvnGlobalHookHandler implements JenkinsHookHandler {
       AdvancedHttpResponse response = request.request();
 
       int statusCode = response.getStatus();
-
-      if (log.isInfoEnabled()) {
-        log.info("request returned {}", statusCode);
+      if (statusCode == Response.Status.UNAUTHORIZED.getStatusCode()) {
+        log.warn("Jenkins hook request returned {}. Please check your Jenkins server credentials in SCM-Manager settings.", statusCode);
+      } else {
+        log.debug("Request returned {}", statusCode);
       }
     } catch (IOException e) {
       log.error("could not execute http request", e);
@@ -108,7 +110,7 @@ public class JenkinsSvnGlobalHookHandler implements JenkinsHookHandler {
       Modifications modifications = service.getModificationsCommand().revision(revision).getModifications();
       addModificationsToContent(content, modifications);
     } catch (IOException e) {
-      log.error("Could not find modifications for changeset" + e);
+      log.error("Could not find modifications for changeset", e);
     }
     return content.toString();
   }
