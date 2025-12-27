@@ -2,12 +2,12 @@
   "scm-jenkins-plugin": {
     "globalConfig": {
       "navLink": "Jenkins",
-      "title": "Globale Jenkins Konfiguration",
+      "title": "Globale Jenkins-Konfiguration",
       "generalSubtitle": "Allgemein",
       "gitOnlySubtitle": "Nur für Git",
-      "warning": "Warnung: Die hier konfigurierte URL erhält Events die Informationen über Namespaces und Namen von Repositories enthalten und somit Informationen über diese Repositories offenlegen können, obwohl der im Jenkins hinterlegte Nutzer für den SCM-Manager keine Zugriffsrechte auf diese Repositories hat.",
+      "warning": "Warnung: Die hier konfigurierte URL erhält Events, die Informationen über Namespaces und Namen von Repositories enthalten. Das könnte an eine externe Stelle Informationen über diese Repositories offenlegen, obwohl der im Jenkins hinterlegte Nutzer für den SCM-Manager keine Zugriffsrechte auf diese Repositories hat.",
       "url": {
-        "label": "URL der Jenkins Installation (mit Kontextpfad)."
+        "label": "URL der Jenkins-Installation (mit Kontextpfad)"
       },
       "disableRepositoryConfiguration": {
         "label": "Nur globale Konfiguration verwenden. Repository-spezifische Konfiguration verbieten"
@@ -22,7 +22,7 @@
         "label": "Trigger für Mercurial-Repositories deaktivieren"
       },
       "disableEventTrigger": {
-        "label": "Trigger für SCM-Manager Events deaktivieren"
+        "label": "Trigger für SCM-Manager-Events deaktivieren"
       },
       "username": {
         "label": "Benutzername für Jenkins (nur für SVN-Commit-Trigger mit CSRF-Schutz erforderlich)"
@@ -33,17 +33,17 @@
       },
       "gitAuthenticationToken": {
         "label": "Git Authentifizierungstoken",
-        "helpText": "Dieser Token wird benötigt um Git basierte Jobs zu triggern. Sie können diesen Token in den Sicherheitseinstellungen Ihres Jenkins erstellen: http://yourjenkinsserver/configureSecurity/."
+        "helpText": "Dieser Token wird benötigt, um Git-basierte Jobs zu triggern. Sie können diesen Token in den Sicherheitseinstellungen Ihrer Jenkins-Instanz erstellen: http://yourjenkinsserver/configureSecurity/."
       }
     },
     "repoConfig": {
       "navLink": "Jenkins",
-      "subtitle": "Jenkins Konfiguration",
+      "subtitle": "Jenkins-Konfiguration",
       "url": {
-        "label": "URL der Jenkins Installation (mit Kontextpfad)"
+        "label": "URL der Jenkins-Installation (mit Kontextpfad)"
       },
       "project": {
-        "label": "Name des Jenkins Projekts"
+        "label": "Name des Jenkins-Projekts"
       },
       "token": {
         "label": "Jenkins-Authentifizierungs-Token"
@@ -65,14 +65,14 @@
       "buildParameters": {
         "name": {
           "label": "Name des Parameters",
-          "helpText": "Der Name muss exakt mit dem Namen im Jenkins Build Job übereinstimmen."
+          "helpText": "Der Name muss exakt mit dem Namen im Jenkins-Build-Job übereinstimmen."
         },
         "value": {
           "label": "Wert des Parameters",
-          "helpText": "- Als boolsche Parameter werden \"true\" oder \"false\" erwartet\n - Für Run Parameter wird das Format \"jobname#buildnummer\" erwartet\n - Variable Parameter aus dem Kontext nutzen das Format ${wert}, z. B. ${repository.name}"
+          "helpText": "- Als boolesche Parameter werden „true“ oder „false“ erwartet\n - Für Run-Parameter wird das Format „jobname#buildnummer“ erwartet\n - Variable Parameter aus dem Kontext nutzen das Format „${wert}“, z. B. „${repository.name}“."
         },
-        "entity": "Build Job Parameter",
-        "helpText": "Der Jenkins kann nur mit Parametern umgehen, die im Build Job definiert sind.\nParameter Namen müssen exakt übereinstimmen."
+        "entity": "Build-Job-Parameter",
+        "helpText": "Der Jenkins kann nur mit Parametern umgehen, die im Build-Job definiert sind.\nParameternamen müssen exakt übereinstimmen."
       }
     }
   },
@@ -80,8 +80,8 @@
     "configuration": {
       "read,write": {
         "jenkins": {
-          "displayName": "Globale Jenkins Konfiguration ändern",
-          "description": "Darf die globale Jenkins Konfiguration verändern"
+          "displayName": "Globale Jenkins-Konfiguration ändern",
+          "description": "Darf die globale Jenkins-Konfiguration verändern."
         }
       }
     },
@@ -89,7 +89,7 @@
       "jenkins": {
         "*": {
           "displayName": "Repository-spezifische Jenkins Konfiguration ändern",
-          "description": "Darf die repository-spezifischen Jenkins Konfiguration verändern (falls nicht global deaktiviert)"
+          "description": "Darf die repository-spezifische Jenkins-Konfiguration verändern (falls nicht global deaktiviert)."
         }
       }
     }

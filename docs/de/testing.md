@@ -10,12 +10,12 @@ docker-compose up
 ```
 
 Melden Sie sich bei Jenkins mit den Anmeldedaten scmadmin/scmadmin an. 
-Klicken Sie dann oben rechts auf den Benutzer und wählen Sie im linken Menü "Konfigurieren". 
+Klicken Sie dann oben rechts auf den Benutzer und wählen Sie im linken Menü „Konfigurieren“. 
 Dort können Sie ein neues API-Token erstellen, indem Sie auf "Neues Token hinzufügen" klicken. 
 Tun Sie dies und kopieren Sie den generierten Hash. 
-Dieser wird im Folgenden als "API-Token" bezeichnet.
+Dieser wird im Folgenden als „API-Token“ bezeichnet.
 
-Diese Jenkins-Instanz hat einen Job konfiguriert, der von `http://172.18.0.1:8081/scm/repo/scmadmin/git` pulled. 
+Diese Jenkins-Instanz hat einen Job konfiguriert, der von `http://172.18.0.1:8081/scm/repo/scmadmin/git` pullt. 
 Sie können dieses Repository in einer laufenden SCM-Manager-Instanz mit curl erstellen:
 
 ```

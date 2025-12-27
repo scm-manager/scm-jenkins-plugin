@@ -2,18 +2,18 @@
 title: Testing with Jenkins
 ---
 
-To get a running Jenkins instance you can use docker and the prepared Jenkins environment:
+In order to get a running Jenkins instance, you can use Docker and the prepared Jenkins environment:
 
 ```
 mvn generate-resources
 docker-compose up
 ```
 
-Log into Jenkins using credentials scmadmin/scmadmin. 
-Then click the user on the top right and choose "Configure" in the left menu. 
-There you can create a new API Token clicking "Add new Token". 
+Log into Jenkins using credentials “scmadmin/scmadmin”. 
+Then, click the user on the top right and choose “Configure” in the left menu. 
+There, you can create a new API Token clicking “Add new token”. 
 Do so and copy the generated hash. 
-This will be referenced in the following as "API Token".
+This will be referenced in the following as “API token”.
 
 This Jenkins instance has a job configured to pull from `http://172.18.0.1:8081/scm/repo/scmadmin/git`. 
 You can create this repository in a running instance of SCM-Manager using curl:
@@ -28,9 +28,9 @@ curl -u scmadmin:scmadmin --data '{
 }' --header "Content-Type: application/vnd.scmm-repository+json" http://localhost:8081/scm/api/v2/repositories/
 ```
 
-#### Repository related configuration
+#### Repository-specific configuration
 
-Set the Jenkins for this repository using curl as follows (please insert your API Token you generated above):
+Set the Jenkins for this repository using curl as follows (please insert your API token you generated above):
 
 ```
 curl -u scmadmin:scmadmin --data '{
@@ -54,7 +54,7 @@ Whenever you change something on the main branch, a build should be triggered in
 
 #### Global configuration
 
-Disable the repository related configuration and create a global one:
+Disable the repository-specific configuration and create a global one:
 
 ```
 curl -u scmadmin:scmadmin --data '{
