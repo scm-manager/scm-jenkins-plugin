@@ -97,7 +97,7 @@
   "verbs": {
     "repository": {
       "jenkins": {
-        "displayName": "Configure Jenkins",
+        "displayName": "configure Jenkins",
         "description": "May modify the repository-specific jenkins configurations (if not disabled globally)."
       }
     }
