@@ -61,10 +61,13 @@ class JenkinsEventRelay {
   private void doIfEnabled(Runnable callback) {
     if (!jenkinsContext.getConfiguration().isDisableEventTrigger()) {
       callback.run();
+    } else {
+      LOG.trace("Event trigger disabled, because Jenkins is not configured");
     }
   }
 
   private void send(String serverUrl, JenkinsRepositoryEventDto eventDto, Repository repository) {
+    LOG.debug("Sending event for repository {}", repository);
     eventDto.setNamespace(repository.getNamespace());
     eventDto.setName(repository.getName());
     eventDto.setType(repository.getType());
@@ -73,6 +76,7 @@ class JenkinsEventRelay {
   }
 
   private void send(String serverUrl, JenkinsEventDto eventDto) {
+    LOG.debug("Sending event to {} : {}", serverUrl, eventDto);
     eventDto.setServer(configuration.getBaseUrl());
 
     List<AdditionalServerIdentification.Identification> identifications = serverIdentifications.stream().map(AdditionalServerIdentification::get).collect(Collectors.toList());

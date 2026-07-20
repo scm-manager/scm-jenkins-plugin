@@ -21,12 +21,15 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestReopenedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatusChangedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Answers;
 import org.mockito.InjectMocks;
@@ -62,6 +65,12 @@ class JenkinsPullRequestEventRelayTest {
 
   @InjectMocks
   private JenkinsPullRequestEventRelay eventRelay;
+
+  private static PullRequest pullRequest(PullRequestStatus status) {
+    PullRequest pullRequest = new PullRequest("42", "feature", "master");
+    pullRequest.setStatus(status);
+    return pullRequest;
+  }
 
   @ParameterizedTest
   @ValueSource(strings = {"BEFORE_CREATE", "BEFORE_MODIFY", "BEFORE_DELETE", "MODIFY"})
@@ -111,6 +120,32 @@ class JenkinsPullRequestEventRelayTest {
         assertThat(dto).extracting("createOrModifiedPullRequests").asList().extracting("target").containsExactly("master");
         return true;
       }));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = PullRequestStatus.class, names = {"DRAFT", "OPEN"})
+    void shouldSendForDraftAndOpenStatusChangedEvent(PullRequestStatus status) {
+      PullRequest pullRequest = pullRequest(status);
+
+      eventRelay.handleStatusChangedEvent(new PullRequestStatusChangedEvent(REPOSITORY, pullRequest, status));
+
+      verify(jenkinsEventRelay).send(eq(REPOSITORY), argThat(dto -> {
+        assertThat(dto).extracting("createOrModifiedPullRequests").asList().extracting("id").containsExactly("42");
+        assertThat(dto).extracting("createOrModifiedPullRequests").asList().extracting("source").containsExactly("feature");
+        assertThat(dto).extracting("createOrModifiedPullRequests").asList().extracting("target").containsExactly("master");
+        assertThat(dto).extracting("createOrModifiedPullRequests").asList().extracting("status").containsExactly(status);
+        return true;
+      }));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = PullRequestStatus.class, names = {"MERGED", "REJECTED"})
+    void shouldNotSendForClosedStatusChangedEvent(PullRequestStatus status) {
+      PullRequest pullRequest = pullRequest(status);
+
+      eventRelay.handleStatusChangedEvent(new PullRequestStatusChangedEvent(REPOSITORY, pullRequest, status));
+
+      verify(jenkinsEventRelay, never()).send(any(), any());
     }
 
     @Test

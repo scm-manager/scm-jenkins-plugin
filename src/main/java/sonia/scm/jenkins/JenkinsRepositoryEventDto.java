@@ -20,6 +20,7 @@ import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import sonia.scm.repository.api.ScmProtocol;
 
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
+@ToString(callSuper = true)
 @SuppressWarnings("java:S2160")
 class JenkinsRepositoryEventDto extends JenkinsEventDto {
   private String namespace;

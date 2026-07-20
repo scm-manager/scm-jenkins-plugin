@@ -20,14 +20,17 @@ import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.List;
 
 @Getter
 @Setter
+@ToString
 @SuppressWarnings("java:S2160")
 public class JenkinsEventDto extends HalRepresentation  {
   private String server;
+  @ToString.Exclude
   private List<AdditionalServerIdentification.Identification> identifications;
   private final EventTarget eventTarget;
 

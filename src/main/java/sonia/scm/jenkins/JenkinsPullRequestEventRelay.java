@@ -22,6 +22,8 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestReopenedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatusChangedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import com.github.legman.Subscribe;
 import lombok.Getter;
@@ -70,6 +72,13 @@ public class JenkinsPullRequestEventRelay {
   }
 
   @Subscribe
+  public void handleStatusChangedEvent(PullRequestStatusChangedEvent event) {
+    if (PullRequestStatus.DRAFT == event.getStatus() || PullRequestStatus.OPEN == event.getStatus()) {
+      handle(event, JenkinsPullRequestEventDto::setCreateOrModifiedPullRequests);
+    }
+  }
+
+  @Subscribe
   public void handleMergedEvent(PullRequestMergedEvent event) {
     handle(event, JenkinsPullRequestEventDto::setDeletedPullRequests);
   }
@@ -109,11 +118,13 @@ public class JenkinsPullRequestEventRelay {
     private String id;
     private String source;
     private String target;
+    private PullRequestStatus status;
 
     public PullRequestDto(PullRequest pullRequest) {
       this.id = pullRequest.getId();
       this.source = pullRequest.getSource();
       this.target = pullRequest.getTarget();
+      this.status = pullRequest.getStatus();
     }
   }
 }
