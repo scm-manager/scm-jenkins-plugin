@@ -16,9 +16,8 @@
 
 import React, { FC, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Level, Subtitle } from "@scm-manager/ui-core";
-import { ChipInputField, ConfigurationForm, Form } from "@scm-manager/ui-forms";
-import { HalRepresentation } from "@scm-manager/ui-types";
+import { ChipInputField, ConfigurationForm, Form, Level, Subtitle, useRepositoryFromParams } from "@scm-manager/ui-core";
+import { HalRepresentation, Link } from "@scm-manager/ui-types";
 
 type BuildParameter = {
   name: string;
@@ -36,13 +35,11 @@ type RepositoryConfiguration = HalRepresentation & {
   buildParameters: BuildParameter[];
 };
 
-type Props = {
-  link: string;
-};
-
-export const JenkinsRepositoryConfiguration: FC<Props> = ({ link }) => {
+export const JenkinsRepositoryConfiguration: FC = () => {
   const [t] = useTranslation("plugins");
   const branchesRef = useRef<HTMLInputElement>(null);
+  const repository = useRepositoryFromParams();
+  const link = (repository._links["jenkinsConfig"] as Link).href;
 
   return (
     <>

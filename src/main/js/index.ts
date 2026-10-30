@@ -18,7 +18,7 @@ import { ConfigurationBinder as cfgBinder } from "@scm-manager/ui-components";
 import { GlobalJenkinsConfiguration } from "./GlobalJenkinsConfiguration";
 import { JenkinsRepositoryConfiguration } from "./JenkinsRepositoryConfiguration";
 
-cfgBinder.bindGlobal(
+cfgBinder.bindAdminSetting(
   "/jenkins",
   "scm-jenkins-plugin.globalConfig.navLink",
   "jenkinsConfig",
